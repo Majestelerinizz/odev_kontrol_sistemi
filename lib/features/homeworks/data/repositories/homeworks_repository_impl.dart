@@ -20,22 +20,28 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
   Stream<List<HomeworkEntity>> getTeacherHomeworks(String teacherId) {
     return _homeworksRef
         .where('teacherId', isEqualTo: teacherId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => HomeworkModel.fromFirestore(doc))
-            .toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => HomeworkModel.fromFirestore(doc))
+          .toList();
+      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return list;
+    });
   }
 
   @override
   Stream<List<HomeworkEntity>> getClassHomeworks(String classId) {
     return _homeworksRef
         .where('classId', isEqualTo: classId)
-        .orderBy('dueDate', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => HomeworkModel.fromFirestore(doc))
-            .toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => HomeworkModel.fromFirestore(doc))
+          .toList();
+      list.sort((a, b) => b.dueDate.compareTo(a.dueDate));
+      return list;
+    });
   }
 
   @override
@@ -54,11 +60,14 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
       String studentId) {
     return _assignmentsRef
         .where('studentId', isEqualTo: studentId)
-        .orderBy('updatedAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => HomeworkAssignmentModel.fromFirestore(doc))
-            .toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => HomeworkAssignmentModel.fromFirestore(doc))
+          .toList();
+      list.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      return list;
+    });
   }
 
   @override

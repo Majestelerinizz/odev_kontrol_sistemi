@@ -5,18 +5,18 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // ── Öğretmen renkleri ──────────────────────────────────────────────────────
-  static const Color teacherPrimary = Color(0xFF123C8C);
-  static const Color teacherLight = Color(0xFF2F6DE1);
-  static const Color teacherSurface = Color(0xFFEEF4FF);
+  // ── Öğretmen & Ana tema renkleri (MatPusula Moru & İndigo) ───────────
+  static const Color teacherPrimary = Color(0xFF4F46E5);
+  static const Color teacherLight = Color(0xFF6366F1);
+  static const Color teacherSurface = Color(0xFFEEF2FF);
 
-  // ── Veli renkleri ─────────────────────────────────────────────────────────
-  static const Color parentPrimary = Color(0xFF159A68);
-  static const Color parentLight = Color(0xFF22C38E);
-  static const Color parentSurface = Color(0xFFEAFBF4);
+  // ── Veli renkleri (MatPusula Zümrüt Yeşili) ─────────────────────────
+  static const Color parentPrimary = Color(0xFF0D9488);
+  static const Color parentLight = Color(0xFF14B8A6);
+  static const Color parentSurface = Color(0xFFF0FDFA);
 
-  // ── Vurgu ─────────────────────────────────────────────────────────────────
-  static const Color accent = Color(0xFF7C3AED);
+  // ── Vurgu (MatPusula Pusula İğnesi Altını) ───────────────────────────
+  static const Color accent = Color(0xFFD97706);
 
   // ── Durum renkleri ────────────────────────────────────────────────────────
   static const Color success = Color(0xFF16A34A);

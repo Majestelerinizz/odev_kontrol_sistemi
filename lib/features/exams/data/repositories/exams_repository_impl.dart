@@ -16,22 +16,28 @@ class ExamsRepositoryImpl implements ExamsRepository {
   Stream<List<ExamResultEntity>> getStudentExams(String studentId) {
     return _examsRef
         .where('studentId', isEqualTo: studentId)
-        .orderBy('examDate', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ExamResultModel.fromFirestore(doc))
-            .toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => ExamResultModel.fromFirestore(doc))
+          .toList();
+      list.sort((a, b) => b.examDate.compareTo(a.examDate));
+      return list;
+    });
   }
 
   @override
   Stream<List<ExamResultEntity>> getClassExams(String classId) {
     return _examsRef
         .where('classId', isEqualTo: classId)
-        .orderBy('examDate', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => ExamResultModel.fromFirestore(doc))
-            .toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => ExamResultModel.fromFirestore(doc))
+          .toList();
+      list.sort((a, b) => b.examDate.compareTo(a.examDate));
+      return list;
+    });
   }
 
   @override

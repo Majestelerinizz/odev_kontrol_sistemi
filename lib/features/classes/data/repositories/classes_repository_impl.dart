@@ -16,10 +16,14 @@ class ClassesRepositoryImpl implements ClassesRepository {
   Stream<List<ClassEntity>> getTeacherClasses(String teacherId) {
     return _classesRef
         .where('teacherId', isEqualTo: teacherId)
-        .orderBy('name')
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => ClassModel.fromFirestore(doc)).toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => ClassModel.fromFirestore(doc))
+          .toList();
+      list.sort((a, b) => a.name.compareTo(b.name));
+      return list;
+    });
   }
 
   @override

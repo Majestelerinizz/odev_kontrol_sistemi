@@ -22,6 +22,8 @@ import '../features/exams/presentation/screens/teacher_exam_list_screen.dart';
 import '../features/exams/presentation/screens/create_exam_result_screen.dart';
 import '../features/analytics/presentation/screens/analytics_graph_screen.dart';
 import '../features/exams/presentation/screens/parent_exam_list_screen.dart';
+import '../features/messages/presentation/screens/teacher_new_message_screen.dart';
+import '../features/profile/presentation/screens/profile_screen.dart';
 
 /// Uygulama router'ı.
 /// GoRouter ile rol tabanlı yönlendirme ve RoleGuard mantığı.
@@ -160,8 +162,12 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
+            path: '/teacher/messages/new',
+            builder: (context, state) => const TeacherNewMessageScreen(),
+          ),
+          GoRoute(
             path: '/teacher/more',
-            builder: (context, state) => const _ComingSoonScreen(title: 'Diğer'),
+            builder: (context, state) => const ProfileScreen(),
           ),
         ],
       ),
@@ -187,12 +193,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/parent/messages',
             builder: (context, state) =>
-                const _ComingSoonScreen(title: 'Mesajlar'),
+                const TeacherNewMessageScreen(),
           ),
           GoRoute(
             path: '/parent/profile',
-            builder: (context, state) =>
-                const _ComingSoonScreen(title: 'Profil'),
+            builder: (context, state) => const ProfileScreen(),
           ),
         ],
       ),
