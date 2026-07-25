@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/app_user.dart';
@@ -14,6 +15,9 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 /// Mevcut oturum durumu stream'i.
 /// null → giriş yok, AppUser → giriş var
 final authStateProvider = StreamProvider<AppUser?>((ref) {
+  if (kIsWeb) {
+    return Stream.value(null);
+  }
   return ref.watch(authRepositoryProvider).authStateChanges;
 });
 

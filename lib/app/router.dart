@@ -49,7 +49,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           location.startsWith('/welcome') ||
           location.startsWith('/splash');
 
-      // Giriş yoksa auth'a yönlendir
+      // Giriş yoksa ve splash/kök dizindeyse welcome'a yönlendir
+      if (!isLoggedIn && (location == '/splash' || location == '/')) {
+        return '/welcome';
+      }
+
+      // Giriş yoksa ve auth sayfası dışında ise welcome'a yönlendir
       if (!isLoggedIn && !isAuthPage) return '/welcome';
 
       // Giriş varsa rol tabanlı yönlendir

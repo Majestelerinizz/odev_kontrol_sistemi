@@ -6,14 +6,11 @@ import '../models/app_user_model.dart';
 
 /// AuthRepository'nin Firebase implementasyonu.
 class AuthRepositoryImpl implements AuthRepository {
-  AuthRepositoryImpl({
-    FirebaseAuth? auth,
-    FirebaseFirestore? firestore,
-  })  : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+  FirebaseAuth? _authInstance;
+  FirebaseFirestore? _firestoreInstance;
 
-  final FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
+  FirebaseAuth get _auth => _authInstance ?? FirebaseAuth.instance;
+  FirebaseFirestore get _firestore => _firestoreInstance ?? FirebaseFirestore.instance;
 
   // ── Koleksiyon referansları ─────────────────────────────────────────────
   CollectionReference<Map<String, dynamic>> get _users =>
@@ -26,10 +23,14 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Stream<AppUser?> get authStateChanges {
-    return _auth.authStateChanges().asyncMap((firebaseUser) async {
-      if (firebaseUser == null) return null;
-      return getUserProfile(firebaseUser.uid);
-    });
+    try {
+      return _auth.authStateChanges().asyncMap((firebaseUser) async {
+        if (firebaseUser == null) return null;
+        return getUserProfile(firebaseUser.uid);
+      });
+    } catch (e) {
+      return Stream.value(null);
+    }
   }
 
   @override

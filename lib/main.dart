@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,7 +25,24 @@ Future<void> main() async {
   ]);
 
   // ── Firebase başlatma ─────────────────────────────────────────────────────
-  await Firebase.initializeApp();
+  try {
+    if (kIsWeb) {
+      await Firebase.initializeApp(
+        options: const FirebaseOptions(
+          apiKey: "AIzaSyDummyKeyForWebTesting1234567",
+          appId: "1:1234567890:web:1234567890abcdef",
+          messagingSenderId: "1234567890",
+          projectId: "odevtakipsistemi-demo",
+          authDomain: "odevtakipsistemi-demo.firebaseapp.com",
+          storageBucket: "odevtakipsistemi-demo.appspot.com",
+        ),
+      );
+    } else {
+      await Firebase.initializeApp();
+    }
+  } catch (e) {
+    debugPrint('Firebase initialize warning: $e');
+  }
 
   runApp(
     const ProviderScope(

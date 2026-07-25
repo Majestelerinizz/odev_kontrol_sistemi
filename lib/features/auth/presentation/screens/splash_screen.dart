@@ -1,41 +1,27 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:odev_takip/features/auth/presentation/providers/auth_providers.dart';
 import 'package:odev_takip/core/theme/app_colors.dart';
 import 'package:odev_takip/core/theme/app_text_styles.dart';
 
 /// Splash ekranı.
-/// Firebase Auth durumuna göre yönlendirme yapar.
-class SplashScreen extends ConsumerWidget {
+/// Logo gösterir ve 1.2s sonra otomatik olarak hoş geldiniz veya ana ekrana yönlendirir.
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authStateProvider);
-
-    return authState.when(
-      loading: () => const _SplashView(),
-      data: (user) {
-        // Yönlendirmeyi router handle eder; splash sadece logo gösterir
-        return const _SplashView();
-      },
-      error: (_, __) => const _SplashView(),
-    );
-  }
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashView extends StatefulWidget {
-  const _SplashView();
-
-  @override
-  State<_SplashView> createState() => _SplashViewState();
-}
-
-class _SplashViewState extends State<_SplashView>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnim;
   late Animation<double> _scaleAnim;
+  Timer? _timer;
+  bool _navigated = false;
 
   @override
   void initState() {
@@ -51,16 +37,43 @@ class _SplashViewState extends State<_SplashView>
       CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
     );
     _controller.forward();
+
+    _timer = Timer(const Duration(milliseconds: 1200), () {
+      if (mounted && !_navigated) {
+        _performNavigation();
+      }
+    });
+  }
+
+  void _performNavigation() {
+    if (_navigated || !mounted) return;
+    _navigated = true;
+
+    final authState = ref.read(authStateProvider);
+    final user = authState.valueOrNull;
+
+    if (user != null) {
+      context.go(user.isTeacher ? '/teacher/home' : '/parent/home');
+    } else {
+      context.go('/welcome');
+    }
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authStateProvider, (previous, next) {
+      if (next is AsyncData && !_navigated) {
+        _performNavigation();
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppColors.teacherPrimary,
       body: Center(
