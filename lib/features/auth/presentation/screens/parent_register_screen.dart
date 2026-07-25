@@ -8,9 +8,10 @@ import '../../../../core/theme/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/step_progress_indicator.dart';
 import '../../../../core/extensions/extensions.dart';
 
-/// Veli kayıt ekranı — 2 adım: davet kodu doğrulama + hesap oluşturma
+/// Veli kayıt ekranı — 3 Adımlı Multi-step Wizard Yapısı
 class ParentRegisterScreen extends ConsumerStatefulWidget {
   const ParentRegisterScreen({super.key});
 
@@ -20,15 +21,18 @@ class ParentRegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
-  int _step = 0; // 0: davet kodu, 1: hesap bilgileri
+  int _currentStep = 0;
 
-  // Step 0
+  // Step 0: Davet kodu
   final _codeController = TextEditingController();
 
-  // Step 1
-  final _formKey = GlobalKey<FormState>();
+  // Step 1: Kişisel Bilgiler
+  final _step1FormKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+
+  // Step 2: Güvenlik
+  final _step2FormKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
   final _passwordConfirmController = TextEditingController();
   bool _termsAccepted = false;
@@ -62,16 +66,33 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
       _validatedCode = code;
       final data = notifier.inviteCodeData;
       _studentName = data?['studentName'] as String?;
-      setState(() => _step = 1);
+      setState(() => _currentStep = 1);
     } else {
       final error = ref.read(parentAuthProvider).errorMessage;
       if (error != null) context.showSnackBar(error, isError: true);
     }
   }
 
+  void _nextStep() {
+    context.unfocus();
+    if (_currentStep == 1) {
+      if (!_step1FormKey.currentState!.validate()) return;
+      setState(() => _currentStep = 2);
+    }
+  }
+
+  void _prevStep() {
+    context.unfocus();
+    if (_currentStep > 0) {
+      setState(() => _currentStep--);
+    } else {
+      context.pop();
+    }
+  }
+
   Future<void> _register() async {
     context.unfocus();
-    if (!_formKey.currentState!.validate()) return;
+    if (!_step2FormKey.currentState!.validate()) return;
     if (!_termsAccepted) {
       context.showSnackBar(AppStrings.errorTermsRequired, isError: true);
       return;
@@ -95,105 +116,118 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(parentAuthProvider);
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
-          onPressed: () {
-            if (_step > 0) {
-              setState(() => _step = 0);
-            } else {
-              context.pop();
-            }
-          },
+          icon: const Icon(Icons.arrow_back_rounded,
+              color: AppColors.textPrimary),
+          onPressed: _prevStep,
         ),
+        title: Text(
+          'Veli Kaydı',
+          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
+        ),
+        centerTitle: true,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSizes.pagePadding * 1.5),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: _step == 0
-                ? _buildStep0(authState)
-                : _buildStep1(authState),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Adım İlerleme Çubuğu ─────────────────────────────────────
+              StepProgressIndicator(
+                currentStep: _currentStep,
+                totalSteps: 3,
+                stepTitles: const [
+                  'Davet Kodu',
+                  'Kişisel Bilgiler',
+                  'Güvenlik & Onay'
+                ],
+                primaryColor: AppColors.parentPrimary,
+              ),
+              const SizedBox(height: 28),
+
+              // ── Adım İçeriği ─────────────────────────────────────────────
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _buildStepContent(),
+              ),
+
+              const SizedBox(height: 32),
+
+              // ── Giriş bağlantısı ─────────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Zaten hesabınız var mı? ',
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                  TextButton(
+                    onPressed: () => context.push('/login'),
+                    child: Text(
+                      AppStrings.login,
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: AppColors.parentPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildStep0(AuthState authState) {
+  Widget _buildStepContent() {
+    switch (_currentStep) {
+      case 0:
+        return _buildStep0();
+      case 1:
+        return _buildStep1();
+      case 2:
+        return _buildStep2();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  // ── Adım 1: Davet Kodu Doğrulama ─────────────────────────────────────────
+  Widget _buildStep0() {
+    final authState = ref.watch(parentAuthProvider);
+
     return Column(
-      key: const ValueKey('step0'),
+      key: const ValueKey(0),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            color: AppColors.parentSurface,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: const Icon(
-            Icons.family_restroom_rounded,
-            color: AppColors.parentPrimary,
-            size: 28,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text('Veli Hesabı', style: AppTextStyles.h2),
-        const SizedBox(height: 8),
         Text(
-          'Öğretmeninizden aldığınız davet kodunu girin.',
+          'Öğrenci Davet Kodu',
+          style: AppTextStyles.h3,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Öğretmeninizden aldığınız 6 haneli davet kodunu (ör: OT-123456) girin.',
           style: AppTextStyles.bodyMedium,
         ),
-        const SizedBox(height: 32),
-
-        // ── Adım göstergesi ────────────────────────────────────────────
-        _StepIndicator(currentStep: 0, totalSteps: 2),
-        const SizedBox(height: 32),
-
+        const SizedBox(height: 24),
         AppTextField(
           label: AppStrings.inviteCode,
-          hint: AppStrings.inviteCodeHint,
+          hint: 'OT-XXXXXX',
           controller: _codeController,
-          prefixIcon: const Icon(Icons.vpn_key_outlined,
+          prefixIcon: const Icon(Icons.qr_code_rounded,
               color: AppColors.textSecondary),
           textCapitalization: TextCapitalization.characters,
           textInputAction: TextInputAction.done,
-          onFieldSubmitted: (_) => _validateCode(),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.infoLight,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.info_outline_rounded,
-                  color: AppColors.info, size: 18),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Davet kodunu öğretmeninizden SMS, WhatsApp veya e-posta ile alabilirsiniz.',
-                  style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.info),
-                ),
-              ),
-            ],
-          ),
         ),
         const SizedBox(height: 28),
-
         PrimaryButton(
-          label: 'Kodu Doğrula',
+          label: 'Kodu Doğrula ➔',
           onPressed: _validateCode,
           isLoading: authState.isLoading,
           backgroundColor: AppColors.parentPrimary,
@@ -202,65 +236,72 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
     );
   }
 
-  Widget _buildStep1(AuthState authState) {
+  // ── Adım 2: Veli Kişisel Bilgileri ────────────────────────────────────────
+  Widget _buildStep1() {
     return Form(
-      key: _formKey,
+      key: _step1FormKey,
       child: Column(
-        key: const ValueKey('step1'),
+        key: const ValueKey(1),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: AppColors.parentSurface,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Icon(
-              Icons.check_circle_rounded,
-              color: AppColors.parentPrimary,
-              size: 28,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text('Hesap Bilgileriniz', style: AppTextStyles.h2),
-          const SizedBox(height: 8),
-          Text(
-            _studentName != null
-                ? '$_studentName için veli hesabı oluşturuluyor.'
-                : 'Hesap bilgilerinizi girin.',
-            style: AppTextStyles.bodyMedium,
-          ),
-          const SizedBox(height: 16),
-
-          // ── Öğrenci önizleme ───────────────────────────────────────────
-          if (_studentName != null)
+          // Eşleşen Öğrenci Kartı
+          if (_studentName != null) ...[
             Container(
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.parentSurface,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.parentPrimary),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.parentPrimary.withAlpha(76)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.school_rounded,
-                      color: AppColors.parentPrimary, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Öğrenci: $_studentName',
-                    style: AppTextStyles.labelLarge
-                        .copyWith(color: AppColors.parentPrimary),
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: AppColors.parentPrimary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.child_care_rounded,
+                        color: Colors.white, size: 24),
                   ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Eşleşen Öğrenci',
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: AppColors.parentPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          _studentName!,
+                          style: AppTextStyles.h4,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.check_circle_rounded,
+                      color: AppColors.parentPrimary, size: 24),
                 ],
               ),
             ),
+            const SizedBox(height: 24),
+          ],
 
-          // ── Adım göstergesi ────────────────────────────────────────────
-          _StepIndicator(currentStep: 1, totalSteps: 2),
-          const SizedBox(height: 32),
-
+          Text(
+            'Veli Bilgileri',
+            style: AppTextStyles.h3,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Kendi Ad Soyad ve e-posta adresinizi girin.',
+            style: AppTextStyles.bodyMedium,
+          ),
+          const SizedBox(height: 24),
           AppTextField(
             label: AppStrings.fullName,
             hint: 'Ad Soyad',
@@ -269,28 +310,77 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
                 color: AppColors.textSecondary),
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.next,
-            validator: (v) => (v == null || v.trim().isEmpty)
-                ? AppStrings.errorNameRequired
-                : null,
-          ),
-          const SizedBox(height: AppSizes.itemSpacing),
-
-          AppTextField(
-            label: AppStrings.email,
-            hint: 'ornek@mail.com',
-            controller: _emailController,
-            prefixIcon: const Icon(Icons.email_outlined,
-                color: AppColors.textSecondary),
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.next,
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return AppStrings.errorEmailRequired;
-              if (!v.trim().isValidEmail) return AppStrings.errorEmailInvalid;
+              if (v == null || v.trim().isEmpty) {
+                return AppStrings.errorNameRequired;
+              }
               return null;
             },
           ),
           const SizedBox(height: AppSizes.itemSpacing),
+          AppTextField(
+            label: AppStrings.email,
+            hint: 'ornek@email.com',
+            controller: _emailController,
+            prefixIcon: const Icon(Icons.email_outlined,
+                color: AppColors.textSecondary),
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) {
+                return AppStrings.errorEmailRequired;
+              }
+              if (!v.trim().isValidEmail) {
+                return AppStrings.errorEmailInvalid;
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 28),
+          Row(
+            children: [
+              Expanded(
+                child: SecondaryButton(
+                  label: '← Kod Değiştir',
+                  onPressed: _prevStep,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: PrimaryButton(
+                  label: 'Devam Et ➔',
+                  onPressed: _nextStep,
+                  backgroundColor: AppColors.parentPrimary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
+  // ── Adım 3: Güvenlik & Kaydı Tamamlama ───────────────────────────────────
+  Widget _buildStep2() {
+    final authState = ref.watch(parentAuthProvider);
+
+    return Form(
+      key: _step2FormKey,
+      child: Column(
+        key: const ValueKey(2),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Güvenlik & Onay',
+            style: AppTextStyles.h3,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Şifrenizi belirleyin ve kaydı tamamlayın.',
+            style: AppTextStyles.bodyMedium,
+          ),
+          const SizedBox(height: 24),
           AppTextField(
             label: AppStrings.password,
             hint: 'En az 8 karakter',
@@ -300,13 +390,16 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
                 color: AppColors.textSecondary),
             textInputAction: TextInputAction.next,
             validator: (v) {
-              if (v == null || v.isEmpty) return AppStrings.errorPasswordRequired;
-              if (!v.isValidPassword) return AppStrings.errorPasswordMin;
+              if (v == null || v.isEmpty) {
+                return AppStrings.errorPasswordRequired;
+              }
+              if (!v.isValidPassword) {
+                return AppStrings.errorPasswordMin;
+              }
               return null;
             },
           ),
           const SizedBox(height: AppSizes.itemSpacing),
-
           AppTextField(
             label: AppStrings.passwordConfirm,
             hint: 'Şifrenizi tekrar girin',
@@ -315,12 +408,16 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
             prefixIcon: const Icon(Icons.lock_outline_rounded,
                 color: AppColors.textSecondary),
             textInputAction: TextInputAction.done,
-            validator: (v) => v != _passwordController.text
-                ? AppStrings.errorPasswordMatch
-                : null,
+            validator: (v) {
+              if (v != _passwordController.text) {
+                return AppStrings.errorPasswordMatch;
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 20),
 
+          // Kullanım şartları
           Row(
             children: [
               Checkbox(
@@ -332,54 +429,65 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
                 ),
               ),
               Expanded(
-                child: Text(
-                  'Kullanım koşullarını ve gizlilik politikasını kabul ediyorum.',
-                  style: AppTextStyles.bodySmall,
+                child: Wrap(
+                  children: [
+                    Text(
+                      'Okudum, kabul ediyorum: ',
+                      style: AppTextStyles.bodySmall,
+                    ),
+                    GestureDetector(
+                      onTap: () {},
+                      child: Text(
+                        AppStrings.termsOfService,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.parentPrimary,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      ' ve ',
+                      style: AppTextStyles.bodySmall,
+                    ),
+                    GestureDetector(
+                      onTap: () {},
+                      child: Text(
+                        AppStrings.privacyPolicy,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.parentPrimary,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 28),
 
-          PrimaryButton(
-            label: AppStrings.register,
-            onPressed: _register,
-            isLoading: authState.isLoading,
-            backgroundColor: AppColors.parentPrimary,
+          Row(
+            children: [
+              Expanded(
+                child: SecondaryButton(
+                  label: '← Geri',
+                  onPressed: _prevStep,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: PrimaryButton(
+                  label: 'Hesabı Oluştur 🚀',
+                  onPressed: _register,
+                  isLoading: authState.isLoading,
+                  backgroundColor: AppColors.parentPrimary,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
         ],
       ),
-    );
-  }
-}
-
-/// Adım göstergesi
-class _StepIndicator extends StatelessWidget {
-  const _StepIndicator({required this.currentStep, required this.totalSteps});
-
-  final int currentStep;
-  final int totalSteps;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(totalSteps, (i) {
-        final isActive = i <= currentStep;
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(right: i < totalSteps - 1 ? 8 : 0),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: 4,
-              decoration: BoxDecoration(
-                color: isActive ? AppColors.parentPrimary : AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-        );
-      }),
     );
   }
 }
