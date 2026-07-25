@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:odev_takip/features/auth/presentation/providers/auth_providers.dart';
 import 'package:odev_takip/core/theme/app_colors.dart';
 import 'package:odev_takip/core/theme/app_text_styles.dart';
+import 'package:odev_takip/core/widgets/matpusula_logo.dart';
 
 /// Splash ekranı.
 /// Logo gösterir ve 1.2s sonra otomatik olarak hoş geldiniz veya ana ekrana yönlendirir.
@@ -84,34 +85,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(51),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.school_rounded,
-                    size: 52,
-                    color: AppColors.teacherPrimary,
-                  ),
-                ),
+                const MatPusulaLogo(size: 104),
                 const SizedBox(height: 20),
                 Text(
-                  'Ödev Takip',
-                  style: AppTextStyles.h2.copyWith(color: Colors.white),
+                  'MatPusula',
+                  style: AppTextStyles.h1.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Eğitimde izlenebilirlik',
+                  'Geleceğini Matematikle Şekillendir',
                   style:
                       AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
                 ),

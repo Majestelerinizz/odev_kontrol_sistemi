@@ -7,6 +7,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_sizes.dart';
 import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/matpusula_logo.dart';
 import '../../../../core/extensions/extensions.dart';
 
 /// MatPusula Şık Giriş Ekranı (Panel 1 Tasarımı)
@@ -92,20 +93,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Center(
                   child: Column(
                     children: [
-                      Container(
-                        width: 76,
-                        height: 76,
-                        decoration: BoxDecoration(
-                          color: activeColor.withAlpha(20),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: activeColor, width: 2),
-                        ),
-                        child: Icon(
-                          Icons.explore_rounded,
-                          size: 44,
-                          color: activeColor,
-                        ),
-                      ),
+                      const MatPusulaLogo(size: 84),
                       const SizedBox(height: 12),
                       Text(
                         'MatPusula',
