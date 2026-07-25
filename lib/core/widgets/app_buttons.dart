@@ -63,7 +63,14 @@ class PrimaryButton extends StatelessWidget {
                     Icon(icon, size: AppSizes.iconMd),
                     const SizedBox(width: 8),
                   ],
-                  Text(label, style: AppTextStyles.buttonLarge.copyWith(color: fgColor)),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: AppTextStyles.buttonLarge.copyWith(color: fgColor),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
                 ],
               ),
       ),
@@ -126,9 +133,13 @@ class SecondaryButton extends StatelessWidget {
                     Icon(icon, size: AppSizes.iconMd),
                     const SizedBox(width: 8),
                   ],
-                  Text(
-                    label,
-                    style: AppTextStyles.buttonLarge.copyWith(color: btnColor),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: AppTextStyles.buttonLarge.copyWith(color: btnColor),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
                 ],
               ),

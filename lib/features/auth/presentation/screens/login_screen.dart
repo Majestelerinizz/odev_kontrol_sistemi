@@ -162,15 +162,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                 // ── Veli İçin Giriş Türü Seçici (Telefon / E-posta) ────────
                 if (!_isTeacherRole) ...[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 10,
+                    runSpacing: 8,
                     children: [
                       ChoiceChip(
-                        label: const Row(
-                          children: [
+                        label: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
                             Icon(Icons.phone_android_rounded, size: 16),
                             SizedBox(width: 6),
-                            Text('Telefon No ile Giriş'),
+                            Text('Telefon No'),
                           ],
                         ),
                         selected: _isParentPhoneMode,
@@ -188,13 +191,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           });
                         },
                       ),
-                      const SizedBox(width: 12),
                       ChoiceChip(
-                        label: const Row(
-                          children: [
+                        label: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
                             Icon(Icons.email_outlined, size: 16),
                             SizedBox(width: 6),
-                            Text('E-posta ile Giriş'),
+                            Text('E-posta'),
                           ],
                         ),
                         selected: !_isParentPhoneMode,

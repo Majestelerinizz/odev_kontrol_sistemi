@@ -15,15 +15,18 @@ final goalsRepositoryProvider = Provider<GoalsRepository>((ref) {
 });
 
 /// Bir öğrencinin tüm sınav sonuçlarının canlı akışı
-final studentExamsStreamProvider =
-    StreamProvider.family<List<ExamResultEntity>, String>((ref, studentId) {
-  return ref.watch(examsRepositoryProvider).getStudentExams(studentId);
-});
+/// Opsiyonel teacherId parametresi ile Firestore güvenlik kurallarına uyum sağlar
+StreamProvider<List<ExamResultEntity>> studentExamsStreamProvider(String studentId, {String? teacherId}) {
+  return StreamProvider<List<ExamResultEntity>>((ref) {
+    return ref.watch(examsRepositoryProvider).getStudentExams(studentId, teacherId: teacherId);
+  });
+}
 
 /// Bir sınıfın tüm sınav sonuçlarının canlı akışı
+/// Family parametresi: (classId, teacherId) record
 final classExamsStreamProvider =
-    StreamProvider.family<List<ExamResultEntity>, String>((ref, classId) {
-  return ref.watch(examsRepositoryProvider).getClassExams(classId);
+    StreamProvider.family<List<ExamResultEntity>, ({String classId, String teacherId})>((ref, params) {
+  return ref.watch(examsRepositoryProvider).getClassExams(params.classId, teacherId: params.teacherId);
 });
 
 /// Öğrencinin aktif hedefinin canlı akışı

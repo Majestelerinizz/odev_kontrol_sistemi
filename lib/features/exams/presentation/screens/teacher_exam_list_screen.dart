@@ -6,6 +6,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_sizes.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../classes/presentation/providers/class_providers.dart';
 import '../../../students/presentation/providers/student_providers.dart';
 import '../providers/exam_providers.dart';
@@ -25,6 +26,8 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
   @override
   Widget build(BuildContext context) {
     final classesAsync = ref.watch(teacherClassesStreamProvider);
+    final user = ref.watch(currentUserProvider);
+    final teacherId = user?.uid ?? '';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -51,7 +54,9 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
           }
 
           _selectedClassId ??= classes.first.id;
-          final examsAsync = ref.watch(classExamsStreamProvider(_selectedClassId!));
+          final examsAsync = ref.watch(classExamsStreamProvider(
+            (classId: _selectedClassId!, teacherId: teacherId),
+          ));
 
           return Column(
             children: [

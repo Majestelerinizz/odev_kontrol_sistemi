@@ -13,9 +13,12 @@ class ExamsRepositoryImpl implements ExamsRepository {
       _firestore.collection('exam_results');
 
   @override
-  Stream<List<ExamResultEntity>> getStudentExams(String studentId) {
-    return _examsRef
-        .where('studentId', isEqualTo: studentId)
+  Stream<List<ExamResultEntity>> getStudentExams(String studentId, {String? teacherId}) {
+    Query<Map<String, dynamic>> query = _examsRef.where('studentId', isEqualTo: studentId);
+    if (teacherId != null && teacherId.isNotEmpty) {
+      query = query.where('teacherId', isEqualTo: teacherId);
+    }
+    return query
         .snapshots()
         .map((snapshot) {
       final list = snapshot.docs
@@ -27,9 +30,10 @@ class ExamsRepositoryImpl implements ExamsRepository {
   }
 
   @override
-  Stream<List<ExamResultEntity>> getClassExams(String classId) {
+  Stream<List<ExamResultEntity>> getClassExams(String classId, {required String teacherId}) {
     return _examsRef
         .where('classId', isEqualTo: classId)
+        .where('teacherId', isEqualTo: teacherId)
         .snapshots()
         .map((snapshot) {
       final list = snapshot.docs
