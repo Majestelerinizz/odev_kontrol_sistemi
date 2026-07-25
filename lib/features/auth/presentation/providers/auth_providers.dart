@@ -17,6 +17,11 @@ final authStateProvider = StreamProvider<AppUser?>((ref) {
   return ref.watch(authRepositoryProvider).authStateChanges;
 });
 
+/// Mevcut oturum açmış kullanıcı (senkron erişim için)
+final currentUserProvider = Provider<AppUser?>((ref) {
+  return ref.watch(authStateProvider).valueOrNull;
+});
+
 // ── Auth işlem durumu ─────────────────────────────────────────────────────────
 
 /// Auth ekranları için işlem durumu (giriş, kayıt, şifre sıfırlama)
@@ -149,6 +154,11 @@ class ParentAuthNotifier extends StateNotifier<AuthState> {
     } catch (_) {
       state = state.error('Beklenmeyen bir hata oluştu.');
     }
+  }
+
+  Future<void> signOut() async {
+    await _repo.signOut();
+    state = const AuthState();
   }
 
   void clearError() => state = const AuthState();

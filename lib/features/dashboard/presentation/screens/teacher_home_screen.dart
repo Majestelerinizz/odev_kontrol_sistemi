@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../features/auth/presentation/providers/auth_providers.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/theme/app_sizes.dart';
-import '../../../core/widgets/app_widgets.dart';
+import 'package:odev_takip/features/auth/presentation/providers/auth_providers.dart';
+import 'package:odev_takip/core/theme/app_colors.dart';
+import 'package:odev_takip/core/theme/app_text_styles.dart';
+import 'package:odev_takip/core/theme/app_sizes.dart';
+import 'package:odev_takip/core/widgets/app_widgets.dart';
 
 /// Öğretmen ana panel ekranı.
 /// Özet kartlar, hızlı işlemler ve son aktivite listesi.

@@ -11,6 +11,17 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/dashboard/presentation/screens/teacher_home_screen.dart';
 import '../../features/dashboard/presentation/screens/parent_home_screen.dart';
+import '../features/classes/presentation/screens/class_list_screen.dart';
+import '../features/classes/presentation/screens/class_detail_screen.dart';
+import '../features/students/presentation/screens/student_detail_screen.dart';
+import '../features/homeworks/presentation/screens/teacher_homework_list_screen.dart';
+import '../features/homeworks/presentation/screens/create_homework_screen.dart';
+import '../features/homeworks/presentation/screens/homework_detail_screen.dart';
+import '../features/homeworks/presentation/screens/parent_homework_list_screen.dart';
+import '../features/exams/presentation/screens/teacher_exam_list_screen.dart';
+import '../features/exams/presentation/screens/create_exam_result_screen.dart';
+import '../features/analytics/presentation/screens/analytics_graph_screen.dart';
+import '../features/exams/presentation/screens/parent_exam_list_screen.dart';
 
 /// Uygulama router'ı.
 /// GoRouter ile rol tabanlı yönlendirme ve RoleGuard mantığı.
@@ -101,16 +112,47 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/teacher/classes',
-            builder: (context, state) => const _ComingSoonScreen(title: 'Sınıflar'),
+            builder: (context, state) => const ClassListScreen(),
+          ),
+          GoRoute(
+            path: '/teacher/classes/:classId',
+            builder: (context, state) => ClassDetailScreen(
+              classId: state.pathParameters['classId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/teacher/students/:studentId',
+            builder: (context, state) => StudentDetailScreen(
+              studentId: state.pathParameters['studentId']!,
+            ),
           ),
           GoRoute(
             path: '/teacher/homeworks',
-            builder: (context, state) => const _ComingSoonScreen(title: 'Ödevler'),
+            builder: (context, state) => const TeacherHomeworkListScreen(),
+          ),
+          GoRoute(
+            path: '/teacher/homeworks/new',
+            builder: (context, state) => const CreateHomeworkScreen(),
+          ),
+          GoRoute(
+            path: '/teacher/homeworks/:homeworkId',
+            builder: (context, state) => HomeworkDetailScreen(
+              homeworkId: state.pathParameters['homeworkId']!,
+            ),
           ),
           GoRoute(
             path: '/teacher/exams',
-            builder: (context, state) =>
-                const _ComingSoonScreen(title: 'Sonuçlar'),
+            builder: (context, state) => const TeacherExamListScreen(),
+          ),
+          GoRoute(
+            path: '/teacher/exams/new',
+            builder: (context, state) => const CreateExamResultScreen(),
+          ),
+          GoRoute(
+            path: '/teacher/analytics/:studentId',
+            builder: (context, state) => AnalyticsGraphScreen(
+              studentId: state.pathParameters['studentId']!,
+            ),
           ),
           GoRoute(
             path: '/teacher/more',
@@ -131,13 +173,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/parent/homeworks',
-            builder: (context, state) =>
-                const _ComingSoonScreen(title: 'Ödevler'),
+            builder: (context, state) => const ParentHomeworkListScreen(),
           ),
           GoRoute(
             path: '/parent/exams',
-            builder: (context, state) =>
-                const _ComingSoonScreen(title: 'Sonuçlar'),
+            builder: (context, state) => const ParentExamListScreen(),
           ),
           GoRoute(
             path: '/parent/messages',

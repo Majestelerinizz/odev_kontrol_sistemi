@@ -8,7 +8,7 @@ import '../theme/app_text_styles.dart';
 class AppTextField extends StatefulWidget {
   const AppTextField({
     super.key,
-    required this.label,
+    this.label,
     this.hint,
     this.controller,
     this.validator,
@@ -33,7 +33,7 @@ class AppTextField extends StatefulWidget {
     this.helperText,
   });
 
-  final String label;
+  final String? label;
   final String? hint;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
@@ -43,8 +43,8 @@ class AppTextField extends StatefulWidget {
   final TextInputAction textInputAction;
   final bool obscureText;
   final bool isPassword;
-  final Widget? prefixIcon;
-  final Widget? suffixIcon;
+  final dynamic prefixIcon;
+  final dynamic suffixIcon;
   final int maxLines;
   final int? minLines;
   final int? maxLength;
@@ -70,13 +70,22 @@ class _AppTextFieldState extends State<AppTextField> {
     _obscureText = widget.isPassword ? true : widget.obscureText;
   }
 
+  Widget? _buildIcon(dynamic icon) {
+    if (icon == null) return null;
+    if (icon is IconData) return Icon(icon);
+    if (icon is Widget) return icon;
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.label, style: AppTextStyles.inputLabel),
-        const SizedBox(height: 6),
+        if (widget.label != null) ...[
+          Text(widget.label!, style: AppTextStyles.inputLabel),
+          const SizedBox(height: 6),
+        ],
         TextFormField(
           controller: widget.controller,
           initialValue: widget.initialValue,
@@ -99,7 +108,7 @@ class _AppTextFieldState extends State<AppTextField> {
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: AppTextStyles.inputHint,
-            prefixIcon: widget.prefixIcon,
+            prefixIcon: _buildIcon(widget.prefixIcon),
             suffixIcon: widget.isPassword
                 ? IconButton(
                     icon: Icon(
