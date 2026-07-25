@@ -174,8 +174,27 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
+      String targetEmail = email.trim();
+
+      // E-posta formatında değilse (telefon numarası veya kullanıcı adı ise) Firestore'dan e-postayı bul
+      if (!targetEmail.contains('@')) {
+        final query = await _users
+            .where('phone', isEqualTo: targetEmail)
+            .get();
+        if (query.docs.isNotEmpty) {
+          targetEmail = query.docs.first.data()['email'] ?? targetEmail;
+        } else {
+          final nameQuery = await _users
+              .where('name', isEqualTo: targetEmail)
+              .get();
+          if (nameQuery.docs.isNotEmpty) {
+            targetEmail = nameQuery.docs.first.data()['email'] ?? targetEmail;
+          }
+        }
+      }
+
       await _auth.signInWithEmailAndPassword(
-        email: email.trim(),
+        email: targetEmail,
         password: password,
       );
 

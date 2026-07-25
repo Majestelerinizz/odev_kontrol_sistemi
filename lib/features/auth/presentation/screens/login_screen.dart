@@ -5,12 +5,12 @@ import '../providers/auth_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_sizes.dart';
-import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/extensions/extensions.dart';
 
-/// Giriş ekranı (öğretmen ve veli için ortak)
+/// MatPusula Şık Giriş Ekranı (Panel 1 Tasarımı)
+/// Öğretmen ve Veli için esnek Telefon / E-posta / Kullanıcı Adı ile giriş desteği
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -20,12 +20,15 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _identityController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  bool _isTeacherRole = true; // true = Öğretmen, false = Veli
+  bool _isParentPhoneMode = true; // Veli için: true = Telefon, false = E-posta
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _identityController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -34,141 +37,355 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     context.unfocus();
     if (!_formKey.currentState!.validate()) return;
 
-    // Önce öğretmen girişi dene; başarısız olursa veli dene
-    await ref.read(teacherAuthProvider.notifier).signIn(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-        );
+    final input = _identityController.text.trim();
+    final password = _passwordController.text;
 
-    if (!mounted) return;
-    final state = ref.read(teacherAuthProvider);
-    if (state.errorMessage != null) {
-      context.showSnackBar(state.errorMessage!, isError: true);
-      ref.read(teacherAuthProvider.notifier).clearError();
+    if (_isTeacherRole) {
+      await ref.read(teacherAuthProvider.notifier).signIn(
+            email: input,
+            password: password,
+          );
+      if (!mounted) return;
+      final state = ref.read(teacherAuthProvider);
+      if (state.errorMessage != null) {
+        context.showSnackBar(state.errorMessage!, isError: true);
+        ref.read(teacherAuthProvider.notifier).clearError();
+      }
+    } else {
+      await ref.read(parentAuthProvider.notifier).signIn(
+            email: input,
+            password: password,
+          );
+      if (!mounted) return;
+      final state = ref.read(parentAuthProvider);
+      if (state.errorMessage != null) {
+        context.showSnackBar(state.errorMessage!, isError: true);
+        ref.read(parentAuthProvider.notifier).clearError();
+      }
     }
-    // Yönlendirme router'daki authStateProvider tarafından yapılır
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(teacherAuthProvider);
+    final teacherState = ref.watch(teacherAuthProvider);
+    final parentState = ref.watch(parentAuthProvider);
+    final isLoading = teacherState.isLoading || parentState.isLoading;
+
+    final activeColor =
+        _isTeacherRole ? AppColors.teacherPrimary : AppColors.parentPrimary;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSizes.pagePadding * 1.5),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.pagePadding * 1.2,
+            vertical: AppSizes.pagePadding,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Başlık ────────────────────────────────────────────────
-                Text(AppStrings.welcomeBack, style: AppTextStyles.h2),
-                const SizedBox(height: 8),
-                Text(
-                  'Hesabınıza giriş yapın.',
-                  style: AppTextStyles.bodyMedium,
-                ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 12),
 
-                // ── E-posta ───────────────────────────────────────────────
+                // ── MatPusula Logo & Slogan Header ─────────────────────────
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 76,
+                        height: 76,
+                        decoration: BoxDecoration(
+                          color: activeColor.withAlpha(20),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: activeColor, width: 2),
+                        ),
+                        child: Icon(
+                          Icons.explore_rounded,
+                          size: 44,
+                          color: activeColor,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'MatPusula',
+                        style: AppTextStyles.h1.copyWith(
+                          color: activeColor,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Geleceğini Matematikle Şekillendir',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // ── Kullanıcı Türü Seçimi (Rol Kartları) ────────────────────
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _RoleTabButton(
+                          title: 'Öğretmen',
+                          icon: Icons.school_rounded,
+                          isSelected: _isTeacherRole,
+                          activeColor: AppColors.teacherPrimary,
+                          onTap: () {
+                            setState(() {
+                              _isTeacherRole = true;
+                              _identityController.clear();
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: _RoleTabButton(
+                          title: 'Veli',
+                          icon: Icons.family_restroom_rounded,
+                          isSelected: !_isTeacherRole,
+                          activeColor: AppColors.parentPrimary,
+                          onTap: () {
+                            setState(() {
+                              _isTeacherRole = false;
+                              _identityController.clear();
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── Veli İçin Giriş Türü Seçici (Telefon / E-posta) ────────
+                if (!_isTeacherRole) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ChoiceChip(
+                        label: const Row(
+                          children: [
+                            Icon(Icons.phone_android_rounded, size: 16),
+                            SizedBox(width: 6),
+                            Text('Telefon No ile Giriş'),
+                          ],
+                        ),
+                        selected: _isParentPhoneMode,
+                        selectedColor: AppColors.parentPrimary.withAlpha(40),
+                        labelStyle: TextStyle(
+                          color: _isParentPhoneMode
+                              ? AppColors.parentPrimary
+                              : AppColors.textSecondary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        onSelected: (_) {
+                          setState(() {
+                            _isParentPhoneMode = true;
+                            _identityController.clear();
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      ChoiceChip(
+                        label: const Row(
+                          children: [
+                            Icon(Icons.email_outlined, size: 16),
+                            SizedBox(width: 6),
+                            Text('E-posta ile Giriş'),
+                          ],
+                        ),
+                        selected: !_isParentPhoneMode,
+                        selectedColor: AppColors.parentPrimary.withAlpha(40),
+                        labelStyle: TextStyle(
+                          color: !_isParentPhoneMode
+                              ? AppColors.parentPrimary
+                              : AppColors.textSecondary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        onSelected: (_) {
+                          setState(() {
+                            _isParentPhoneMode = false;
+                            _identityController.clear();
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // ── Dinamik Giriş Alanı (Girdi Kutusu) ─────────────────────
                 AppTextField(
-                  label: AppStrings.email,
-                  hint: 'ornek@okul.com',
-                  controller: _emailController,
-                  prefixIcon: const Icon(Icons.email_outlined,
-                      color: AppColors.textSecondary),
-                  keyboardType: TextInputType.emailAddress,
+                  label: _isTeacherRole
+                      ? 'Kullanıcı Adı, E-posta veya Telefon'
+                      : (_isParentPhoneMode
+                          ? 'Telefon Numarası'
+                          : 'Veli E-posta Adresi'),
+                  hint: _isTeacherRole
+                      ? 'ahmet@okul.com / 05XX... / ahmet123'
+                      : (_isParentPhoneMode
+                          ? '05XX XXX XX XX'
+                          : 'veli@email.com'),
+                  controller: _identityController,
+                  prefixIcon: Icon(
+                    _isTeacherRole
+                        ? Icons.person_outline_rounded
+                        : (_isParentPhoneMode
+                            ? Icons.phone_android_rounded
+                            : Icons.email_outlined),
+                    color: activeColor,
+                  ),
+                  keyboardType: !_isTeacherRole && _isParentPhoneMode
+                      ? TextInputType.phone
+                      : TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) {
-                      return AppStrings.errorEmailRequired;
-                    }
-                    if (!v.trim().isValidEmail) {
-                      return AppStrings.errorEmailInvalid;
+                      return 'Lütfen bu alanı doldurun';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: AppSizes.itemSpacing),
 
-                // ── Şifre ─────────────────────────────────────────────────
+                // ── Şifre Alanı ───────────────────────────────────────────
                 AppTextField(
-                  label: AppStrings.password,
+                  label: 'Şifre',
                   hint: 'Şifrenizi girin',
                   controller: _passwordController,
                   isPassword: true,
-                  prefixIcon: const Icon(Icons.lock_outline_rounded,
-                      color: AppColors.textSecondary),
+                  prefixIcon:
+                      Icon(Icons.lock_outline_rounded, color: activeColor),
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _submit(),
                   validator: (v) {
                     if (v == null || v.isEmpty) {
-                      return AppStrings.errorPasswordRequired;
+                      return 'Lütfen şifrenizi girin';
                     }
                     return null;
                   },
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
-                // ── Şifremi unuttum ───────────────────────────────────────
+                // ── Şifremi Unuttum ───────────────────────────────────────
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => context.push('/forgot-password'),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(0, AppSizes.minimumTouchTarget),
-                    ),
                     child: Text(
-                      AppStrings.forgotPassword,
+                      'Şifremi Unuttum?',
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.teacherPrimary,
+                        color: activeColor,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
-                // ── Giriş butonu ──────────────────────────────────────────
+                // ── Giriş Yap Butonu ──────────────────────────────────────
                 PrimaryButton(
-                  label: AppStrings.login,
+                  label: 'Giriş Yap 🚀',
                   onPressed: _submit,
-                  isLoading: authState.isLoading,
+                  isLoading: isLoading,
+                  backgroundColor: activeColor,
                 ),
                 const SizedBox(height: 24),
 
-                // ── Ayırıcı ───────────────────────────────────────────────
+                // ── Kayıt Yönlendirmesi ────────────────────────────────────
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Expanded(child: Divider()),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('veya', style: AppTextStyles.bodySmall),
+                    Text(
+                      'Hesabınız yok mu?',
+                      style: AppTextStyles.bodyMedium,
                     ),
-                    const Expanded(child: Divider()),
+                    TextButton(
+                      onPressed: () {
+                        if (_isTeacherRole) {
+                          context.push('/register/teacher');
+                        } else {
+                          context.push('/register/parent');
+                        }
+                      },
+                      child: Text(
+                        'Hemen Kayıt Ol',
+                        style: AppTextStyles.labelLarge.copyWith(
+                          color: activeColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 24),
-
-                // ── Kayıt ol ──────────────────────────────────────────────
-                SecondaryButton(
-                  label: 'Hesap Oluştur',
-                  onPressed: () => context.push('/role-selection'),
-                ),
-                const SizedBox(height: 16),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Kullanıcı Türü Seçim Butonu Component
+class _RoleTabButton extends StatelessWidget {
+  const _RoleTabButton({
+    required this.title,
+    required this.icon,
+    required this.isSelected,
+    required this.activeColor,
+    required this.onTap,
+  });
+
+  final String title;
+  final IconData icon;
+  final bool isSelected;
+  final Color activeColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.white : AppColors.textSecondary,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: AppTextStyles.labelLarge.copyWith(
+                color: isSelected ? Colors.white : AppColors.textSecondary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );

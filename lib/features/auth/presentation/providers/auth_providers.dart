@@ -160,6 +160,21 @@ class ParentAuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) async {
+    state = state.loading;
+    try {
+      await _repo.signInWithEmailAndPassword(email: email, password: password);
+      state = state.success;
+    } on AuthException catch (e) {
+      state = state.error(e.message);
+    } catch (_) {
+      state = state.error('Beklenmeyen bir hata oluştu.');
+    }
+  }
+
   Future<void> signOut() async {
     await _repo.signOut();
     state = const AuthState();

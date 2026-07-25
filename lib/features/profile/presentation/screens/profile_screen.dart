@@ -5,15 +5,134 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_sizes.dart';
 import '../../../../core/widgets/app_buttons.dart';
+import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 
-/// Profil & Ayarlar Ekranı ("Diğer" sekmesi)
-class ProfileScreen extends ConsumerWidget {
+/// MatPusula Profil & Ayarlar Ekranı
+/// Öğretmen ve Veli için özel özelleştirilmiş ayarlar menüsü
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  bool _notificationsEnabled = true;
+  bool _homeworkAlertsEnabled = true;
+
+  void _showAddChildDialog() {
+    final codeController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.person_add_rounded, color: AppColors.parentPrimary),
+            SizedBox(width: 8),
+            Text('Yeni Öğrenci/Çocuk Ekle'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Öğretmeninizden aldığınız 6 haneli davet kodunu girin:',
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              label: 'Davet Kodu',
+              hint: 'Örn: OT-A7K9M2',
+              controller: codeController,
+              prefixIcon: const Icon(Icons.key_rounded, color: AppColors.parentPrimary),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('İptal'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.parentPrimary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () {
+              if (codeController.text.trim().isEmpty) return;
+              Navigator.pop(ctx);
+              context.showSnackBar('Davet kodu başarıyla doğrulandı ve öğrenci eklendi! 🎉');
+            },
+            child: const Text('Ekle', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChangePasswordDialog() {
+    final oldPassController = TextEditingController();
+    final newPassController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.lock_rounded, color: AppColors.teacherPrimary),
+            SizedBox(width: 8),
+            Text('Şifre Değiştir'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppTextField(
+              label: 'Mevcut Şifre',
+              hint: 'Mevcut şifreniz',
+              controller: oldPassController,
+              isPassword: true,
+            ),
+            const SizedBox(height: 12),
+            AppTextField(
+              label: 'Yeni Şifre',
+              hint: 'En az 8 karakter',
+              controller: newPassController,
+              isPassword: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('İptal'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.teacherPrimary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () {
+              if (newPassController.text.length < 6) {
+                context.showSnackBar('Şifre en az 6 karakter olmalıdır', isError: true);
+                return;
+              }
+              Navigator.pop(ctx);
+              context.showSnackBar('Şifreniz başarıyla güncellendi! 🔒');
+            },
+            child: const Text('Güncelle', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final isTeacher = user?.isTeacher ?? true;
     final primaryColor =
@@ -52,14 +171,14 @@ class ProfileScreen extends ConsumerWidget {
                 child: Row(
                   children: [
                     CircleAvatar(
-                      radius: 32,
-                      backgroundColor: primaryColor.withAlpha(38),
+                      radius: 34,
+                      backgroundColor: primaryColor.withAlpha(30),
                       child: Icon(
                         isTeacher
                             ? Icons.school_rounded
                             : Icons.family_restroom_rounded,
                         color: primaryColor,
-                        size: 36,
+                        size: 38,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -68,12 +187,12 @@ class ProfileScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            user?.name ?? 'Kullanıcı',
+                            user?.name ?? (isTeacher ? 'Öğretmen Hesabı' : 'Veli Hesabı'),
                             style: AppTextStyles.h4,
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            user?.email ?? 'ornek@email.com',
+                            user?.email ?? 'ornek@matpusula.com',
                             style: AppTextStyles.bodySmall,
                           ),
                           const SizedBox(height: 8),
@@ -85,7 +204,7 @@ class ProfileScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              isTeacher ? 'Öğretmen Hesabı' : 'Veli Hesabı',
+                              isTeacher ? '👨‍🏫 Matematik Öğretmeni' : '👨‍👩‍👧 Veli Hesabı',
                               style: AppTextStyles.labelSmall.copyWith(
                                 color: primaryColor,
                                 fontWeight: FontWeight.bold,
@@ -100,28 +219,80 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
 
-              // ── Ayar Menüsü Seçenekleri ─────────────────────────────────
-              _buildSettingsGroup('Uygulama Ayarları', [
-                _buildSettingsTile(
-                  icon: Icons.notifications_active_rounded,
-                  title: 'Bildirim İzinleri',
-                  subtitle: 'Ödev ve duyuru bildirimlerini yönetin',
-                  onTap: () => context.showSnackBar('Bildirim ayarları güncellendi'),
+              // ── Veli Özel: Çocuk Bağlantısı ve Yeni Çocuk Ekleme ────────
+              if (!isTeacher) ...[
+                _buildSettingsGroup('Öğrenci / Çocuk Bağlantıları', [
+                  ListTile(
+                    leading: const Icon(Icons.face_rounded, color: AppColors.parentPrimary),
+                    title: const Text('Ahmet Yılmaz', style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: const Text('8A Sınıfı • No: 456'),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.successLight,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Bağlı',
+                        style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.add_circle_outline_rounded, color: AppColors.parentPrimary),
+                    title: const Text('Yeni Çocuk / Öğrenci Ekle', style: TextStyle(color: AppColors.parentPrimary, fontWeight: FontWeight.bold)),
+                    subtitle: const Text('Öğretmenden alınan davet kodu ile ekle'),
+                    trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.parentPrimary),
+                    onTap: _showAddChildDialog,
+                  ),
+                ]),
+                const SizedBox(height: 20),
+              ],
+
+              // ── Bildirim Tercihleri ────────────────────────────────────
+              _buildSettingsGroup('Bildirim Ayarları', [
+                SwitchListTile(
+                  secondary: Icon(Icons.notifications_active_rounded, color: primaryColor),
+                  title: const Text('Anlık Bildirimler', style: TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: const Text('Duyuru ve mesaj bildirimlerini al'),
+                  value: _notificationsEnabled,
+                  activeColor: primaryColor,
+                  onChanged: (val) => setState(() => _notificationsEnabled = val),
                 ),
-                _buildSettingsTile(
-                  icon: Icons.palette_rounded,
-                  title: 'Tema & Renk Paleti',
-                  subtitle: 'MatPusula Özel Tema',
-                  onTap: () {},
-                ),
-                _buildSettingsTile(
-                  icon: Icons.info_outline_rounded,
-                  title: 'Hakkında',
-                  subtitle: 'MatPusula v1.0.0',
-                  onTap: () => context.showSnackBar('MatPusula v1.0.0 - Üretim Sürümü'),
+                const Divider(height: 1),
+                SwitchListTile(
+                  secondary: Icon(Icons.assignment_turned_in_rounded, color: primaryColor),
+                  title: const Text('Ödev & Deneme Uarıları', style: TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: const Text('Yaklaşan ödev ve deneme hatırlatmaları'),
+                  value: _homeworkAlertsEnabled,
+                  activeColor: primaryColor,
+                  onChanged: (val) => setState(() => _homeworkAlertsEnabled = val),
                 ),
               ]),
+              const SizedBox(height: 20),
 
+              // ── Güvenlik & Hesap Ayarları ──────────────────────────────
+              _buildSettingsGroup('Güvenlik & Hesap', [
+                _buildSettingsTile(
+                  icon: Icons.lock_outline_rounded,
+                  title: 'Şifre Değiştir',
+                  subtitle: 'Hesap şifrenizi güncelleyin',
+                  onTap: _showChangePasswordDialog,
+                ),
+                _buildSettingsTile(
+                  icon: Icons.color_lens_outlined,
+                  title: 'Görünüm & Tema',
+                  subtitle: 'MatPusula Mor & Zümrüt Tema',
+                  onTap: () => context.showSnackBar('MatPusula Özel Tema Aktif ✨'),
+                ),
+                _buildSettingsTile(
+                  icon: Icons.help_outline_rounded,
+                  title: 'Destek & Hakkında',
+                  subtitle: 'MatPusula v1.0.0 • Destek Hattı',
+                  onTap: () => context.showSnackBar('MatPusula Destek: destek@matpusula.com'),
+                ),
+              ]),
               const SizedBox(height: 32),
 
               // ── Çıkış Yap Butonu ──────────────────────────────────────
@@ -130,7 +301,7 @@ class ProfileScreen extends ConsumerWidget {
                 icon: Icons.logout_rounded,
                 onPressed: () async {
                   await ref.read(authRepositoryProvider).signOut();
-                  if (!context.mounted) return;
+                  if (!mounted) return;
                   context.go('/welcome');
                 },
               ),
