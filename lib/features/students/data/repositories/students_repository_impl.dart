@@ -22,11 +22,14 @@ class StudentsRepositoryImpl implements StudentsRepository {
   Stream<List<StudentEntity>> getClassStudents(String classId) {
     return _studentsRef
         .where('classId', isEqualTo: classId)
-        .orderBy('name')
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => StudentModel.fromFirestore(doc))
-            .toList());
+        .map((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => StudentModel.fromFirestore(doc))
+          .toList();
+      list.sort((a, b) => a.name.compareTo(b.name));
+      return list;
+    });
   }
 
   @override
@@ -116,12 +119,12 @@ class StudentsRepositoryImpl implements StudentsRepository {
     final query = await _inviteCodesRef
         .where('studentId', isEqualTo: studentId)
         .where('used', isEqualTo: false)
-        .orderBy('createdAt', descending: true)
-        .limit(1)
         .get();
 
     if (query.docs.isEmpty) return null;
-    final model = InviteCodeModel.fromFirestore(query.docs.first);
+    final list = query.docs.map((d) => InviteCodeModel.fromFirestore(d)).toList();
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final model = list.first;
     return model.isExpired ? null : model;
   }
 
