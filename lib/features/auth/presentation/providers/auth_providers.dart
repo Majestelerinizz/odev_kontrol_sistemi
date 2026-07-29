@@ -15,9 +15,6 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 /// Mevcut oturum durumu stream'i.
 /// null → giriş yok, AppUser → giriş var
 final authStateProvider = StreamProvider<AppUser?>((ref) {
-  if (kIsWeb) {
-    return Stream.value(null);
-  }
   return ref.watch(authRepositoryProvider).authStateChanges;
 });
 
