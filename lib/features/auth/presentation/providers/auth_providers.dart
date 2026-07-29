@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/app_user.dart';

@@ -48,7 +48,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
       if (!mounted) return;
       final state = ref.read(teacherAuthProvider);
-      if (state.errorMessage != null) {
+      if (state.isSuccess) {
+        final currentUser = ref.read(currentUserProvider);
+        if (currentUser?.isParent == true) {
+          context.go('/parent/home');
+        } else {
+          context.go('/teacher/home');
+        }
+      } else if (state.errorMessage != null) {
         context.showSnackBar(state.errorMessage!, isError: true);
         ref.read(teacherAuthProvider.notifier).clearError();
       }
@@ -59,7 +66,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
       if (!mounted) return;
       final state = ref.read(parentAuthProvider);
-      if (state.errorMessage != null) {
+      if (state.isSuccess) {
+        final currentUser = ref.read(currentUserProvider);
+        if (currentUser?.isTeacher == true) {
+          context.go('/teacher/home');
+        } else {
+          context.go('/parent/home');
+        }
+      } else if (state.errorMessage != null) {
         context.showSnackBar(state.errorMessage!, isError: true);
         ref.read(parentAuthProvider.notifier).clearError();
       }

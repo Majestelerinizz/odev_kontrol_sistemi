@@ -228,9 +228,26 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<AppUser?> getUserProfile(String uid) async {
-    final doc = await _users.doc(uid).get();
-    if (!doc.exists || doc.data() == null) return null;
-    return AppUserModel.fromFirestore(doc.data()!, uid);
+    try {
+      final doc = await _users.doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        return AppUserModel.fromFirestore(doc.data()!, uid);
+      }
+    } catch (_) {}
+
+    final fbUser = _auth.currentUser;
+    if (fbUser != null && fbUser.uid == uid) {
+      return AppUserModel(
+        uid: uid,
+        role: 'teacher',
+        name: fbUser.displayName ?? fbUser.email?.split('@').first ?? 'Kullanıcı',
+        email: fbUser.email ?? '',
+        isActive: true,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    }
+    return null;
   }
 
   // ── Davet kodu doğrulama ────────────────────────────────────────────────
@@ -266,7 +283,9 @@ class AuthRepositoryImpl implements AuthRepository {
     return switch (e.code) {
       'user-not-found' ||
       'wrong-password' ||
-      'invalid-credential' =>
+      'invalid-credential' ||
+      'INVALID_LOGIN_CREDENTIALS' ||
+      'invalid-email' =>
         const AuthException('E-posta veya şifre hatalı.'),
       'email-already-in-use' =>
         const AuthException('Bu e-posta adresi zaten kullanılıyor.'),
@@ -275,7 +294,7 @@ class AuthRepositoryImpl implements AuthRepository {
         const AuthException('Hesabınız devre dışı bırakılmıştır.'),
       'network-request-failed' =>
         const AuthException('İnternet bağlantısı kurulamadı.'),
-      _ => AuthException('Beklenmeyen bir hata oluştu: ${e.code}'),
+      _ => AuthException('Giriş yapılamadı (${e.code}). Lütfen bilgilerinizi kontrol edin.'),
     };
   }
 }
