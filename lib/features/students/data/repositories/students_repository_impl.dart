@@ -19,9 +19,10 @@ class StudentsRepositoryImpl implements StudentsRepository {
       _firestore.collection('invite_codes');
 
   @override
-  Stream<List<StudentEntity>> getClassStudents(String classId) {
+  Stream<List<StudentEntity>> getClassStudents(String classId, {required String teacherId}) {
     return _studentsRef
         .where('classId', isEqualTo: classId)
+        .where('teacherId', isEqualTo: teacherId)
         .snapshots()
         .map((snapshot) {
       final list = snapshot.docs

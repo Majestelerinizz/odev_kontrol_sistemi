@@ -17,25 +17,25 @@ class StatusBadge extends StatelessWidget {
 
   static _StatusConfig _getConfig(String status) {
     return switch (status) {
-      'completed' => _StatusConfig(
+      'completed' => const _StatusConfig(
           label: 'Tamamlandı',
           color: AppColors.success,
           bgColor: AppColors.successLight,
           icon: Icons.check_circle_rounded,
         ),
-      'missed' => _StatusConfig(
+      'missed' => const _StatusConfig(
           label: 'Yapılmadı',
           color: AppColors.error,
           bgColor: AppColors.errorLight,
           icon: Icons.cancel_rounded,
         ),
-      'overdue' => _StatusConfig(
+      'overdue' => const _StatusConfig(
           label: 'Gecikti',
           color: AppColors.statusOverdue,
           bgColor: Color(0xFFFFE4E4),
           icon: Icons.warning_rounded,
         ),
-      _ => _StatusConfig(
+      _ => const _StatusConfig(
           label: 'Bekliyor',
           color: AppColors.warning,
           bgColor: AppColors.warningLight,
@@ -120,7 +120,7 @@ class EmptyState extends StatelessWidget {
             Container(
               width: 80,
               height: 80,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.surfaceVariant,
                 shape: BoxShape.circle,
               ),
@@ -183,7 +183,7 @@ class ErrorState extends StatelessWidget {
             Container(
               width: 80,
               height: 80,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.errorLight,
                 shape: BoxShape.circle,
               ),

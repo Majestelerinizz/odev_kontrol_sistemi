@@ -99,22 +99,22 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
                     // ── Özellik listesi ───────────────────────────────────
                     const SizedBox(height: 40),
-                    _FeatureItem(
+                    const _FeatureItem(
                       icon: Icons.assignment_rounded,
                       text: 'Ödev takibi ve durum güncellemesi',
                     ),
                     const SizedBox(height: 16),
-                    _FeatureItem(
+                    const _FeatureItem(
                       icon: Icons.bar_chart_rounded,
                       text: 'Deneme sonuçları ve grafikler',
                     ),
                     const SizedBox(height: 16),
-                    _FeatureItem(
+                    const _FeatureItem(
                       icon: Icons.track_changes_rounded,
                       text: 'Konu analizi ve hedef takibi',
                     ),
                     const SizedBox(height: 16),
-                    _FeatureItem(
+                    const _FeatureItem(
                       icon: Icons.notifications_rounded,
                       text: 'Anlık bildirimler ve mesajlaşma',
                     ),

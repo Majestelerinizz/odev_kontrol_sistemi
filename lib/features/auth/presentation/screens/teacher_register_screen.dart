@@ -84,8 +84,6 @@ class _TeacherRegisterScreenState
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(teacherAuthProvider);
-
     // Hata mesajı göster
     ref.listen(teacherAuthProvider, (_, next) {
       if (next.errorMessage != null) {

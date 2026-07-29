@@ -64,7 +64,7 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: DropdownButtonFormField<String>(
-                  value: _selectedClassId,
+                  initialValue: _selectedClassId,
                   decoration: InputDecoration(
                     labelText: 'Sınıf Filtresi',
                     prefixIcon: const Icon(Icons.group_rounded),

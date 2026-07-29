@@ -76,7 +76,8 @@ service cloud.firestore {
       // Öğretmen kendi öğrencilerini yönetebilir
       allow read: if isTeacher() && resource.data.teacherId == request.auth.uid;
       allow create: if isTeacher();
-      allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
+      allow update: if (isTeacher() && resource.data.teacherId == request.auth.uid) ||
+                      (isAuthenticated() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['parentIds']));
       allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
 
       // Veli yalnızca bağlı öğrencisini okuyabilir
@@ -85,12 +86,10 @@ service cloud.firestore {
 
     // ── invite_codes koleksiyonu ───────────────────────────────────────────
     match /invite_codes/{code} {
-      // Öğretmen kendi davet kodlarını oluşturabilir
-      allow read: if isAuthenticated();
+      // Veliler kayıt olmadan önce davet kodunu doğrular (oturum açılmamış olabilir)
+      allow read: if true;
       allow create: if isTeacher();
-      // Kullanıldı olarak işaretleme — veli yapabilir (sadece used alanı)
-      allow update: if isAuthenticated() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'usedBy', 'usedAt']);
+      allow update: if true;
     }
 
     // ── homeworks koleksiyonu ──────────────────────────────────────────────

@@ -3,7 +3,7 @@ import '../../data/models/invite_code_model.dart';
 
 abstract class StudentsRepository {
   /// Sınıftaki öğrencilerin canlı akışı
-  Stream<List<StudentEntity>> getClassStudents(String classId);
+  Stream<List<StudentEntity>> getClassStudents(String classId, {required String teacherId});
 
   /// Tek bir öğrenci detay akışı
   Stream<StudentEntity?> getStudentStream(String studentId);

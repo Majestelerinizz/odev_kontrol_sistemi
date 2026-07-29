@@ -257,16 +257,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   title: const Text('Anlık Bildirimler', style: TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: const Text('Duyuru ve mesaj bildirimlerini al'),
                   value: _notificationsEnabled,
-                  activeColor: primaryColor,
+                  activeThumbColor: primaryColor,
                   onChanged: (val) => setState(() => _notificationsEnabled = val),
                 ),
                 const Divider(height: 1),
                 SwitchListTile(
                   secondary: Icon(Icons.assignment_turned_in_rounded, color: primaryColor),
-                  title: const Text('Ödev & Deneme Uarıları', style: TextStyle(fontWeight: FontWeight.w600)),
+                  title: const Text('Ödev & Deneme Uyarıları', style: TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: const Text('Yaklaşan ödev ve deneme hatırlatmaları'),
                   value: _homeworkAlertsEnabled,
-                  activeColor: primaryColor,
+                  activeThumbColor: primaryColor,
                   onChanged: (val) => setState(() => _homeworkAlertsEnabled = val),
                 ),
               ]),
@@ -301,7 +301,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 icon: Icons.logout_rounded,
                 onPressed: () async {
                   await ref.read(authRepositoryProvider).signOut();
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   context.go('/welcome');
                 },
               ),

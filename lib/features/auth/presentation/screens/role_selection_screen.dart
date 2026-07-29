@@ -220,7 +220,7 @@ class _RoleCardState extends State<_RoleCard> {
                 ],
               ),
               const SizedBox(height: 16),
-              Divider(height: 1, color: AppColors.border),
+              const Divider(height: 1, color: AppColors.border),
               const SizedBox(height: 12),
               ...widget.features.map(
                 (f) => Padding(

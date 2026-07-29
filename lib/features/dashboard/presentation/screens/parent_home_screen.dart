@@ -80,7 +80,7 @@ class ParentHomeScreen extends ConsumerWidget {
                       Container(
                         width: 44,
                         height: 44,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.parentPrimary,
                           shape: BoxShape.circle,
                         ),
@@ -102,7 +102,7 @@ class ParentHomeScreen extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      Icon(
+                      const Icon(
                         Icons.keyboard_arrow_down_rounded,
                         color: AppColors.parentPrimary,
                       ),
@@ -115,7 +115,7 @@ class ParentHomeScreen extends ConsumerWidget {
                 // ── Bugünkü durum kartları ─────────────────────────────────
                 const _ParentSectionTitle('Bugünkü Durum'),
                 const SizedBox(height: 12),
-                Row(
+                const Row(
                   children: [
                     Expanded(
                       child: _ParentSummaryCard(
@@ -125,7 +125,7 @@ class ParentHomeScreen extends ConsumerWidget {
                         color: AppColors.parentPrimary,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: _ParentSummaryCard(
                         label: 'Tamamlandı',
@@ -137,7 +137,7 @@ class ParentHomeScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Row(
+                const Row(
                   children: [
                     Expanded(
                       child: _ParentSummaryCard(
@@ -147,7 +147,7 @@ class ParentHomeScreen extends ConsumerWidget {
                         color: AppColors.accent,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: _ParentSummaryCard(
                         label: 'Hedefe Kalan',
@@ -163,7 +163,7 @@ class ParentHomeScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 const _ParentSectionTitle('Öğretmen Notu'),
                 const SizedBox(height: 12),
-                EmptyState(
+                const EmptyState(
                   title: 'Henüz not yok',
                   subtitle: 'Öğretmeninizin notları burada görünecek.',
                   icon: Icons.sticky_note_2_rounded,
@@ -173,7 +173,7 @@ class ParentHomeScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 const _ParentSectionTitle('Son Bildirimler'),
                 const SizedBox(height: 12),
-                EmptyState(
+                const EmptyState(
                   title: 'Bildirim yok',
                   subtitle: 'Yeni bildirimler burada görünecek.',
                   icon: Icons.notifications_rounded,

@@ -103,7 +103,7 @@ class _CreateHomeworkScreenState extends ConsumerState<CreateHomeworkScreen> {
                 children: [
                   // ── Sınıf Seçimi ──────────────────────────────────────────
                   DropdownButtonFormField<String>(
-                    value: _selectedClassId,
+                    initialValue: _selectedClassId,
                     decoration: InputDecoration(
                       labelText: 'Sınıf Seçin',
                       prefixIcon: const Icon(Icons.group_rounded),
@@ -127,7 +127,7 @@ class _CreateHomeworkScreenState extends ConsumerState<CreateHomeworkScreen> {
 
                   // ── Ders Seçimi ───────────────────────────────────────────
                   DropdownButtonFormField<String>(
-                    value: _selectedSubject,
+                    initialValue: _selectedSubject,
                     decoration: InputDecoration(
                       labelText: 'Ders',
                       prefixIcon: const Icon(Icons.book_rounded),
@@ -261,8 +261,9 @@ class _CreateHomeworkScreenState extends ConsumerState<CreateHomeworkScreen> {
                           _selectedClassId != null) {
                         // Sınıftaki tüm öğrencileri çek
                         final students = await ref.read(
-                            classStudentsStreamProvider(_selectedClassId!)
-                                .future);
+                            classStudentsStreamProvider(
+                              (classId: _selectedClassId!, teacherId: user?.uid ?? ''),
+                            ).future);
                         final studentIds = students.map((s) => s.id).toList();
 
                         if (studentIds.isEmpty) {

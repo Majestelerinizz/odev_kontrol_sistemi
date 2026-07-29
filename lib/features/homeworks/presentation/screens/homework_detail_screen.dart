@@ -33,7 +33,9 @@ class HomeworkDetailScreen extends ConsumerWidget {
           }
 
           final studentsAsync =
-              ref.watch(classStudentsStreamProvider(homework.classId));
+              ref.watch(classStudentsStreamProvider(
+                (classId: homework.classId, teacherId: homework.teacherId),
+              ));
 
           return Column(
             children: [

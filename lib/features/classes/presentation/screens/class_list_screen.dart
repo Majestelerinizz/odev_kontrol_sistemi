@@ -110,7 +110,7 @@ class ClassListScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<int>(
-                      value: selectedGrade,
+                      initialValue: selectedGrade,
                       decoration: InputDecoration(
                         labelText: 'Sınıf Seviyesi',
                         prefixIcon: const Icon(Icons.numbers_rounded),

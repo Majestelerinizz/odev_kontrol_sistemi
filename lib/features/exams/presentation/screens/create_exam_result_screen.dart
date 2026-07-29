@@ -103,8 +103,9 @@ class _CreateExamResultScreenState
           }
 
           _selectedClassId ??= classes.first.id;
-          final studentsAsync =
-              ref.watch(classStudentsStreamProvider(_selectedClassId!));
+          final studentsAsync = ref.watch(classStudentsStreamProvider(
+            (classId: _selectedClassId!, teacherId: user?.uid ?? ''),
+          ));
 
           return Form(
             key: _formKey,
@@ -115,7 +116,7 @@ class _CreateExamResultScreenState
                 children: [
                   // ── Sınıf Seçimi ──────────────────────────────────────────
                   DropdownButtonFormField<String>(
-                    value: _selectedClassId,
+                    initialValue: _selectedClassId,
                     decoration: InputDecoration(
                       labelText: 'Sınıf Seçin',
                       prefixIcon: const Icon(Icons.group_rounded),
@@ -153,7 +154,7 @@ class _CreateExamResultScreenState
                       _selectedStudentId ??= students.first.id;
 
                       return DropdownButtonFormField<String>(
-                        value: _selectedStudentId,
+                        initialValue: _selectedStudentId,
                         decoration: InputDecoration(
                           labelText: 'Öğrenci Seçin',
                           prefixIcon: const Icon(Icons.person_rounded),

@@ -71,7 +71,7 @@ class TeacherHomeScreen extends ConsumerWidget {
                 // ── Özet kartlar ───────────────────────────────────────────
                 const _SectionTitle('Bu Hafta'),
                 const SizedBox(height: 12),
-                Row(
+                const Row(
                   children: [
                     Expanded(
                       child: _SummaryCard(
@@ -81,7 +81,7 @@ class TeacherHomeScreen extends ConsumerWidget {
                         color: AppColors.teacherPrimary,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: _SummaryCard(
                         label: 'Yaklaşan',
@@ -93,7 +93,7 @@ class TeacherHomeScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Row(
+                const Row(
                   children: [
                     Expanded(
                       child: _SummaryCard(
@@ -103,7 +103,7 @@ class TeacherHomeScreen extends ConsumerWidget {
                         color: AppColors.error,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: _SummaryCard(
                         label: 'Mesaj',

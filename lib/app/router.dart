@@ -260,7 +260,9 @@ class TeacherShell extends StatelessWidget {
   int _getTeacherIndex(String location) {
     if (location.startsWith('/teacher/home')) return 0;
     if (location.startsWith('/teacher/classes') ||
-        location.startsWith('/teacher/students')) return 1;
+        location.startsWith('/teacher/students')) {
+      return 1;
+    }
     if (location.startsWith('/teacher/homeworks')) return 2;
     if (location.startsWith('/teacher/exams')) return 3;
     return 4;
@@ -350,34 +352,5 @@ class ParentShell extends StatelessWidget {
       case 4:
         context.go('/parent/profile');
     }
-  }
-}
-
-/// Henüz tamamlanmamış ekranlar için geçici placeholder
-class _ComingSoonScreen extends StatelessWidget {
-  const _ComingSoonScreen({required this.title});
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.construction_rounded, size: 48, color: Color(0xFF94A3B8)),
-            const SizedBox(height: 16),
-            Text(
-              '$title — Yakında',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            const Text('Bu bölüm Faz 2\'de eklenecek.',
-                style: TextStyle(color: Color(0xFF94A3B8))),
-          ],
-        ),
-      ),
-    );
   }
 }

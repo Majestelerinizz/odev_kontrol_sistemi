@@ -90,7 +90,7 @@ class _TeacherNewMessageScreenState
                   error: (_, __) => const Text('Sınıflar yüklenemedi'),
                   data: (classes) {
                     return DropdownButtonFormField<String>(
-                      value: _selectedClassId,
+                      initialValue: _selectedClassId,
                       decoration: InputDecoration(
                         labelText: 'Hedef Sınıf',
                         prefixIcon: const Icon(Icons.class_rounded,

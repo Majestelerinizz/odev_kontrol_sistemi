@@ -5,7 +5,6 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_sizes.dart';
-import '../../../../core/widgets/app_widgets.dart';
 import '../../../../core/widgets/app_buttons.dart';
 import '../providers/student_providers.dart';
 import '../../data/models/invite_code_model.dart';

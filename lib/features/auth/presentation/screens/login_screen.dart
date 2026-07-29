@@ -168,9 +168,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     runSpacing: 8,
                     children: [
                       ChoiceChip(
-                        label: Row(
+                        label: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(Icons.phone_android_rounded, size: 16),
                             SizedBox(width: 6),
                             Text('Telefon No'),
@@ -192,9 +192,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         },
                       ),
                       ChoiceChip(
-                        label: Row(
+                        label: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(Icons.email_outlined, size: 16),
                             SizedBox(width: 6),
                             Text('E-posta'),

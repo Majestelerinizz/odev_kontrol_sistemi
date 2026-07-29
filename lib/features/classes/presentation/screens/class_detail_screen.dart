@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +14,7 @@ import '../../../students/domain/entities/student_entity.dart';
 
 class ClassDetailScreen extends ConsumerStatefulWidget {
   const ClassDetailScreen({super.key, required this.classId});
+
   final String classId;
 
   @override
@@ -31,9 +33,12 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final studentsAsync =
-        ref.watch(classStudentsStreamProvider(widget.classId));
     final user = ref.watch(currentUserProvider);
+    final teacherId = user?.uid ?? FirebaseAuth.instance.currentUser?.uid ?? '';
+    final studentsAsync =
+        ref.watch(classStudentsStreamProvider(
+          (classId: widget.classId, teacherId: teacherId),
+        ));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -43,7 +48,7 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
           IconButton(
             icon: const Icon(Icons.person_add_alt_1_rounded),
             tooltip: 'Öğrenci Ekle',
-            onPressed: () => _showAddStudentDialog(context, user?.uid ?? ''),
+            onPressed: () => _showAddStudentDialog(context, teacherId),
           ),
         ],
       ),
@@ -281,7 +286,13 @@ class _StudentCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(student.name, style: AppTextStyles.h4),
+                        Flexible(
+                          child: Text(
+                            student.name,
+                            style: AppTextStyles.h4,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                         if (student.schoolNumber != null) ...[
                           const SizedBox(width: 6),
                           Text(
@@ -305,15 +316,18 @@ class _StudentCard extends StatelessWidget {
                               : AppColors.warning,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          student.hasParent
-                              ? 'Veli Bağlı'
-                              : 'Veli Bekliyor (Davet Kodu Gerekli)',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: student.hasParent
-                                ? AppColors.success
-                                : AppColors.warning,
-                            fontWeight: FontWeight.w600,
+                        Expanded(
+                          child: Text(
+                            student.hasParent
+                                ? 'Veli Bağlı'
+                                : 'Veli Bekliyor (Davet Kodu Gerekli)',
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: student.hasParent
+                                  ? AppColors.success
+                                  : AppColors.warning,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],

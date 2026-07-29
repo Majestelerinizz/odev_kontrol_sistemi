@@ -29,12 +29,12 @@ Future<void> main() async {
     if (kIsWeb) {
       await Firebase.initializeApp(
         options: const FirebaseOptions(
-          apiKey: "AIzaSyDummyKeyForWebTesting1234567",
-          appId: "1:1234567890:web:1234567890abcdef",
-          messagingSenderId: "1234567890",
-          projectId: "odevtakipsistemi-demo",
-          authDomain: "odevtakipsistemi-demo.firebaseapp.com",
-          storageBucket: "odevtakipsistemi-demo.appspot.com",
+          apiKey: "AIzaSyDx03qPyKBzQUb97dW_j2cN1kbBbQL0sZM",
+          appId: "1:1063947496038:web:c424f96a4fa7ed77711ba7",
+          messagingSenderId: "1063947496038",
+          projectId: "odevtakipsistemi-b93b2",
+          authDomain: "odevtakipsistemi-b93b2.firebaseapp.com",
+          storageBucket: "odevtakipsistemi-b93b2.firebasestorage.app",
         ),
       );
     } else {
