@@ -35,9 +35,14 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
         title: const Text('Deneme Sınavı Sonuçları'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.camera_enhance_rounded),
+            tooltip: 'AI Kamera ile Fotoğraf Tara',
+            onPressed: () => context.push('/teacher/exams/scan'),
+          ),
+          IconButton(
             icon: const Icon(Icons.post_add_rounded),
             tooltip: 'Sonuç Gir',
-            onPressed: () => context.push('/teacher/exams/new'),
+            onPressed: () => context.push('/teacher/exams/create'),
           ),
         ],
       ),

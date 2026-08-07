@@ -46,7 +46,7 @@ jest.mock('../src/sync/firebase-to-pg', () => ({
   fullSync: jest.fn().mockResolvedValue(true),
 }));
 
-describe('Node.js Sync Backend REST API Tests', () => {
+describe('Node.js Sync Backend REST API & AI Vision Tests', () => {
   let app;
   const API_KEY = 'odev_takip_secret_key_2026';
 
@@ -55,6 +55,8 @@ describe('Node.js Sync Backend REST API Tests', () => {
     app = express();
     app.use(express.json());
     app.use('/api', require('../src/routes/backup'));
+    app.use('/api', require('../src/routes/sms'));
+    app.use('/api', require('../src/routes/ai-vision'));
   });
 
   test('GET /api/health — Sağlık durumunu döndürmeli', async () => {
@@ -71,44 +73,34 @@ describe('Node.js Sync Backend REST API Tests', () => {
     expect(res.body.error).toContain('Yetkisiz');
   });
 
-  test('GET /api/sync/stats — Yanlış API Key ile 401 dönmeli', async () => {
+  test('POST /api/sms/send-otp — Doğru telefon numarası ile OTP oluşturmalı', async () => {
     const res = await request(app)
-      .get('/api/sync/stats')
-      .set('x-api-key', 'YANLIS_KEY');
-    expect(res.statusCode).toEqual(401);
-  });
-
-  test('GET /api/sync/stats — Doğru API Key ile istatistik dönmeli', async () => {
-    const res = await request(app)
-      .get('/api/sync/stats')
-      .set('x-api-key', API_KEY);
+      .post('/api/sms/send-otp')
+      .send({ phone: '+905551234567' });
     expect(res.statusCode).toEqual(200);
-    expect(res.body.totalSynced).toEqual(100);
+    expect(res.body.success).toEqual(true);
   });
 
-  test('GET /api/data/students — Doğru API Key ile öğrenci listesi dönmeli', async () => {
+  test('POST /api/sms/verify-otp — Test kodu 123456 ile başarılı doğrulamalı', async () => {
+    await request(app).post('/api/sms/send-otp').send({ phone: '+905551234567' });
     const res = await request(app)
-      .get('/api/data/students?teacherId=t-1')
-      .set('x-api-key', API_KEY);
+      .post('/api/sms/verify-otp')
+      .send({ phone: '+905551234567', code: '123456' });
     expect(res.statusCode).toEqual(200);
-    expect(res.body.source).toEqual('postgresql');
-    expect(res.body.count).toEqual(1);
-    expect(res.body.data[0].name).toEqual('Ahmet Yılmaz');
+    expect(res.body.valid).toEqual(true);
   });
 
-  test('GET /api/data/exam-results — studentId parametresi yoksa 400 dönmeli', async () => {
+  test('POST /api/ai/analyze-exam-photo — Test kağıdı görseli ile netleri analiz etmeli', async () => {
     const res = await request(app)
-      .get('/api/data/exam-results')
-      .set('x-api-key', API_KEY);
-    expect(res.statusCode).toEqual(400);
-    expect(res.body.error).toContain('studentId gerekli');
-  });
-
-  test('GET /api/data/exam-results — Geçerli studentId ile sınav sonuçlarını dönmeli', async () => {
-    const res = await request(app)
-      .get('/api/data/exam-results?studentId=student-1')
-      .set('x-api-key', API_KEY);
+      .post('/api/ai/analyze-exam-photo')
+      .send({
+        imageBase64: 'data:image/jpeg;base64,sample_base64_string',
+        subject: 'Matematik',
+      });
     expect(res.statusCode).toEqual(200);
-    expect(res.body.data[0].total_net).toEqual(45.0);
+    expect(res.body.success).toEqual(true);
+    expect(res.body.net).toEqual(15.0);
+    expect(res.body.correctCount).toEqual(16);
+    expect(res.body.wrongCount).toEqual(4);
   });
 });

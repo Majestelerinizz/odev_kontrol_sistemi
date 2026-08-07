@@ -23,6 +23,7 @@ import '../features/exams/presentation/screens/teacher_exam_list_screen.dart';
 import '../features/exams/presentation/screens/create_exam_result_screen.dart';
 import '../features/analytics/presentation/screens/analytics_graph_screen.dart';
 import '../features/exams/presentation/screens/parent_exam_list_screen.dart';
+import '../features/exams/presentation/screens/ai_exam_scanner_screen.dart';
 import '../features/messages/presentation/screens/teacher_new_message_screen.dart';
 import '../features/messages/presentation/screens/teacher_messages_history_screen.dart';
 import '../features/messages/presentation/screens/parent_messages_list_screen.dart';
@@ -155,8 +156,12 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const TeacherExamListScreen(),
           ),
           GoRoute(
-            path: '/teacher/exams/new',
+            path: '/teacher/exams/create',
             builder: (context, state) => const CreateExamResultScreen(),
+          ),
+          GoRoute(
+            path: '/teacher/exams/scan',
+            builder: (context, state) => const AiExamScannerScreen(),
           ),
           GoRoute(
             path: '/teacher/analytics/:studentId',
