@@ -39,10 +39,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# ── Backend (Node.js Sync Servisi) ────────────────────────────
+# ── Backend & Web Dashboard ────────────────────────────────────
 /backend/node_modules/
 /backend/.env
 /backend/serviceAccountKey.json
+/web-dashboard/node_modules/
+/web-dashboard/dist/
 
 # ── Firebase yapılandırma dosyaları (GİZLİ — asla commit etme) ─
 **/google-services.json
