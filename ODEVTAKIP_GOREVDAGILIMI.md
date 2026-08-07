@@ -9,26 +9,26 @@
 
 | Ekip Üyesi | Sorumlu Olduğu Alan | Ana Görev ve Sorumluluklar |
 |---|---|---|
-| 👑 **Yusuf** | **Proje Lideri & Mobil UI/UX Mimarı** | • Flutter mobil arayüz geliştirme (Riverpod, GoRouter, Tema)<br/>• Optik Tarama Kamerası Ekranı (`AiExamScannerScreen`) tasarımı<br/>• Öğretmen & Veli kontrol panelleri ve `fl_chart` net grafikleri |
-| 🤖 **Seyid** | **Yapay Zeka & Görüntü İşleme Uzmanı** | • Optik form kabarcık (A, B, C, D) okuma & OCR entegrasyonu<br/>• Gemini AI Vision ile optik ve öğretmen tik/çarpı analizi<br/>• Kağıt hizalama ve doğru/yanlış/boş tespit motoru |
-| 🐘 **Anıl** | **Backend & Veritabanı Mimarı** | • Node.js Express REST API servisi ve PostgreSQL veritabanı şeması<br/>• Firebase Firestore Realtime Sync ve veri güvenliği kuralları<br/>• Optik sınav sonuçlarının veritabanına otomatik kaydedilmesi |
+| 👑 **Yusuf** | **Proje Lideri & Yapay Zeka & Görüntü İşleme Uzmanı** | • Optik form kabarcık (A, B, C, D) okuma & OCR entegrasyonu<br/>• Gemini AI Vision ile optik ve öğretmen tik/çarpı analizi<br/>• Kağıt hizalama ve doğru/yanlış/boş tespit motoru |
+| 🐘 **Anıl** | **Mobil UI/UX Mimarı** | • Flutter mobil arayüz geliştirme (Riverpod, GoRouter, Tema)<br/>• Optik Tarama Kamerası Ekranı (`AiExamScannerScreen`) tasarımı<br/>• Öğretmen & Veli kontrol panelleri ve `fl_chart` net grafikleri |
+| 🤖 **Seyid** | **Backend & Veritabanı Mimarı** | • Node.js Express REST API servisi ve PostgreSQL veritabanı şeması<br/>• Firebase Firestore Realtime Sync ve veri güvenliği kuralları<br/>• Optik sınav sonuçlarının veritabanına otomatik kaydedilmesi |
 | 📱 **Abdullah**| **Entegrasyon, Twilio SMS & DevOps Uzmanı**| • Twilio SMS servisi ile velilere sınav sonuç SMS'i iletimi<br/>• Firebase Cloud Messaging (FCM) anlık uygulama içi bildirimler<br/>• Google Play Store & Apple App Store mağaza yayın süreçleri |
 
 ---
 
 ## 📋 Geliştirilecek Optik Okuma & Veli Bildirim Özellikleri
 
-### 1. Optik Form & Test Kağıdı Okuma (Seyid & Yusuf)
+### 1. Optik Form & Test Kağıdı Okuma (Yusuf & Anıl)
 - [ ] Kamera ile optik form hizalama ve fotoğraf çekimi.
 - [ ] Cevap anahtarı şablonu (A, B, C, D) ile öğrenci cevaplarının otomatik eşleştirilmesi.
 - [ ] Öğretmen kalem işaretlerinin (tik ✔️ / çarpı ❌) yapay zeka ile otomatik sayılması.
 
-### 2. Anlık Net & Puanlama Motoru (Anıl & Seyid)
+### 2. Anlık Net & Puanlama Motoru (Seyid & Yusuf)
 - [ ] 4 yanlış 1 doğruyu götürür net hesaplama kuralı.
 - [ ] Ders bazlı (Matematik, Türkçe, Fen) netlerin ve toplam net puanının hesaplanması.
 - [ ] Sınıf içi derece ve başarı yüzdesi üretimi.
 
-### 3. Otomatik Veli Bildirimi & SMS (Abdullah & Anıl)
+### 3. Otomatik Veli Bildirimi & SMS (Abdullah & Seyid)
 - [ ] Sınav okunduğu an Twilio SMS ile veliye otomatik kısa bilgi SMS'i gönderimi.
 - [ ] Mobil uygulamaya anlık push notification düşmesi.
 

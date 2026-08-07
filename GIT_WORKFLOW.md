@@ -8,9 +8,9 @@ Bu proje, ana kod tabanını (`main`) korumak ve ekip üyelerinin birbirinin kod
 
 | Ekip Üyesi | Sorumluluk Alanı | Git Branch Adı |
 |---|---|---|
-| 👑 **Yusuf** | Proje Lideri & Mobil UI/UX Mimarı | `yusuf` |
-| 🤖 **Seyid** | Yapay Zeka & Görüntü İşleme Uzmanı | `seyid` |
-| 🐘 **Anıl** | Backend & Veritabanı Mimarı | `anil` |
+| 👑 **Yusuf** | Proje Lideri & Yapay Zeka Uzmanı | `yusuf` |
+| 🐘 **Anıl** | Mobil UI/UX Mimarı | `anil` |
+| 🤖 **Seyid** | Backend & Veritabanı Mimarı | `seyid` |
 | 📱 **Abdullah** | Entegrasyon, SMS & DevOps Uzmanı | `abdullah` |
 
 ---
