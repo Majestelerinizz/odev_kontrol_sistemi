@@ -32,6 +32,11 @@
 - [ ] Sınav okunduğu an Twilio SMS ile veliye otomatik kısa bilgi SMS'i gönderimi.
 - [ ] Mobil uygulamaya anlık push notification düşmesi.
 
+### 4. Hiyerarşik "Soy Ağacı" İzleme Modülü (Anıl & Seyid)
+- [ ] Okul ➔ Sınıf ➔ Öğretmen ➔ Öğrenci ➔ Veli hiyerarşik ağaç tasarımı.
+- [ ] Velilerin anlık Twilio SMS iletim durumlarının (İletildi, Bekliyor, Hata) renkli rozetlerle takip edilmesi.
+- [ ] Mobil uygulamada Flutter CustomPainter / TreeView ile görselleştirme.
+
 ---
 
 ## ❓ Detaylı Proje Karar & Soru-Cevap Anketi

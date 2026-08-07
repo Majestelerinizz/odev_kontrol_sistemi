@@ -49,6 +49,8 @@ app.*.map.json
 # ── Firebase yapılandırma dosyaları (GİZLİ — asla commit etme) ─
 **/google-services.json
 **/GoogleService-Info.plist
+**/*firebase-adminsdk*.json
+**/serviceAccountKey.json
 
 # ── PostgreSQL Docker verileri ─────────────────────────────────
 postgres_data/
