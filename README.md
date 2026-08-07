@@ -16,10 +16,10 @@
 
 ---
 
-## 📱 Uygulama Görünümü ve Ekran Ekran Görselleri
+## 📱 Gerçek Uygulama Ekran Görüntüleri (App Screenshots)
 
 <div align="center">
-  <img src="assets/images/matpusula_app_showcase.png" alt="MatPusula App Showcase" width="800" />
+  <img src="assets/images/matpusula_real_screenshots.png" alt="MatPusula Gerçek Uygulama Ekran Görüntüleri Galeri" width="850" />
 </div>
 
 ---
