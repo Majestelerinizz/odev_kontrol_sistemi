@@ -16,11 +16,19 @@
 
 ---
 
-## 📱 Gerçek Uygulama Ekran Görüntüleri (App Screenshots)
+## 📱 Gerçek Uygulama Ekran Görüntüleri (Authentic Mobile Screenshots)
 
 <div align="center">
-  <img src="assets/images/matpusula_real_screenshots.png" alt="MatPusula Gerçek Uygulama Ekran Görüntüleri Galeri" width="850" />
+  <img src="assets/images/screenshots/screenshot_home.jpg" alt="Ana Sayfa & Kontrol Paneli" width="260" style="border-radius:12px; margin: 4px;" />
+  <img src="assets/images/screenshots/screenshot_homework.jpg" alt="Ödev Yönetimi & Takip" width="260" style="border-radius:12px; margin: 4px;" />
+  <img src="assets/images/screenshots/screenshot_profile.jpg" alt="Profil & KVKK Ayarları" width="260" style="border-radius:12px; margin: 4px;" />
 </div>
+
+<br/>
+
+| 🏠 Ana Sayfa & Kontrol Paneli | 📚 Ödev Yönetim Modülü | 👤 Profil & Hesap Ayarları |
+|---|---|---|
+| Öğretmen kar karşılama, haftalık istatistikler, hızlı işlemler | Konu/ders bazlı ödev listeleri, son teslim tarihleri, ekleme & silme | Profil bilgileri, anlık bildirim tercihleri, KVKK ve kalıcı hesap silme |
 
 ---
 
