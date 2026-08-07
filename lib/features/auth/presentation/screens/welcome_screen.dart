@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_sizes.dart';
 import '../../../../core/widgets/app_buttons.dart';
+import '../../../../core/widgets/matpusula_logo.dart';
 
 /// Hoş geldiniz ekranı.
 /// Uygulama açıldığında gösterilir; giriş veya kayıt seçenekleri sunar.
@@ -69,26 +70,18 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   children: [
                     const SizedBox(height: 40),
 
-                    // ── Logo ──────────────────────────────────────────────
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: const Icon(
-                        Icons.school_rounded,
-                        size: 40,
-                        color: AppColors.teacherPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
+                    // ── Logo & Başlık ─────────────────────────────────────
+                    const MatPusulaLogo(size: 84),
+                    const SizedBox(height: 24),
 
-                    // ── Başlık ────────────────────────────────────────────
                     Text(
-                      'Ödev Takip',
-                      style: AppTextStyles.h1.copyWith(color: Colors.white),
+                      'MatPusula',
+                      style: AppTextStyles.h1.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Ödev & Eğitim Takip Sistemi',
+                      style: AppTextStyles.h4.copyWith(color: Colors.white70),
                     ),
                     const SizedBox(height: 12),
                     Text(

@@ -14,6 +14,7 @@ class ClassesRepositoryImpl implements ClassesRepository {
 
   @override
   Stream<List<ClassEntity>> getTeacherClasses(String teacherId) {
+    if (teacherId.isEmpty) return Stream.value([]);
     return _classesRef
         .where('teacherId', isEqualTo: teacherId)
         .snapshots()
@@ -23,7 +24,7 @@ class ClassesRepositoryImpl implements ClassesRepository {
           .toList();
       list.sort((a, b) => a.name.compareTo(b.name));
       return list;
-    });
+    }).handleError((_) => <ClassEntity>[]);
   }
 
   @override

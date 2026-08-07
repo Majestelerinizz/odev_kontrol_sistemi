@@ -14,6 +14,7 @@ class ExamsRepositoryImpl implements ExamsRepository {
 
   @override
   Stream<List<ExamResultEntity>> getStudentExams(String studentId, {String? teacherId}) {
+    if (studentId.isEmpty) return Stream.value([]);
     Query<Map<String, dynamic>> query = _examsRef.where('studentId', isEqualTo: studentId);
     if (teacherId != null && teacherId.isNotEmpty) {
       query = query.where('teacherId', isEqualTo: teacherId);
@@ -26,14 +27,17 @@ class ExamsRepositoryImpl implements ExamsRepository {
           .toList();
       list.sort((a, b) => b.examDate.compareTo(a.examDate));
       return list;
-    });
+    }).handleError((_) => <ExamResultEntity>[]);
   }
 
   @override
   Stream<List<ExamResultEntity>> getClassExams(String classId, {required String teacherId}) {
-    return _examsRef
-        .where('classId', isEqualTo: classId)
-        .where('teacherId', isEqualTo: teacherId)
+    if (classId.isEmpty) return Stream.value([]);
+    Query<Map<String, dynamic>> query = _examsRef.where('classId', isEqualTo: classId);
+    if (teacherId.isNotEmpty) {
+      query = query.where('teacherId', isEqualTo: teacherId);
+    }
+    return query
         .snapshots()
         .map((snapshot) {
       final list = snapshot.docs
@@ -41,7 +45,7 @@ class ExamsRepositoryImpl implements ExamsRepository {
           .toList();
       list.sort((a, b) => b.examDate.compareTo(a.examDate));
       return list;
-    });
+    }).handleError((_) => <ExamResultEntity>[]);
   }
 
   @override

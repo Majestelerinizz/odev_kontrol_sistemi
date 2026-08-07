@@ -18,6 +18,7 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
 
   @override
   Stream<List<HomeworkEntity>> getTeacherHomeworks(String teacherId) {
+    if (teacherId.isEmpty) return Stream.value([]);
     return _homeworksRef
         .where('teacherId', isEqualTo: teacherId)
         .snapshots()
@@ -27,11 +28,12 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
           .toList();
       list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return list;
-    });
+    }).handleError((_) => <HomeworkEntity>[]);
   }
 
   @override
   Stream<List<HomeworkEntity>> getClassHomeworks(String classId) {
+    if (classId.isEmpty) return Stream.value([]);
     return _homeworksRef
         .where('classId', isEqualTo: classId)
         .snapshots()
@@ -41,23 +43,26 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
           .toList();
       list.sort((a, b) => b.dueDate.compareTo(a.dueDate));
       return list;
-    });
+    }).handleError((_) => <HomeworkEntity>[]);
   }
 
   @override
   Stream<List<HomeworkAssignmentEntity>> getHomeworkAssignments(
       String homeworkId) {
+    if (homeworkId.isEmpty) return Stream.value([]);
     return _assignmentsRef
         .where('homeworkId', isEqualTo: homeworkId)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => HomeworkAssignmentModel.fromFirestore(doc))
-            .toList());
+            .toList())
+        .handleError((_) => <HomeworkAssignmentEntity>[]);
   }
 
   @override
   Stream<List<HomeworkAssignmentEntity>> getStudentAssignments(
       String studentId) {
+    if (studentId.isEmpty) return Stream.value([]);
     return _assignmentsRef
         .where('studentId', isEqualTo: studentId)
         .snapshots()
@@ -67,14 +72,19 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
           .toList();
       list.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
       return list;
-    });
+    }).handleError((_) => <HomeworkAssignmentEntity>[]);
   }
 
   @override
   Future<HomeworkEntity?> getHomeworkById(String homeworkId) async {
-    final doc = await _homeworksRef.doc(homeworkId).get();
-    if (!doc.exists) return null;
-    return HomeworkModel.fromFirestore(doc);
+    try {
+      if (homeworkId.isEmpty) return null;
+      final doc = await _homeworksRef.doc(homeworkId).get();
+      if (!doc.exists) return null;
+      return HomeworkModel.fromFirestore(doc);
+    } catch (_) {
+      return null;
+    }
   }
 
   @override

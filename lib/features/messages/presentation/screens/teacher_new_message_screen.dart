@@ -7,9 +7,11 @@ import '../../../../core/theme/app_sizes.dart';
 import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../classes/presentation/providers/class_providers.dart';
+import '../providers/messages_providers.dart';
 
-/// Toplu Mesaj Gönderme Ekranı
+/// Toplu Veli Mesajı ve Duyuru Oluşturma Ekranı
 class TeacherNewMessageScreen extends ConsumerStatefulWidget {
   const TeacherNewMessageScreen({super.key});
 
@@ -24,6 +26,7 @@ class _TeacherNewMessageScreenState
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   String? _selectedClassId;
+  String? _selectedClassName;
   bool _isSending = false;
 
   @override
@@ -37,13 +40,38 @@ class _TeacherNewMessageScreenState
     context.unfocus();
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isSending = true);
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (!mounted) return;
-    setState(() => _isSending = false);
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) {
+      context.showSnackBar('Oturum açmış kullanıcı bulunamadı!', isError: true);
+      return;
+    }
 
-    context.showSnackBar('Mesaj başarıyla velilere iletildi! 📲');
-    context.pop();
+    setState(() => _isSending = true);
+
+    try {
+      final repo = ref.read(messagesRepositoryProvider);
+
+      await repo.sendMessage(
+        teacherId: currentUser.uid,
+        teacherName: currentUser.name,
+        classId: _selectedClassId,
+        className: _selectedClassName,
+        title: _titleController.text.trim(),
+        body: _contentController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      context.showSnackBar('Duyuru başarıyla velilere gönderildi! 📲');
+      context.pop();
+    } catch (e) {
+      if (!mounted) return;
+      context.showSnackBar('Mesaj gönderilemedi: ${e.toString()}', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() => _isSending = false);
+      }
+    }
   }
 
   @override
@@ -89,7 +117,7 @@ class _TeacherNewMessageScreenState
                   loading: () => const LinearProgressIndicator(),
                   error: (_, __) => const Text('Sınıflar yüklenemedi'),
                   data: (classes) {
-                    return DropdownButtonFormField<String>(
+                    return DropdownButtonFormField<String?>(
                       initialValue: _selectedClassId,
                       decoration: InputDecoration(
                         labelText: 'Hedef Sınıf',
@@ -109,7 +137,18 @@ class _TeacherNewMessageScreenState
                               child: Text(c.name),
                             )),
                       ],
-                      onChanged: (val) => setState(() => _selectedClassId = val),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedClassId = val;
+                          if (val != null) {
+                            final match =
+                                classes.firstWhere((c) => c.id == val);
+                            _selectedClassName = match.name;
+                          } else {
+                            _selectedClassName = null;
+                          }
+                        });
+                      },
                     );
                   },
                 ),

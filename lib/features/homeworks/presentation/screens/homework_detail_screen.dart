@@ -162,20 +162,20 @@ class HomeworkDetailScreen extends ConsumerWidget {
                       loading: () =>
                           const Center(child: CircularProgressIndicator()),
                       error: (err, __) =>
-                          Center(child: Text('Atamalar yüklenemedi: $err')),
+                          const Center(child: Text('Atama bilgisi bulunamadı.')),
                     );
                   },
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
                   error: (err, __) =>
-                      Center(child: Text('Öğrenciler yüklenemedi: $err')),
+                      const Center(child: Text('Öğrenci bilgisi bulunamadı.')),
                 ),
               ),
             ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, __) => Center(child: Text('Ödev bilgisi yüklenemedi: $err')),
+        error: (err, __) => const Center(child: Text('Ödev bilgisi bulunamadı.')),
       ),
     );
   }

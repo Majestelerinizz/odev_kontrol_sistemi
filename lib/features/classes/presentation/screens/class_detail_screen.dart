@@ -106,9 +106,9 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(
-                child: Text('Öğrenciler yüklenemedi: $err',
-                    style: const TextStyle(color: AppColors.error)),
+              error: (err, stack) => const Center(
+                child: Text('Öğrenci bilgisi yüklenemedi. Lütfen tekrar giriş yapın.',
+                    style: TextStyle(color: AppColors.textSecondary)),
               ),
             ),
           ),

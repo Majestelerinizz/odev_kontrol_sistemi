@@ -12,6 +12,9 @@ Bu belge, **Ödev Takip Sistemi** projesinde tamamlanan tüm aşamaları, geliş
 | **Faz 2.1** | Sınıf ve Öğrenci Yönetimi, 6 Haneli Veli Davet Kodu Üretimi | **%100 Tamamlandı** | 20/20 Geçti |
 | **Faz 2.2** | Ödev Oluşturma, Sınıfa Toplu Atama ve Veli Durum Takibi | **%100 Tamamlandı** | 22/22 Geçti |
 | **Faz 2.3** | Deneme Sınavı Girişi, Anlık Net Hesabı, `fl_chart` Grafikleri & Hedefler | **%100 Tamamlandı** | 25/25 Geçti |
+| **Faz 2.6** | Veli Mesajlaşma & Duyuru Altyapısı, Uygulama İçi Bildirimler & Geçmiş | **%100 Tamamlandı** | 27/27 Geçti |
+| **Backend & Sync** | Node.js Express API + PostgreSQL Docker + Jest Entegrasyon Testleri | **%100 Tamamlandı** | 7/7 Geçti |
+| **Faz 3** | UI/UX Cilalama, Gizlilik/Hesap Silme Akışı, Android Keystore & Mağaza Rehberi | **%100 Tamamlandı** | 34/34 Geçti |
 
 ---
 
@@ -49,6 +52,25 @@ Bu belge, **Ödev Takip Sistemi** projesinde tamamlanan tüm aşamaları, geliş
 - [x] **`fl_chart` Gelişim Grafiği Ekranı** (`AnalyticsGraphScreen`): Öğrencinin denemeler arası net ve puan ilerleme çizgi grafiği (`LineChart`), Hedef Puan ilerleme çubuğu ve ders dağılım kartları.
 - [x] **Veli Deneme Takip Ekranı** (`ParentExamListScreen`): Çocuğun deneme sonuçları ve net gelişim çizgi grafiği.
 
+### 5. 💬 Veli Mesajlaşma & Duyuru Altyapısı (Faz 2.6)
+- [x] `MessageEntity` ve `MessageModel` tanımlandı (toplu ve bireysel mesaj tipleri).
+- [x] `MessagesRepository` yazıldı: Firestore `messages` koleksiyonuna kayıt atılırken otomatik olarak hedef velilere `notifications` üretilmesi sağlandı.
+- [x] **Toplu Mesaj Oluşturma Ekranı** (`TeacherNewMessageScreen`): Sınıf seçerek veya tüm sınıflara başlık me açıklama içeren duyuru gönderme.
+- [x] **Öğretmen Duyuru Geçmişi** (`TeacherMessagesHistoryScreen`): Gönderilen duyuruların ulaştığı veli sayısı ve detayları.
+- [x] **Veli Duyuru Listesi Ekranı** (`ParentMessagesListScreen`): Öğretmenlerden gelen duyuruların canlı Stream ile listelenmesi.
+
+### 6. 🐘 Node.js + PostgreSQL Sync Backend & REST API
+- [x] Docker `docker-compose.yml` (PostgreSQL 16 & pgAdmin) yapılandırması güncellendi.
+- [x] `backend/.env` yapılandırıldı (API Secret Key ve lokal DB URL).
+- [x] REST API Sağlık & Sync İstatistikleri (`/api/health`, `/api/sync/stats`, `/api/data/students`, `/api/data/exam-results`) bağlandı.
+- [x] `PostgresApiService` istemcisi `odev_takip_secret_key_2026` doğrulama anahtarı ile güncellendi.
+- [x] `tests/api.test.js` Jest test ortamı kuruldu (**7/7 test yeşil**).
+
+### 7. 🚀 Faz 3 — UI Cilalama, Keystore & Mağaza Hazırlığı
+- [x] **Profil & Gizlilik Akışları**: `ProfileScreen` içine **Gizlilik Politikası & KVKK** diyalogu ve **Hesabımı Sil** güvenlik uyarısı entegre edildi.
+- [x] **Android Imzalama Yapılandırması**: `android/key.properties.example` şablonu oluşturuldu ve `android/app/build.gradle.kts` release imzalama blokları bağlandı.
+- [x] **Mağaza Yayın Rehberi**: `RELEASE_CHECKLIST.md` hazırlanarak Android (`.aab`) ve iOS (`.ipa`) derleme komutları ile Play Store / App Store gönderim formu detaylandırıldı.
+
 ---
 
 ## 📂 Kod Tabanı Yapısı ve Rotalar
@@ -72,19 +94,18 @@ Rotalar (GoRouter):
 - /teacher/exams               -> TeacherExamListScreen
 - /teacher/exams/new           -> CreateExamResultScreen
 - /teacher/analytics/:studentId-> AnalyticsGraphScreen
+- /teacher/messages            -> TeacherMessagesHistoryScreen
+- /teacher/messages/new        -> TeacherNewMessageScreen
 - /parent/home                 -> ParentHomeScreen
 - /parent/homeworks            -> ParentHomeworkListScreen
 - /parent/exams                -> ParentExamListScreen
+- /parent/messages             -> ParentMessagesListScreen
 ```
 
 ---
 
 ## 🧪 Test İstatistikleri
 
-`flutter test` komutu ile çalıştırılan tüm unit ve widget testleri **25/25 yeşil** geçmiştir:
-
-1. `test/unit/app_utils_test.dart` (17 test) ➔ Net hesabı, ödev durumları, e-posta/şifre doğrulamaları, Türkçe tarih formatlayıcı.
-2. `test/unit/class_and_student_test.dart` (2 test) ➔ ClassEntity & StudentEntity kopyalama, veli eşleşme mantığı.
-3. `test/unit/homework_test.dart` (2 test) ➔ HomeworkEntity gecikme kontrolü & HomeworkAssignmentEntity durum yardımcıları.
-4. `test/unit/exam_and_goal_test.dart` (3 test) ➔ SubjectScore net hesabı, ders haritası erişimi, GoalEntity kalan puan hesabı.
-5. `test/widget_test.dart` (1 test) ➔ Uygulama başlatma smoke testi.
+- **Flutter Unit & Widget Testleri:** **27/27 yeşil**
+- **Node.js Backend REST API Testleri:** **7/7 yeşil**
+- **Toplam Test Başarısı:** **34/34 %100 Yeşil**

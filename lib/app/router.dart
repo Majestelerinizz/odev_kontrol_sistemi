@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/auth/presentation/providers/auth_providers.dart';
-import '../../features/auth/presentation/screens/splash_screen.dart';
-import '../../features/auth/presentation/screens/welcome_screen.dart';
-import '../../features/auth/presentation/screens/role_selection_screen.dart';
-import '../../features/auth/presentation/screens/teacher_register_screen.dart';
-import '../../features/auth/presentation/screens/parent_register_screen.dart';
-import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/auth/presentation/screens/forgot_password_screen.dart';
-import '../../features/dashboard/presentation/screens/teacher_home_screen.dart';
-import '../../features/dashboard/presentation/screens/parent_home_screen.dart';
+import '../features/auth/presentation/providers/auth_providers.dart';
+import '../features/auth/presentation/screens/splash_screen.dart';
+import '../features/auth/presentation/screens/welcome_screen.dart';
+import '../features/auth/presentation/screens/role_selection_screen.dart';
+import '../features/auth/presentation/screens/teacher_register_screen.dart';
+import '../features/auth/presentation/screens/parent_register_screen.dart';
+import '../features/auth/presentation/screens/login_screen.dart';
+import '../features/auth/presentation/screens/forgot_password_screen.dart';
+import '../features/dashboard/presentation/screens/teacher_home_screen.dart';
+import '../features/dashboard/presentation/screens/parent_home_screen.dart';
+
 import '../features/classes/presentation/screens/class_list_screen.dart';
 import '../features/classes/presentation/screens/class_detail_screen.dart';
 import '../features/students/presentation/screens/student_detail_screen.dart';
@@ -23,6 +24,8 @@ import '../features/exams/presentation/screens/create_exam_result_screen.dart';
 import '../features/analytics/presentation/screens/analytics_graph_screen.dart';
 import '../features/exams/presentation/screens/parent_exam_list_screen.dart';
 import '../features/messages/presentation/screens/teacher_new_message_screen.dart';
+import '../features/messages/presentation/screens/teacher_messages_history_screen.dart';
+import '../features/messages/presentation/screens/parent_messages_list_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 
 /// Uygulama router'ı.
@@ -162,6 +165,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
+            path: '/teacher/messages',
+            builder: (context, state) => const TeacherMessagesHistoryScreen(),
+          ),
+          GoRoute(
             path: '/teacher/messages/new',
             builder: (context, state) => const TeacherNewMessageScreen(),
           ),
@@ -192,8 +199,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/parent/messages',
-            builder: (context, state) =>
-                const TeacherNewMessageScreen(),
+            builder: (context, state) => const ParentMessagesListScreen(),
           ),
           GoRoute(
             path: '/parent/profile',

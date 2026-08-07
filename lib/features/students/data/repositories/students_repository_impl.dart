@@ -20,9 +20,14 @@ class StudentsRepositoryImpl implements StudentsRepository {
 
   @override
   Stream<List<StudentEntity>> getClassStudents(String classId, {required String teacherId}) {
-    return _studentsRef
-        .where('classId', isEqualTo: classId)
-        .where('teacherId', isEqualTo: teacherId)
+    if (classId.isEmpty) return Stream.value([]);
+
+    Query<Map<String, dynamic>> query = _studentsRef.where('classId', isEqualTo: classId);
+    if (teacherId.isNotEmpty) {
+      query = query.where('teacherId', isEqualTo: teacherId);
+    }
+
+    return query
         .snapshots()
         .map((snapshot) {
       final list = snapshot.docs
@@ -30,15 +35,16 @@ class StudentsRepositoryImpl implements StudentsRepository {
           .toList();
       list.sort((a, b) => a.name.compareTo(b.name));
       return list;
-    });
+    }).handleError((_) => <StudentEntity>[]);
   }
 
   @override
   Stream<StudentEntity?> getStudentStream(String studentId) {
+    if (studentId.isEmpty) return Stream.value(null);
     return _studentsRef.doc(studentId).snapshots().map((doc) {
       if (!doc.exists) return null;
       return StudentModel.fromFirestore(doc);
-    });
+    }).handleError((_) => null);
   }
 
   @override
@@ -99,9 +105,8 @@ class StudentsRepositoryImpl implements StudentsRepository {
     required String studentId,
     required String teacherId,
   }) async {
-    // 6 haneli rastgele kod üret: Örn 'OT-A7K9M2'
     final code = _generateRandomCode();
-    final expiresAt = DateTime.now().add(const Duration(days: 14)); // 14 gün geçerli
+    final expiresAt = DateTime.now().add(const Duration(days: 14));
 
     final inviteModel = InviteCodeModel(
       code: code,
@@ -117,16 +122,20 @@ class StudentsRepositoryImpl implements StudentsRepository {
 
   @override
   Future<InviteCodeModel?> getActiveInviteCode(String studentId) async {
-    final query = await _inviteCodesRef
-        .where('studentId', isEqualTo: studentId)
-        .where('used', isEqualTo: false)
-        .get();
+    try {
+      final query = await _inviteCodesRef
+          .where('studentId', isEqualTo: studentId)
+          .where('used', isEqualTo: false)
+          .get();
 
-    if (query.docs.isEmpty) return null;
-    final list = query.docs.map((d) => InviteCodeModel.fromFirestore(d)).toList();
-    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    final model = list.first;
-    return model.isExpired ? null : model;
+      if (query.docs.isEmpty) return null;
+      final list = query.docs.map((d) => InviteCodeModel.fromFirestore(d)).toList();
+      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      final model = list.first;
+      return model.isExpired ? null : model;
+    } catch (_) {
+      return null;
+    }
   }
 
   String _generateRandomCode() {

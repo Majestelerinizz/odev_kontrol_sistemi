@@ -33,6 +33,9 @@ abstract class AuthRepository {
   /// Çıkış
   Future<void> signOut();
 
+  /// Hesabı hem Firebase Auth hem Firestore'dan kalıcı olarak sil
+  Future<void> deleteAccount();
+
   /// Şifre sıfırlama e-postası gönder
   Future<void> sendPasswordResetEmail(String email);
 

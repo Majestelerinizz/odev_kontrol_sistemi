@@ -6,6 +6,7 @@ import 'package:odev_takip/core/theme/app_colors.dart';
 import 'package:odev_takip/core/theme/app_text_styles.dart';
 import 'package:odev_takip/core/theme/app_sizes.dart';
 import 'package:odev_takip/core/widgets/app_widgets.dart';
+import 'package:odev_takip/core/widgets/matpusula_logo.dart';
 
 /// Veli ana panel ekranı.
 /// Çocuğun günlük ödev özeti, son deneme sonucu, hedef ve bildirimler.
@@ -36,19 +37,34 @@ class ParentHomeScreen extends ConsumerWidget {
                     colors: [AppColors.parentPrimary, AppColors.parentLight],
                   ),
                 ),
-                padding: const EdgeInsets.fromLTRB(20, 60, 20, 16),
+                padding: const EdgeInsets.fromLTRB(20, 48, 20, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    Row(
+                      children: [
+                        const MatPusulaLogo(size: 28),
+                        const SizedBox(width: 8),
+                        Text(
+                          'MatPusula',
+                          style: AppTextStyles.h4.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
                     Text(
                       'Merhaba, ${user?.name.split(' ').first ?? 'Veli'} 👋',
-                      style: AppTextStyles.h2.copyWith(color: Colors.white),
+                      style: AppTextStyles.h3.copyWith(color: Colors.white),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       'Çocuğunuzun güncel durumu aşağıda.',
-                      style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
+                      style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
                     ),
                   ],
                 ),

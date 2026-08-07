@@ -131,6 +131,92 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  void _showPrivacyPolicyDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.privacy_tip_rounded, color: AppColors.info),
+            SizedBox(width: 8),
+            Text('Gizlilik Politikası & KVKK'),
+          ],
+        ),
+        content: const SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Ödev Takip Sistemi (MatPusula) Gizlilik Bildirimi',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              SizedBox(height: 8),
+              Text(
+                '1. Kişisel Verilerin İşlenmesi:\nKullanıcıların adı, e-posta adresi ve rol bilgileri yalnızca uygulama içi ödev, sınav ve duyuru süreçlerinin yürütülmesi amacıyla işlenir.\n\n'
+                '2. Veri Güvenliği:\nTüm veriler Google Firebase bulut altyapısında şifreli ve yetkilendirilmiş erişim kuralları (Firestore Security Rules) ile korunur.\n\n'
+                '3. Üçüncü Taraflarla Paylaşım:\nVerileriniz hiçbir reklam veren veya 3. taraf pazarlama şirketleri ile paylaşılmaz.\n\n'
+                '4. Haklarınız:\nHesabınızı dilediğiniz zaman silebilir veya verilerinizin silinmesini talep edebilirsiniz.',
+                style: TextStyle(fontSize: 13, height: 1.4, color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.info,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Okudum ve Anladım', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AppColors.error),
+            SizedBox(width: 8),
+            Text('Hesabı Sil?'),
+          ],
+        ),
+        content: const Text(
+          'Hesabınızı sildiğinizde profil verileriniz ve bağlantılarınız sistemden kalıcı olarak temizlenir. Bu işlem geri alınamaz.',
+          style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Vazgeç'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(authRepositoryProvider).deleteAccount();
+              if (!mounted) return;
+              context.showSnackBar('Hesabınız ve profil verileriniz Firebase\'den kalıcı olarak silindi.');
+              context.go('/welcome');
+            },
+            child: const Text('Hesabımı Sil', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
@@ -281,16 +367,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   onTap: _showChangePasswordDialog,
                 ),
                 _buildSettingsTile(
-                  icon: Icons.color_lens_outlined,
-                  title: 'Görünüm & Tema',
-                  subtitle: 'MatPusula Mor & Zümrüt Tema',
-                  onTap: () => context.showSnackBar('MatPusula Özel Tema Aktif ✨'),
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'Gizlilik Politikası & KVKK',
+                  subtitle: 'Veri gizliliği ve kullanım şartları',
+                  onTap: _showPrivacyPolicyDialog,
                 ),
                 _buildSettingsTile(
-                  icon: Icons.help_outline_rounded,
-                  title: 'Destek & Hakkında',
-                  subtitle: 'MatPusula v1.0.0 • Destek Hattı',
-                  onTap: () => context.showSnackBar('MatPusula Destek: destek@matpusula.com'),
+                  icon: Icons.delete_forever_outlined,
+                  title: 'Hesabımı Sil',
+                  subtitle: 'Tüm kişisel verilerinizi kalıcı olarak silin',
+                  onTap: _showDeleteAccountDialog,
                 ),
               ]),
               const SizedBox(height: 32),
@@ -327,13 +413,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
+        Material(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(children: children),
           ),
-          child: Column(children: children),
         ),
       ],
     );
