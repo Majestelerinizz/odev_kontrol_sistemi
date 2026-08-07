@@ -1,176 +1,118 @@
-# 📋 Ödev Takip Sistemi (MatPusula)
+<div align="center">
 
-**Ödev Takip Sistemi**, öğretmenlerin sınıf, öğrenci, ödev, deneme sınavı sonuçları ve hedeflerini kolayca yönetebildiği; velilerin ise canlı senkronizasyon ile **yalnızca kendi çocuklarına ait** bilgileri ve performans grafiklerini takip edebildiği Flutter ile geliştirilmiş gelişmiş bir iOS ve Android mobil uygulamasıdır.
+  <img src="assets/images/matpusula_logo.png" alt="MatPusula Logo" width="160" />
 
-> **Canlı Senkronizasyon & Offline Desteği:** Firebase Cloud Firestore'un `snapshots` yapısı sayesinde öğretmen bir ödevi kontrol ettiği veya sınav sonucu girdiği anda velinin ekranında veriler **canlı (real-time)** güncellenir.
+  # 🧭 MatPusula — Ödev & Deneme Sınavı Takip Platformu
 
----
+  **Modern, Hızlı ve Güvenli Öğretmen & Veli İletişim Portalı**
 
-## 📑 İçindekiler
-- [Özellikler](#-özellikler)
-- [Teknoloji Stack](#-teknoloji-stack)
-- [Gereksinimler](#-gereksinimler)
-- [Hızlı Kurulum](#-hızlı-kurulum)
-- [Proje & Klasör Yapısı](#-proje--klasör-yapısı)
-- [Veritabanı Şeması (Firestore)](#-veritabanı-şeması-firestore)
-- [Güvenlik & Rol Kuralları](#-güvenlik--rol-kuralları)
-- [Komutlar & Testler](#-komutlar--testler)
-- [Yol Haritası](#-yol-haritası)
-- [Lisans](#-lisans)
+  [![Flutter](https://img.shields.io/badge/Flutter-3.33+-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+  [![Firebase](https://img.shields.io/badge/Firebase-Auth%20%7C%20Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
+  [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+  [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+  [![Tests Status](https://img.shields.io/badge/Tests-34%2F34%20PASSED-4600B4?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-ve-kalite-raporu)
+
+</div>
 
 ---
 
-## ✨ Özellikler
+## 📱 Uygulama Görünümü ve Ekran Ekran Görselleri
 
-### 1. 🔑 Güvenli Rol Tabanlı Kimlik Doğrulama (Auth & RoleGuard)
-- **Öğretmen ve Veli Ayrımı**: Kayıt esnasında seçilen role uygun özelleştirilmiş kayıt akışları.
-- **RoleGuard Yönlendirme**: `GoRouter` ile öğretmenin veli ekranlarına, velinin öğretmen yönetimine erişimi engellenir.
-- **Şifre Sıfırlama & Profil**: Firebase Auth e-posta doğrulama ve şifre yenileme.
-
-### 2. 🏫 Sınıf ve Öğrenci Yönetimi
-- **Sınıf Oluşturma**: Sınıf adı ve seviye (örn: *8-A Sınıfı*) belirleme.
-- **Öğrenci Kaydı & Arama**: Sınıfa okul numarası ve ad-soyad ile öğrenci ekleme, canlı arama filtresi.
-- **6 Haneli Veli Davet Kodu**: Her öğrenciye özel otomatik `OT-XXXXXX` davet kodu üretme. Tek tıkla kopyalama ve veli hesabı ile eşleştirme.
-
-### 3. 📚 Ödev Oluşturma, Atama ve Kontrol
-- **Esnek Ödev Atama**: Sınıfa Ders (Matematik, Türkçe, Fen vb.), Ödev Başlığı, Kaynak Kitap, Soru Aralığı ve Son Teslim Tarihi belirleme.
-- **Öğretmen Kontrol Paneli**: Öğrencilerin ödev durumlarını tek tıkla **Tamamlandı** (Yeşil), **Yapılmadı** (Kırmızı) veya **Bekliyor** (Amber) olarak işaretleme.
-- **Veli Ödev Takibi**: Velinin çocuğuna atanan aktif, geciken ve tamamlanan ödevleri renkli rozetlerle (`StatusBadge`) takip etmesi.
-
-### 4. 📊 Deneme Sınavı Girişi, Net Hesabı ve Grafikler (`fl_chart`)
-- **Otomatik Net Hesaplama**: Ders bazında Doğru, Yanlış ve Boş verisi girildiğinde sistem **4 Yanlış = 1 Doğru** formülüyle (`Doğru - (Yanlış / 4)`) netleri ve toplam puanı anında hesaplar.
-- **Gelişim Çizgi Grafiği (`LineChart`)**: `fl_chart` kütüphanesi ile öğrencinin denemeler arası net ve puan yükseliş/düşüş eğrisi.
-- **Hedef Takip Sistemi**: Öğrenciye özel belirlenen LGS/YKS hedef puanı, mevcut puan ve hedefe kalan puan ilerleme çubuğu.
+<div align="center">
+  <img src="assets/images/matpusula_app_showcase.png" alt="MatPusula App Showcase" width="800" />
+</div>
 
 ---
 
-## 🛠 Teknoloji Stack
+## ✨ Öne Çıkan Özellikler
 
-| Katman | Teknoloji / Kütüphane | Açıklama |
-|---|---|---|
-| **Framework** | **Flutter 3.x / Dart 3.x** | iOS ve Android tek kod tabanı |
-| **State Management** | **Flutter Riverpod 2.6** | Reaktif ve modüler durum yönetimi |
-| **Navigation** | **GoRouter 14.8** | Rol tabanlı yönlendirme ve RoleGuard |
-| **Backend & DB** | **Firebase Cloud Firestore** | Canlı WebSocket akışları ve çevrimdışı önbellekleme |
-| **Authentication** | **Firebase Auth** | E-posta/Şifre ile güvenli oturum yönetimi |
-| **Grafikler** | **fl_chart 0.68** | Net ve Puan ilerleme çizgi grafikleri |
-| **UI Design** | **Vanilla Material 3** | Özel renk paleti, tipografi ve micro-animation |
+### 👨‍🏫 Öğretmen Modülü
+* **Sınıf & Öğrenci Yönetimi:** Kolay sınıf oluşturma, seviye filtresi, öğrenci ekleme ve profil detayları.
+* **6 Haneli Veli Davet Kodu:** Her öğrenciye özel otomatik son kullanma tarihli (`OT-XXXXXX`) eşleşme kodu üretme ve panoya kopyalama (`Clipboard`).
+* **Ödev Takip Paneli:** Sınıfa veya tekli öğrenciye ödev tanımlama; *Tamamlandı*, *Yapılmadı*, *Bekliyor* durum yönetimi.
+* **Deneme Sınavı & Net Hesabı:** Ders bazlı Doğru/Yanlış girdileri ile otomatik net hesabı (4 Yanlış = 1 Doğru) ve **`fl_chart`** başarı grafiği.
+* **Duyuru & Mesajlaşma:** Sınıf velilerine anlık toplu duyuru ve bildirim iletimi.
 
----
-
-## 💻 Gereksinimler
-
-- **Flutter SDK**: `>=3.3.0 <4.0.0`
-- **Dart SDK**: `>=3.3.0 <4.0.0`
-- **Android Studio** (Android emulator için) veya **Xcode** (iOS simulator için)
-- **Firebase Projesi**: `google-services.json` (Android) ve `GoogleService-Info.plist` (iOS)
+### 👨‍👩‍👧‍👦 Veli Modülü
+* **Davet Koduyla Hızlı Kayıt:** Öğretmenden alınan 6 haneli kod ile saniyeler içinde öğrenciye otomatik bağlanma.
+* **Beni Hatırla (Kalıcı Oturum):** Çıkış yapılana kadar tek tıkla otomatik giriş kalıcılığı.
+* **Öğrenci Durum Takibi:** Çocuğun ödev durumlarını, deneme net grafiklerini ve öğretmen notlarını anlık görüntüleme.
+* **Mesaj Kutusu:** Öğretmenden gelen duyuruları görüntüleme ve okundu durum takibi.
 
 ---
 
-## 🚀 Hızlı Kurulum
-
-### 1) Projeyi Klonlayın
-```bash
-git clone https://github.com/Majestelerinizz/odev_kontrol_sistemi.git
-cd odev_kontrol_sistemi
-```
-
-### 2) Bağımlılıkları Yükleyin
-```bash
-flutter pub get
-```
-
-### 3) Firebase Yapılandırması
-Firebase konsolunuzdan indirdiğiniz yapılandırma dosyalarını ilgili dizinlere ekleyin:
-- **Android**: `android/app/google-services.json`
-- **iOS**: `ios/Runner/GoogleService-Info.plist`
-
-### 4) Uygulamayı Çalıştırın
-```bash
-# Android Emulator veya Cihazda Çalıştır
-flutter run
-
-# iOS Simulator'de Çalıştır
-flutter run -d iPhone
-```
-
----
-
-## 📁 Proje & Klasör Yapısı
-
-Clean Architecture (Domain, Data, Presentation) prensiplerine uygun özellik (feature) bazlı klasör yapısı:
+## 🏗️ Proje Mimarisi
 
 ```text
 lib/
-├── app/
-│   ├── app.dart                   # MaterialApp & Riverpod konfigürasyonu
-│   └── router.dart                # GoRouter ve RoleGuard yönlendirme kuralları
-├── core/
-│   ├── extensions/                # String, DateTime ve Net uzantıları
-│   ├── theme/                     # AppTheme, AppColors, AppTextStyles, AppSizes
-│   ├── utils/                     # NetCalculator, HomeworkStatusCalculator
-│   └── widgets/                   # AppButtons, AppTextField, StatusBadge, EmptyState
+├── app/                  # GoRouter yönlendirme ve RoleGuard güvenlik duvarı
+├── core/                 # Tema, renkler, boyutlar, ortak widget'lar ve uzantılar
 └── features/
-    ├── analytics/                 # fl_chart Gelişim Grafikleri ve Analiz Ekranı
-    ├── auth/                      # Kayıt, Giriş, Rol Seçimi ve Auth Providers
-    ├── classes/                   # Sınıf Listeleme, Sınıf Detayı ve Sınıf Ekleme
-    ├── dashboard/                 # Öğretmen ve Veli Ana Ekran Panelleri
-    ├── exams/                     # Deneme Sınavı Girişi ve Sınav Listesi
-    ├── goals/                     # Hedef Puan / Net Takip Modülü
-    ├── homeworks/                 # Ödev Atama, Ödev Kontrol ve Veli Takibi
-    └── students/                  # Öğrenci Detayı ve Veli Davet Kodu Üretimi
+    ├── analytics/        # fl_chart grafikleri ve hedef net analizleri
+    ├── auth/             # Firebase Auth, login/register wizard, rollback ve kalıcı silme
+    ├── classes/          # Sınıf listesi ve detay ekranları
+    ├── dashboard/        # Öğretmen & Veli ana panelleri
+    ├── exams/            # Deneme sınavı sonuçları ve net hesaplayıcı
+    ├── homeworks/        # Ödev atama ve kontrol listesi
+    ├── messages/         # Veli duyuru ve mesajlaşma servisleri
+    ├── profile/          # Profil, KVKK Gizlilik bildirimi ve hesap silme
+    └── students/         # Öğrenci profilleri ve davet kodu jeneratörü
 ```
 
 ---
 
-## 🗄 Veritabanı Şeması (Firestore)
+## 🐘 Backend & Senkronizasyon Servisi (`backend/`)
 
-Koleksiyonlar ve temel alanları:
+Uygulama, Google Firebase verilerinin yerel PostgreSQL veritabanına otomatik senkronize edilmesini sağlayan **Node.js Express + Docker** servisine sahiptir.
 
-* **`users`**: `uid`, `email`, `fullName`, `role` (`teacher` | `parent`), `phoneNumber`, `createdAt`
-* **`classes`**: `id`, `teacherId`, `name`, `gradeLevel`, `studentCount`, `createdAt`
-* **`students`**: `id`, `classId`, `teacherId`, `name`, `schoolNumber`, `parentIds` (List), `targetScore`, `teacherNote`
-* **`invite_codes`**: `code` (örn: `OT-8A9K2M`), `studentId`, `teacherId`, `expiresAt`, `isUsed`
-* **`homeworks`**: `id`, `teacherId`, `classId`, `title`, `subject`, `sourceName`, `questionRange`, `dueDate`
-* **`homework_assignments`**: `id`, `homeworkId`, `studentId`, `status` (`pending` | `completed` | `missed`), `completedAt`
-* **`exam_results`**: `id`, `studentId`, `classId`, `examName`, `publisher`, `scores` (Map), `totalNet`, `totalScore`, `examDate`
-* **`goals`**: `id`, `studentId`, `type`, `targetValue`, `currentValue`, `isActive`
+* **Dokümantasyon & API:** Node.js Express REST API (`/api/health`, `/api/data/students`, `/api/data/exam-results`)
+* **Veritabanı:** PostgreSQL 16 Alpine + pgAdmin 4 Container'ları (`docker-compose.yml`)
+* **Testler:** Jest REST API entegrasyon testleri (`7/7 Passed`)
 
 ---
 
-## 🛡 Güvenlik & Rol Kuralları
-
-`firestore.rules` dosyasında tanımlanan veritabanı güvenlik kuralları:
-- **Öğretmen Yetkileri**: Sadece kendi oluşturduğu sınıfları, öğrencileri, ödevleri ve sınavları yazabilir/güncelleyebilir.
-- **Veli Yetkileri**: Davet kodu ile eşleştiği **yalnızca kendi çocuğunun** ödev durumlarını ve sınav sonuçlarını okuyabilir.
-
----
-
-## 🧪 Komutlar & Testler
-
-Birim ve widget testlerini çalıştırmak için:
+## 🧪 Test ve Kalite Raporu
 
 ```bash
-# Tüm testleri çalıştır (25/25 test)
+# Flutter Birim & Widget Testlerini Çalıştır
 flutter test
 
-# Statik kod analizi yap
-flutter analyze
+# Backend REST API Entegrasyon Testlerini Çalıştır
+cd backend && npm test
+```
+
+| Test Paketi | Test Sayısı | Başarı Oranı |
+|---|---|---|
+| **Flutter Unit & Widget Tests** | 27 / 27 | **%100 PASSED** |
+| **Node.js REST API Tests** | 7 / 7 | **%100 PASSED** |
+| **Toplam Sistem Testi** | **34 / 34** | **%100 PASSED** |
+
+---
+
+## 🚀 Çalıştırma Rehberi
+
+### 1. Mobil Uygulamayı Çalıştırma (Flutter)
+```bash
+# Bağımlılıkları yükle
+flutter pub get
+
+# Cihazda veya Emülatörde çalıştır
+flutter run
+```
+
+### 2. Backend & PostgreSQL Docker Servisini Çalıştırma
+```bash
+# Docker servislerini başlat
+docker compose up -d
+
+# Backend servisini başlat
+cd backend
+npm install
+npm start
 ```
 
 ---
 
-## 🛣 Yol Haritası
+## 📄 Lisans ve Telif Hakkı
 
-- [x] **Faz 1 — Çekirdek & Auth**: Temel mimari, tema, GoRouter, Firebase Auth & Rol kayıtları.
-- [x] **Faz 2.1 — Sınıf & Öğrenci**: Sınıf yönetimi, öğrenci ekleme, canlı arama ve Veli Davet Kodu üretimi.
-- [x] **Faz 2.2 — Ödev Sistemi**: Ödev oluşturma, sınıfa toplu atama, öğretmen kontrolü ve veli takibi.
-- [x] **Faz 2.3 — Deneme & Grafikler**: Anlık net hesaplayıcı, `fl_chart` çizgi grafikleri ve hedef takibi.
-- [ ] **Faz 3 — Yayınlama**: App Store ve Play Store release build yapılandırmaları ve mağaza görselleri.
-
----
-
-## 📜 Lisans
-
-© 2026 Yusuf Karagüzel · Tüm hakları saklıdır.  
-İzinsiz kopyalanması veya dağıtılması yasaktır.
+© 2026 **MatPusula**. Tüm hakları saklıdır.
