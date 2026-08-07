@@ -57,7 +57,8 @@ let firebaseInitialized = false;
 
 function initFirebase() {
   const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH
-    || path.join(__dirname, '..', 'serviceAccountKey.json');
+    ? path.resolve(process.cwd(), process.env.FIREBASE_SERVICE_ACCOUNT_PATH)
+    : path.join(__dirname, '..', 'serviceAccountKey.json');
 
   try {
     const fs = require('fs');
@@ -82,8 +83,9 @@ async function startServer() {
 
   if (firebaseInitialized) {
     try {
-      await fullSync();
-      startRealtimeSync();
+      const db = admin.firestore();
+      await fullSync(db);
+      startRealtimeSync(db);
     } catch (err) {
       console.error('❌ İlk sync hatası:', err.message);
     }
