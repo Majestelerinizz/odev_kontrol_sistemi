@@ -8,13 +8,28 @@ import 'package:odev_takip/core/theme/app_sizes.dart';
 import 'package:odev_takip/core/widgets/app_widgets.dart';
 import 'package:odev_takip/core/widgets/matpusula_logo.dart';
 
+import '../../../../core/widgets/notification_permission_dialog.dart';
+
 /// Öğretmen ana panel ekranı.
 /// Özet kartlar, hızlı işlemler ve son aktivite listesi.
-class TeacherHomeScreen extends ConsumerWidget {
+class TeacherHomeScreen extends ConsumerStatefulWidget {
   const TeacherHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TeacherHomeScreen> createState() => _TeacherHomeScreenState();
+}
+
+class _TeacherHomeScreenState extends ConsumerState<TeacherHomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationPermissionDialog.showIfFirstTime(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
     final user = authState.valueOrNull;
 

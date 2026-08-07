@@ -8,13 +8,28 @@ import 'package:odev_takip/core/theme/app_sizes.dart';
 import 'package:odev_takip/core/widgets/app_widgets.dart';
 import 'package:odev_takip/core/widgets/matpusula_logo.dart';
 
+import '../../../../core/widgets/notification_permission_dialog.dart';
+
 /// Veli ana panel ekranı.
 /// Çocuğun günlük ödev özeti, son deneme sonucu, hedef ve bildirimler.
-class ParentHomeScreen extends ConsumerWidget {
+class ParentHomeScreen extends ConsumerStatefulWidget {
   const ParentHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ParentHomeScreen> createState() => _ParentHomeScreenState();
+}
+
+class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationPermissionDialog.showIfFirstTime(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
     final user = authState.valueOrNull;
 
