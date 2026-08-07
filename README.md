@@ -119,6 +119,17 @@ npm install
 npm start
 ```
 
+### 3. Web Kontrol Paneli & "Soy Ağacı" Hiyerarşisini Çalıştırma
+```bash
+# Web Dashboard klasörüne git
+cd web-dashboard
+
+# Bağımlılıkları yükle ve geliştirme sunucusunu başlat
+npm install
+npm run dev
+```
+Web paneli **http://localhost:3000** adresinde çalışarak Docker, PostgreSQL, Firebase ve Twilio SMS durumlarını anlık izlemenizi ve Okul ➔ Sınıf ➔ Öğrenci ➔ Veli hiyerarşisini görünür kılar.
+
 ---
 
 ## 📄 Lisans ve Telif Hakkı

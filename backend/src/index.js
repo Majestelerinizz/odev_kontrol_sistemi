@@ -17,6 +17,7 @@ const { startRealtimeSync, fullSync } = require('./sync/firebase-to-pg');
 const backupRouter = require('./routes/backup');
 const smsRouter = require('./routes/sms');
 const aiVisionRouter = require('./routes/ai-vision');
+const webDashboardRouter = require('./routes/web-dashboard-api');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -30,6 +31,7 @@ app.use(morgan('dev'));
 app.use('/api', backupRouter);
 app.use('/api', smsRouter);
 app.use('/api', aiVisionRouter);
+app.use('/api', webDashboardRouter);
 
 // ── Kök endpoint ───────────────────────────────────────────────
 app.get('/', (req, res) => {
