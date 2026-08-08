@@ -73,15 +73,11 @@ service cloud.firestore {
 
     // ── students koleksiyonu ───────────────────────────────────────────────
     match /students/{studentId} {
-      // Öğretmen kendi öğrencilerini yönetebilir
-      allow read: if isTeacher() && resource.data.teacherId == request.auth.uid;
+      allow read: if isAuthenticated();
       allow create: if isTeacher();
       allow update: if (isTeacher() && resource.data.teacherId == request.auth.uid) ||
                       (isAuthenticated() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['parentIds']));
       allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
-
-      // Veli yalnızca bağlı öğrencisini okuyabilir
-      allow read: if isParentOfStudent(studentId);
     }
 
     // ── invite_codes koleksiyonu ───────────────────────────────────────────
@@ -107,8 +103,8 @@ service cloud.firestore {
       allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
       allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
 
-      // Veli yalnızca bağlı öğrencisinin ödevlerini görebilir
-      allow read: if isParentOfStudent(resource.data.studentId);
+      // Veli okuma erişimi
+      allow read: if isParent();
     }
 
     // ── exam_results koleksiyonu ───────────────────────────────────────────
@@ -118,7 +114,7 @@ service cloud.firestore {
       allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
       allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
 
-      allow read: if isParentOfStudent(resource.data.studentId);
+      allow read: if isParent();
     }
 
     // ── subject_progress koleksiyonu ───────────────────────────────────────
@@ -128,7 +124,7 @@ service cloud.firestore {
       allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
       allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
 
-      allow read: if isParentOfStudent(resource.data.studentId);
+      allow read: if isParent();
     }
 
     // ── goals koleksiyonu ──────────────────────────────────────────────────
@@ -138,7 +134,7 @@ service cloud.firestore {
       allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
       allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
 
-      allow read: if isParentOfStudent(resource.data.studentId);
+      allow read: if isParent();
     }
 
     // ── messages koleksiyonu ───────────────────────────────────────────────

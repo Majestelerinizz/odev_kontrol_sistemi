@@ -8,6 +8,9 @@ abstract class StudentsRepository {
   /// Tek bir öğrenci detay akışı
   Stream<StudentEntity?> getStudentStream(String studentId);
 
+  /// Veliye bağlı öğrencilerin canlı akışı
+  Stream<List<StudentEntity>> getParentStudents(String parentUid);
+
   /// Öğrenci ekleme (sınıfın studentCount değerini artırır)
   Future<String> addStudent(StudentEntity student);
 

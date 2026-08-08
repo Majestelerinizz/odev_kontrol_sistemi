@@ -28,6 +28,13 @@ final studentStreamProvider =
   return ref.watch(studentsRepositoryProvider).getStudentStream(studentId);
 });
 
+/// Veliye bağlı öğrencilerin canlı akışı
+final parentStudentsStreamProvider =
+    StreamProvider.family<List<StudentEntity>, String>((ref, parentUid) {
+  if (parentUid.isEmpty) return Stream.value(const <StudentEntity>[]);
+  return ref.watch(studentsRepositoryProvider).getParentStudents(parentUid);
+});
+
 /// Öğrencinin aktif davet kodu getirme provider'ı
 final activeInviteCodeProvider =
     FutureProvider.family<InviteCodeModel?, String>((ref, studentId) {

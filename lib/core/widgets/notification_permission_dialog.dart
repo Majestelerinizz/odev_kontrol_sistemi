@@ -5,8 +5,13 @@ import '../theme/app_colors.dart';
 class NotificationPermissionDialog extends StatelessWidget {
   const NotificationPermissionDialog({super.key});
 
-  /// Giriş sonrası diyalog gösterme çağrısı
+  static bool _hasPrompted = false;
+
+  /// Giriş sonrası yalnızca 1 defa gösterilecek diyalog çağrısı
   static Future<void> showIfFirstTime(BuildContext context) async {
+    if (_hasPrompted) return;
+    _hasPrompted = true;
+
     await Future.delayed(const Duration(milliseconds: 700));
     if (!context.mounted) return;
 

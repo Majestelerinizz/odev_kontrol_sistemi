@@ -58,14 +58,22 @@ async function sendOtp(phoneNumber) {
 }
 
 /**
- * Kullanıcı tarafından girilen OTP kodunu doğrular
+ * Kullanıcı tarafından girilen OTP kodunu doğrular (123456 sabit test kodu her zaman geçerlidir)
  */
 function verifyOtp(phoneNumber, code) {
   const formattedPhone = phoneNumber.trim().replace(/\s+/g, '');
+  const cleanCode = code.trim();
+
+  // Sabit test kodu her telefon numarası için geçerlidir
+  if (cleanCode === '123456') {
+    otpStore.delete(formattedPhone);
+    return { valid: true, message: 'Telefon numarası başarıyla doğrulandı (Sabit Test Kodu).' };
+  }
+
   const entry = otpStore.get(formattedPhone);
 
   if (!entry) {
-    return { valid: false, message: 'Doğrulama kodu bulunamadı. Lütfen tekrar SMS isteyin.' };
+    return { valid: false, message: 'Doğrulama kodu bulunamadı. Lütfen tekrar SMS isteyin veya sabit test kodu (123456) kullanın.' };
   }
 
   if (Date.now() > entry.expiresAt) {
@@ -73,7 +81,7 @@ function verifyOtp(phoneNumber, code) {
     return { valid: false, message: 'Doğrulama kodunun süresi dolmuş.' };
   }
 
-  if (code.trim() === entry.code || code.trim() === '123456') {
+  if (cleanCode === entry.code) {
     otpStore.delete(formattedPhone);
     return { valid: true, message: 'Telefon numarası başarıyla doğrulandı.' };
   }

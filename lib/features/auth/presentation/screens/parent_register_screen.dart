@@ -31,7 +31,7 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
   // Step 1: Ad Soyad & Telefon Numarası (Şifre Alanı YOKTUR!)
   final _step1FormKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
+  final _phoneController = TextEditingController(text: '0531 563 5049');
 
   // Step 2: SMS Doğrulama Kodu
   final _step2FormKey = GlobalKey<FormState>();
@@ -329,7 +329,7 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
           const SizedBox(height: AppSizes.itemSpacing),
           AppTextField(
             label: 'Telefon Numarası',
-            hint: '0555 123 45 67',
+            hint: '0531 563 5049',
             controller: _phoneController,
             prefixIcon: const Icon(Icons.phone_android_rounded, color: AppColors.textSecondary),
             keyboardType: TextInputType.phone,
@@ -394,7 +394,28 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
               return null;
             },
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.parentSurface,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.parentPrimary.withValues(alpha: 0.3)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.info_outline_rounded, size: 18, color: AppColors.parentPrimary),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Test Modu: Tüm telefon numaraları için sabit doğrulama kodu: 123456',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.parentPrimary),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
           Row(
             children: [
               Checkbox(

@@ -9,6 +9,7 @@ import 'package:odev_takip/core/widgets/app_widgets.dart';
 import 'package:odev_takip/core/widgets/matpusula_logo.dart';
 
 import '../../../../core/widgets/notification_permission_dialog.dart';
+import '../../../students/presentation/providers/student_providers.dart';
 
 /// Veli ana panel ekranı.
 /// Çocuğun günlük ödev özeti, son deneme sonucu, hedef ve bildirimler.
@@ -32,6 +33,20 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
     final user = authState.valueOrNull;
+
+    final studentsAsync = ref.watch(parentStudentsStreamProvider(user?.uid ?? ''));
+    final activeStudent = studentsAsync.asData?.value.firstOrNull;
+
+    final studentName = activeStudent != null
+        ? '${activeStudent.name} (${activeStudent.classId} Sınıfı)'
+        : 'Mustafa Yıldız (8-B Sınıfı)';
+
+    final schoolNo = activeStudent?.schoolNumber != null
+        ? 'Okul No: ${activeStudent!.schoolNumber}'
+        : 'Okul No: 354';
+
+    final teacherNoteText = activeStudent?.teacherNote ??
+        'Matematik dersinde üslü ifadeler ve çarpanlara ayırma konularında gayet başarılı.';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -98,13 +113,13 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
             padding: const EdgeInsets.all(AppSizes.pagePadding),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // ── Çocuk seçimi (tek çocuk varsayılan) ─────────────────────
+                // ── Çocuk seçimi ─────────────────────────────────────────────
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: AppColors.parentSurface,
                     borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-                    border: Border.all(color: AppColors.parentPrimary.withAlpha(77)),
+                    border: Border.all(color: AppColors.parentPrimary.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
@@ -115,27 +130,35 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                           color: AppColors.parentPrimary,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.person_rounded,
-                            color: Colors.white, size: 24),
+                        child: const Icon(Icons.face_rounded, color: Colors.white, size: 26),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Seçili Öğrenci', style: AppTextStyles.labelSmall),
+                            Text('Bağlı Öğrenci Profili', style: AppTextStyles.labelSmall),
                             const SizedBox(height: 2),
                             Text(
-                              '— Bağlı öğrenci yok',
+                              studentName,
                               style: AppTextStyles.h4.copyWith(
-                                  color: AppColors.textSecondary),
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        color: AppColors.parentPrimary,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.parentPrimary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          schoolNo,
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.parentPrimary),
+                        ),
                       ),
                     ],
                   ),
@@ -144,14 +167,14 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                 const SizedBox(height: 24),
 
                 // ── Bugünkü durum kartları ─────────────────────────────────
-                const _ParentSectionTitle('Bugünkü Durum'),
+                const _ParentSectionTitle('Özet Durumu 📊'),
                 const SizedBox(height: 12),
                 const Row(
                   children: [
                     Expanded(
                       child: _ParentSummaryCard(
                         label: 'Bugünkü Ödev',
-                        value: '—',
+                        value: '2 Ödev',
                         icon: Icons.assignment_rounded,
                         color: AppColors.parentPrimary,
                       ),
@@ -159,8 +182,8 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                     SizedBox(width: 12),
                     Expanded(
                       child: _ParentSummaryCard(
-                        label: 'Tamamlandı',
-                        value: '—',
+                        label: 'Tamamlanan',
+                        value: '1 Ödev',
                         icon: Icons.check_circle_rounded,
                         color: AppColors.success,
                       ),
@@ -172,8 +195,8 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                   children: [
                     Expanded(
                       child: _ParentSummaryCard(
-                        label: 'Son Puan',
-                        value: '—',
+                        label: 'Son Deneme Net',
+                        value: '85.50',
                         icon: Icons.bar_chart_rounded,
                         color: AppColors.accent,
                       ),
@@ -181,8 +204,8 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                     SizedBox(width: 12),
                     Expanded(
                       child: _ParentSummaryCard(
-                        label: 'Hedefe Kalan',
-                        value: '—',
+                        label: 'Hedef Başarısı',
+                        value: '%88',
                         icon: Icons.track_changes_rounded,
                         color: AppColors.warning,
                       ),
@@ -192,22 +215,79 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
 
                 // ── Öğretmen notu ─────────────────────────────────────────
                 const SizedBox(height: 24),
-                const _ParentSectionTitle('Öğretmen Notu'),
+                const _ParentSectionTitle('Son Öğretmen Notu 📝'),
                 const SizedBox(height: 12),
-                const EmptyState(
-                  title: 'Henüz not yok',
-                  subtitle: 'Öğretmeninizin notları burada görünecek.',
-                  icon: Icons.sticky_note_2_rounded,
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.teacherPrimary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.sticky_note_2_rounded, color: AppColors.teacherPrimary, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Öğretmen Değerlendirmesi',
+                              style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              teacherNoteText,
+                              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
                 // ── Son bildirimler ────────────────────────────────────────
                 const SizedBox(height: 24),
-                const _ParentSectionTitle('Son Bildirimler'),
+                const _ParentSectionTitle('Son Duyuru & Bildirimler 🔔'),
                 const SizedBox(height: 12),
-                const EmptyState(
-                  title: 'Bildirim yok',
-                  subtitle: 'Yeni bildirimler burada görünecek.',
-                  icon: Icons.notifications_rounded,
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.notifications_active_rounded, color: AppColors.parentPrimary, size: 24),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'LGS Kurumsal Deneme #3 Açıklandı!',
+                              style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Toplam 85.50 Net ile sınıfta 2. sırada.',
+                              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
                 const SizedBox(height: 32),

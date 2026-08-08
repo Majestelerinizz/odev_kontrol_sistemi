@@ -30,6 +30,11 @@ abstract class AuthRepository {
     required String password,
   });
 
+  /// Veli için şifresiz telefon numarası ile hızlı giriş/kayıt
+  Future<AppUser> signInOrRegisterParentWithPhone({
+    required String phone,
+  });
+
   /// Çıkış
   Future<void> signOut();
 

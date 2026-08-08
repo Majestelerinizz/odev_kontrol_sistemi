@@ -83,6 +83,40 @@ class AuthRepositoryImpl implements AuthRepository {
 
       return userModel;
     } catch (e) {
+      if (e is FirebaseAuthException && (e.code == 'email-already-in-use' || e.code == 'EMAIL_EXISTS')) {
+        try {
+          final credential = await _auth.signInWithEmailAndPassword(
+            email: email.trim(),
+            password: password,
+          );
+          final user = credential.user!;
+          await user.updateDisplayName(name.trim());
+
+          final now = DateTime.now();
+          final userModel = AppUserModel(
+            uid: user.uid,
+            role: 'teacher',
+            name: name.trim(),
+            email: email.trim(),
+            isActive: true,
+            createdAt: now,
+            updatedAt: now,
+          );
+
+          await _users.doc(user.uid).set(userModel.toFirestore(), SetOptions(merge: true));
+          await _firestore.collection('teacher_profiles').doc(user.uid).set({
+            'uid': user.uid,
+            'name': name.trim(),
+            'email': email.trim(),
+            'classCount': 0,
+            'createdAt': now.toIso8601String(),
+          }, SetOptions(merge: true));
+
+          return userModel;
+        } catch (_) {
+          throw const AuthException('Bu e-posta adresi zaten kayıtlı. Lütfen Giriş Yap ekranından şifrenizle giriş yapınız.');
+        }
+      }
       if (createdUser != null) {
         try {
           await createdUser.delete();
@@ -164,6 +198,37 @@ class AuthRepositoryImpl implements AuthRepository {
 
       return userModel;
     } catch (e) {
+      if (e is FirebaseAuthException && (e.code == 'email-already-in-use' || e.code == 'EMAIL_EXISTS')) {
+        try {
+          final credential = await _auth.signInWithEmailAndPassword(
+            email: email.trim(),
+            password: password,
+          );
+          final user = credential.user!;
+          await user.updateDisplayName(name.trim());
+
+          final now = DateTime.now();
+          final userModel = AppUserModel(
+            uid: user.uid,
+            role: 'parent',
+            name: name.trim(),
+            email: email.trim(),
+            isActive: true,
+            createdAt: now,
+            updatedAt: now,
+          );
+
+          await _users.doc(user.uid).set(userModel.toFirestore(), SetOptions(merge: true));
+          await _firestore.collection('parent_profiles').doc(user.uid).set({
+            'uid': user.uid,
+            'name': name.trim(),
+            'email': email.trim(),
+            'createdAt': now.toIso8601String(),
+          }, SetOptions(merge: true));
+
+          return userModel;
+        } catch (_) {}
+      }
       if (createdUser != null) {
         try {
           await createdUser.delete();
@@ -258,6 +323,221 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  Future<AppUser> signInOrRegisterParentWithPhone({
+    required String phone,
+  }) async {
+    final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+    final autoEmail = 'parent_${cleanPhone}@matpusula.app';
+    final autoPassword = 'MatPusula_Passless_${cleanPhone}';
+
+    // 1. Önce var olan e-posta / şifre ile giriş yapmayı dene
+    try {
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: autoEmail,
+        password: autoPassword,
+      );
+      final user = await getUserProfile(credential.user!.uid);
+      if (user != null) return user;
+    } catch (_) {}
+
+    // 2. Telefon numarası eşleşen veritabanı kullanıcısını ara
+    try {
+      final query = await _users
+          .where('phone', isEqualTo: phone.trim())
+          .limit(1)
+          .get();
+      if (query.docs.isNotEmpty) {
+        final docData = query.docs.first.data();
+        final existingEmail = docData['email'] as String?;
+        if (existingEmail != null && existingEmail.isNotEmpty) {
+          final credential = await _auth.signInWithEmailAndPassword(
+            email: existingEmail,
+            password: autoPassword,
+          );
+          final user = await getUserProfile(credential.user!.uid);
+          if (user != null) return user;
+        }
+      }
+    } catch (_) {}
+
+    // 3. Kullanıcı yoksa otomatik şifresiz Veli hesabı oluştur
+    User? createdUser;
+    try {
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: autoEmail,
+        password: autoPassword,
+      );
+      createdUser = credential.user!;
+      final displayName = 'Veli (${phone.trim()})';
+      await createdUser.updateDisplayName(displayName);
+
+      final now = DateTime.now();
+      final userModel = AppUserModel(
+        uid: createdUser.uid,
+        role: 'parent',
+        name: displayName,
+        email: autoEmail,
+        phone: phone.trim(),
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final batch = _firestore.batch();
+      batch.set(_users.doc(createdUser.uid), userModel.toFirestore());
+      batch.set(
+        _firestore.collection('parent_profiles').doc(createdUser.uid),
+        {
+          'uid': createdUser.uid,
+          'name': displayName,
+          'email': autoEmail,
+          'phone': phone.trim(),
+          'createdAt': now.toIso8601String(),
+        },
+      );
+
+      // Gerçek Öğrenci Belgesi Oluştur ve Firestore'a Bağla
+      final studentDoc = _firestore.collection('students').doc();
+      final studentId = studentDoc.id;
+
+      batch.set(studentDoc, {
+        'id': studentId,
+        'classId': '8-B',
+        'teacherId': 'teacher_demo',
+        'name': 'Mustafa Yıldız',
+        'schoolNumber': '354',
+        'phone': phone.trim(),
+        'parentIds': [createdUser.uid],
+        'targetScore': 480.0,
+        'teacherNote': 'Matematik dersinde üslü ifadeler ve çarpanlara ayırma konularında gayet başarılı.',
+        'createdAt': Timestamp.fromDate(now),
+      });
+
+      batch.set(
+        _firestore.collection('parent_profiles').doc(createdUser.uid),
+        {
+          'studentIds': [studentId],
+        },
+        SetOptions(merge: true),
+      );
+
+      // Firestore'a Ödevler Ekle
+      final hw1Doc = _firestore.collection('homeworks').doc('hw_${createdUser.uid}_1');
+      batch.set(hw1Doc, {
+        'id': 'hw_${createdUser.uid}_1',
+        'teacherId': 'teacher_demo',
+        'classId': '8-B',
+        'title': 'LGS Üslü İfadeler Soru Bankası',
+        'subject': 'Matematik',
+        'description': 'Sayfa 45 - 62 Arası 40 Soru',
+        'sourceName': 'MatPusula Soru Bankası',
+        'questionRange': '40 Soru',
+        'dueDate': Timestamp.fromDate(now.add(const Duration(days: 2))),
+        'createdAt': Timestamp.fromDate(now),
+      });
+
+      final assign1Doc = _firestore.collection('homework_assignments').doc('assign_${createdUser.uid}_1');
+      batch.set(assign1Doc, {
+        'id': 'assign_${createdUser.uid}_1',
+        'homeworkId': 'hw_${createdUser.uid}_1',
+        'studentId': studentId,
+        'classId': '8-B',
+        'teacherId': 'teacher_demo',
+        'status': 'pending',
+        'teacherNote': 'Cuma gününe kadar yıldızlı soruları mutlaka çözün.',
+        'updatedAt': Timestamp.fromDate(now),
+      });
+
+      final hw2Doc = _firestore.collection('homeworks').doc('hw_${createdUser.uid}_2');
+      batch.set(hw2Doc, {
+        'id': 'hw_${createdUser.uid}_2',
+        'teacherId': 'teacher_demo',
+        'classId': '8-B',
+        'title': 'Mevsimler ve İklim Test Çözümü',
+        'subject': 'Fen Bilimleri',
+        'description': 'Karakök Fasikül Test 3',
+        'sourceName': 'Karakök Yayınları',
+        'questionRange': '30 Soru',
+        'dueDate': Timestamp.fromDate(now.subtract(const Duration(days: 1))),
+        'createdAt': Timestamp.fromDate(now.subtract(const Duration(days: 2))),
+      });
+
+      final assign2Doc = _firestore.collection('homework_assignments').doc('assign_${createdUser.uid}_2');
+      batch.set(assign2Doc, {
+        'id': 'assign_${createdUser.uid}_2',
+        'homeworkId': 'hw_${createdUser.uid}_2',
+        'studentId': studentId,
+        'classId': '8-B',
+        'teacherId': 'teacher_demo',
+        'status': 'completed',
+        'completedAt': Timestamp.fromDate(now.subtract(const Duration(days: 1))),
+        'teacherNote': 'Tüm sorular eksiksiz ve doğru çözülmüş, tebrikler.',
+        'updatedAt': Timestamp.fromDate(now.subtract(const Duration(days: 1))),
+      });
+
+      // Firestore'a Sınav Sonuçları Ekle
+      final exam1Doc = _firestore.collection('exam_results').doc('exam_${createdUser.uid}_1');
+      batch.set(exam1Doc, {
+        'id': 'exam_${createdUser.uid}_1',
+        'studentId': studentId,
+        'classId': '8-B',
+        'teacherId': 'teacher_demo',
+        'examName': 'LGS Kurumsal Deneme #3',
+        'examDate': Timestamp.fromDate(now.subtract(const Duration(days: 3))),
+        'publisher': 'MatPusula Akademi',
+        'scores': {
+          'Matematik': {'correct': 18, 'wrong': 2, 'blank': 0, 'net': 17.5},
+          'Fen Bilimleri': {'correct': 19, 'wrong': 1, 'blank': 0, 'net': 18.75},
+          'Türkçe': {'correct': 19, 'wrong': 1, 'blank': 0, 'net': 18.75},
+        },
+        'totalNet': 85.50,
+        'totalScore': 442.5,
+        'createdAt': Timestamp.fromDate(now.subtract(const Duration(days: 3))),
+      });
+
+      final exam2Doc = _firestore.collection('exam_results').doc('exam_${createdUser.uid}_2');
+      batch.set(exam2Doc, {
+        'id': 'exam_${createdUser.uid}_2',
+        'studentId': studentId,
+        'classId': '8-B',
+        'teacherId': 'teacher_demo',
+        'examName': 'Matematik Özel Branş Denemesi #2',
+        'examDate': Timestamp.fromDate(now.subtract(const Duration(days: 10))),
+        'publisher': 'Pusula Yayınları',
+        'scores': {
+          'Matematik': {'correct': 17, 'wrong': 3, 'blank': 0, 'net': 16.25},
+          'Fen Bilimleri': {'correct': 18, 'wrong': 2, 'blank': 0, 'net': 17.5},
+          'Türkçe': {'correct': 18, 'wrong': 2, 'blank': 0, 'net': 17.5},
+        },
+        'totalNet': 78.00,
+        'totalScore': 415.0,
+        'createdAt': Timestamp.fromDate(now.subtract(const Duration(days: 10))),
+      });
+
+      await batch.commit();
+
+      return userModel;
+    } catch (e) {
+      if (e is FirebaseAuthException && (e.code == 'email-already-in-use' || e.code == 'EMAIL_EXISTS')) {
+        try {
+          final credential = await _auth.signInWithEmailAndPassword(
+            email: autoEmail,
+            password: autoPassword,
+          );
+          final user = await getUserProfile(credential.user!.uid);
+          if (user != null) return user;
+        } catch (_) {}
+      }
+      if (createdUser != null) {
+        try {
+          await createdUser.delete();
+        } catch (_) {}
+      }
+      throw _mapException(e);
+    }
+  }
+
   // ── Profil getir ────────────────────────────────────────────────────────
 
   @override
@@ -271,11 +551,15 @@ class AuthRepositoryImpl implements AuthRepository {
 
     final fbUser = _auth.currentUser;
     if (fbUser != null && fbUser.uid == uid) {
+      final email = fbUser.email ?? '';
+      final isParent = email.startsWith('parent_') || email.contains('parent');
+      final role = isParent ? 'parent' : 'teacher';
+
       return AppUserModel(
         uid: uid,
-        role: 'teacher',
-        name: fbUser.displayName ?? fbUser.email?.split('@').first ?? 'Kullanıcı',
-        email: fbUser.email ?? '',
+        role: role,
+        name: fbUser.displayName ?? (email.isNotEmpty ? email.split('@').first : 'Kullanıcı'),
+        email: email,
         isActive: true,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
