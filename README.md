@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="assets/images/matpusula_logo.png" alt="MatPusula Logo" width="160" />
+  <img src="https://raw.githubusercontent.com/Majestelerinizz/odev_kontrol_sistemi/main/assets/images/matpusula_logo.png" alt="MatPusula Logo" width="160" />
 
   # 🧭 MatPusula — Ödev & Deneme Sınavı Takip Platformu
 
@@ -10,7 +10,7 @@
   [![Firebase](https://img.shields.io/badge/Firebase-Auth%20%7C%20Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
   [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
   [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
-  [![Tests Status](https://img.shields.io/badge/Tests-34%2F34%20PASSED-4600B4?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-ve-kalite-raporu)
+  [![Tests Status](https://img.shields.io/badge/Tests-32%2F32%20PASSED-4600B4?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-ve-kalite-raporu)
 
 </div>
 
@@ -19,9 +19,9 @@
 ## 📱 Gerçek Uygulama Ekran Görüntüleri (Authentic Mobile Screenshots)
 
 <div align="center">
-  <img src="assets/images/screenshots/screenshot_home.jpg" alt="Ana Sayfa & Kontrol Paneli" width="260" style="border-radius:12px; margin: 4px;" />
-  <img src="assets/images/screenshots/screenshot_homework.jpg" alt="Ödev Yönetimi & Takip" width="260" style="border-radius:12px; margin: 4px;" />
-  <img src="assets/images/screenshots/screenshot_profile.jpg" alt="Profil & KVKK Ayarları" width="260" style="border-radius:12px; margin: 4px;" />
+  <img src="https://raw.githubusercontent.com/Majestelerinizz/odev_kontrol_sistemi/main/assets/images/screenshots/screenshot_home.jpg" alt="Ana Sayfa & Kontrol Paneli" width="260" style="border-radius:12px; margin: 4px;" />
+  <img src="https://raw.githubusercontent.com/Majestelerinizz/odev_kontrol_sistemi/main/assets/images/screenshots/screenshot_homework.jpg" alt="Ödev Yönetimi & Takip" width="260" style="border-radius:12px; margin: 4px;" />
+  <img src="https://raw.githubusercontent.com/Majestelerinizz/odev_kontrol_sistemi/main/assets/images/screenshots/screenshot_profile.jpg" alt="Profil & KVKK Ayarları" width="260" style="border-radius:12px; margin: 4px;" />
 </div>
 
 <br/>
