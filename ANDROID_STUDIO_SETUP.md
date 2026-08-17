@@ -41,10 +41,7 @@ PostgreSQL sync sistemini aktif etmek için gereken tüm adımları içerir.
 ### Adım 1.3 — Projeyi Aç
 
 1. Android Studio'da `File → Open`
-2. Şu klasörü seç:
-   ```
-   C:\Users\yusuf\Desktop\ODEV_SİSTEM_PROJESİ
-   ```
+2. Repodaki `mobile` klasörünü seç (Flutter uygulaması artık kökte değil)
 3. **Trust Project** → **OK**
 4. Sağ altta "Indexing..." bitmesini bekle (~1-2 dk)
 
@@ -194,6 +191,7 @@ npm run dev
 
 Android Studio Terminal panelinde (`View → Tool Windows → Terminal`):
 ```bash
+cd mobile
 flutter pub get
 ```
 
@@ -306,7 +304,7 @@ docker compose up -d
 cd backend && npm install && npm run dev
 
 # Terminal 3 — Flutter
-flutter pub get && flutter run
+cd mobile && flutter pub get && flutter run
 ```
 
 **3 terminal, 3 komut — hepsi hazır!** 🎉

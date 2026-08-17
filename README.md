@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="assets/images/matpusula_logo.png" alt="MatPusula Logo" width="160" />
+  <img src="mobile/assets/images/matpusula_logo.png" alt="MatPusula Logo" width="160" />
 
   # 🧭 MatPusula — Ödev & Deneme Sınavı Takip Platformu
 
@@ -19,9 +19,9 @@
 ## 📱 Gerçek Uygulama Ekran Görüntüleri (Authentic Mobile Screenshots)
 
 <div align="center">
-  <img src="assets/images/screenshots/screenshot_home.jpg" alt="Ana Sayfa & Kontrol Paneli" width="260" style="border-radius:12px; margin: 4px;" />
-  <img src="assets/images/screenshots/screenshot_homework.jpg" alt="Ödev Yönetimi & Takip" width="260" style="border-radius:12px; margin: 4px;" />
-  <img src="assets/images/screenshots/screenshot_profile.jpg" alt="Profil & KVKK Ayarları" width="260" style="border-radius:12px; margin: 4px;" />
+  <img src="mobile/assets/images/screenshots/screenshot_home.jpg" alt="Ana Sayfa & Kontrol Paneli" width="260" style="border-radius:12px; margin: 4px;" />
+  <img src="mobile/assets/images/screenshots/screenshot_homework.jpg" alt="Ödev Yönetimi & Takip" width="260" style="border-radius:12px; margin: 4px;" />
+  <img src="mobile/assets/images/screenshots/screenshot_profile.jpg" alt="Profil & KVKK Ayarları" width="260" style="border-radius:12px; margin: 4px;" />
 </div>
 
 <br/>
@@ -52,30 +52,19 @@
 ## 🏗️ Proje Mimarisi
 
 ```text
-lib/
-├── app/                  # GoRouter yönlendirme ve RoleGuard güvenlik duvarı
-├── core/                 # Tema, renkler, boyutlar, ortak widget'lar ve uzantılar
-└── features/
-    ├── analytics/        # fl_chart grafikleri ve hedef net analizleri
-    ├── auth/             # Firebase Auth, login/register wizard, rollback ve kalıcı silme
-    ├── classes/          # Sınıf listesi ve detay ekranları
-    ├── dashboard/        # Öğretmen & Veli ana panelleri
-    ├── exams/            # Deneme sınavı sonuçları ve net hesaplayıcı
-    ├── homeworks/        # Ödev atama ve kontrol listesi
-    ├── messages/         # Veli duyuru ve mesajlaşma servisleri
-    ├── profile/          # Profil, KVKK Gizlilik bildirimi ve hesap silme
-    └── students/         # Öğrenci profilleri ve davet kodu jeneratörü
+mobile/                   # Flutter iOS/Android uygulaması (öğretmen + veli)
+web-panel/                # Flutter web admin paneli (süper kullanıcı gözetimi)
+functions/                # Cloud Functions (toplu FCM push: sendBroadcast)
+backend/                  # (opsiyonel/legacy) PostgreSQL sync; admin panel buna bağlı değil
 ```
+
+Admin panel: öğretmen/öğrenci listeleme, platform istatistikleri, aktivite akışı ve filtreli toplu push. **Öğretmen web kopyası değildir.** Manuel admin oluşturma: [ADMIN_SEED.md](ADMIN_SEED.md).
 
 ---
 
-## 🐘 Backend & Senkronizasyon Servisi (`backend/`)
+## 🐘 Backend & Senkronizasyon Servisi (`backend/`) — Opsiyonel
 
-Uygulama, Google Firebase verilerinin yerel PostgreSQL veritabanına otomatik senkronize edilmesini sağlayan **Node.js Express + Docker** servisine sahiptir.
-
-* **Dokümantasyon & API:** Node.js Express REST API (`/api/health`, `/api/data/students`, `/api/data/exam-results`)
-* **Veritabanı:** PostgreSQL 16 Alpine + pgAdmin 4 Container'ları (`docker-compose.yml`)
-* **Testler:** Jest REST API entegrasyon testleri (`7/7 Passed`)
+Mobil uygulama ve admin panel **doğrudan Firestore** kullanır. `backend/` klasörü, Firebase verilerinin PostgreSQL'e senkronize edilmesi için eski/opsiyonel bir Node.js servisidir; admin panel yol haritasında yer almaz.
 
 ---
 
@@ -83,7 +72,8 @@ Uygulama, Google Firebase verilerinin yerel PostgreSQL veritabanına otomatik se
 
 ```bash
 # Flutter Birim & Widget Testlerini Çalıştır
-flutter test
+cd mobile && flutter test
+cd ../web-panel && flutter test
 
 # Backend REST API Entegrasyon Testlerini Çalıştır
 cd backend && npm test
@@ -112,34 +102,34 @@ Sistemin ilişkisel haritasını doğrudan mobil ve yönetim katmanında görsel
 
 ### 1. Mobil Uygulamayı Çalıştırma (Flutter)
 ```bash
-# Bağımlılıkları yükle
+cd mobile
 flutter pub get
-
-# Cihazda veya Emülatörde çalıştır
 flutter run
 ```
 
-### 2. Backend & PostgreSQL Docker Servisini Çalıştırma
+### 2. Admin Web Paneli (Flutter Web)
+
 ```bash
-# Docker servislerini başlat
+cd web-panel
+flutter pub get
+flutter run -d chrome
+```
+
+Üretim derlemesi:
+
+```bash
+cd web-panel
+flutter build web --release --wasm
+```
+
+Panel yalnızca `role=admin` hesapları kabul eder. İlk admin hesabı için [ADMIN_SEED.md](ADMIN_SEED.md). Toplu push için `functions/` deploy edilmeli (`firebase deploy --only functions`).
+
+### 3. Backend & PostgreSQL (Opsiyonel)
+
+```bash
 docker compose up -d
-
-# Backend servisini başlat
-cd backend
-npm install
-npm start
+cd backend && npm install && npm start
 ```
-
-### 3. Web Kontrol Paneli & "Soy Ağacı" Hiyerarşisini Çalıştırma
-```bash
-# Web Dashboard klasörüne git
-cd web-dashboard
-
-# Bağımlılıkları yükle ve geliştirme sunucusunu başlat
-npm install
-npm run dev
-```
-Web paneli **http://localhost:3000** adresinde çalışarak Docker, PostgreSQL, Firebase ve Twilio SMS durumlarını anlık izlemenizi ve Okul ➔ Sınıf ➔ Öğrenci ➔ Veli hiyerarşisini görünür kılar.
 
 ---
 

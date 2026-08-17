@@ -4,6 +4,9 @@
 *.pyc
 *.swp
 .DS_Store
+*.apk
+*.aab
+*.ipa
 .atom/
 .build/
 .buildlog/
@@ -26,6 +29,8 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+mobile/build/
+web-panel/build/
 /coverage/
 
 # Symbolication related
@@ -38,13 +43,16 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+mobile/android/app/debug
+mobile/android/app/profile
+mobile/android/app/release
 
-# ── Backend & Web Dashboard ────────────────────────────────────
+# ── Backend & Cloud Functions ──────────────────────────────────
 /backend/node_modules/
 /backend/.env
 /backend/serviceAccountKey.json
-/web-dashboard/node_modules/
-/web-dashboard/dist/
+/functions/node_modules/
+/functions/lib/
 
 # ── Firebase yapılandırma dosyaları (GİZLİ — asla commit etme) ─
 **/google-services.json
