@@ -328,8 +328,8 @@ class AuthRepositoryImpl implements AuthRepository {
     required String phone,
   }) async {
     final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
-    final autoEmail = 'parent_${cleanPhone}@matpusula.app';
-    final autoPassword = 'MatPusula_Passless_${cleanPhone}';
+    final autoEmail = 'parent_$cleanPhone@matpusula.app';
+    final autoPassword = 'MatPusula_Passless_$cleanPhone';
 
     // 1. Önce var olan e-posta / şifre ile giriş yapmayı dene
     try {

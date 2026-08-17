@@ -4,7 +4,6 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_sizes.dart';
-import '../../../../core/widgets/app_widgets.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/exam_providers.dart';
@@ -24,10 +23,10 @@ class ParentExamListScreen extends ConsumerWidget {
       examName: 'LGS Kurumsal Deneme #3',
       examDate: DateTime.now().subtract(const Duration(days: 3)),
       publisher: 'MatPusula Akademi',
-      scores: {
-        'Matematik': const SubjectScore(correct: 18, wrong: 2, blank: 0),
-        'Fen Bilimleri': const SubjectScore(correct: 19, wrong: 1, blank: 0),
-        'Türkçe': const SubjectScore(correct: 19, wrong: 1, blank: 0),
+      scores: const {
+        'Matematik': SubjectScore(correct: 18, wrong: 2, blank: 0),
+        'Fen Bilimleri': SubjectScore(correct: 19, wrong: 1, blank: 0),
+        'Türkçe': SubjectScore(correct: 19, wrong: 1, blank: 0),
       },
       totalNet: 85.50,
       totalScore: 442.5,
@@ -41,10 +40,10 @@ class ParentExamListScreen extends ConsumerWidget {
       examName: 'Matematik Özel Branş Denemesi #2',
       examDate: DateTime.now().subtract(const Duration(days: 10)),
       publisher: 'Pusula Yayınları',
-      scores: {
-        'Matematik': const SubjectScore(correct: 17, wrong: 3, blank: 0),
-        'Fen Bilimleri': const SubjectScore(correct: 18, wrong: 2, blank: 0),
-        'Türkçe': const SubjectScore(correct: 18, wrong: 2, blank: 0),
+      scores: const {
+        'Matematik': SubjectScore(correct: 17, wrong: 3, blank: 0),
+        'Fen Bilimleri': SubjectScore(correct: 18, wrong: 2, blank: 0),
+        'Türkçe': SubjectScore(correct: 18, wrong: 2, blank: 0),
       },
       totalNet: 78.00,
       totalScore: 415.0,
@@ -58,10 +57,10 @@ class ParentExamListScreen extends ConsumerWidget {
       examName: 'Seviye Tespit Sınavı #1',
       examDate: DateTime.now().subtract(const Duration(days: 20)),
       publisher: 'Okul Geneli',
-      scores: {
-        'Matematik': const SubjectScore(correct: 15, wrong: 4, blank: 1),
-        'Fen Bilimleri': const SubjectScore(correct: 16, wrong: 3, blank: 1),
-        'Türkçe': const SubjectScore(correct: 17, wrong: 3, blank: 0),
+      scores: const {
+        'Matematik': SubjectScore(correct: 15, wrong: 4, blank: 1),
+        'Fen Bilimleri': SubjectScore(correct: 16, wrong: 3, blank: 1),
+        'Türkçe': SubjectScore(correct: 17, wrong: 3, blank: 0),
       },
       totalNet: 71.50,
       totalScore: 388.0,

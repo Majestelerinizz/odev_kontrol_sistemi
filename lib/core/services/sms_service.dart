@@ -14,7 +14,6 @@ class SmsService {
         body: jsonEncode({'phone': phone}),
       );
       if (res.statusCode == 200) {
-        final data = jsonDecode(res.body) as Map<String, dynamic>;
         return {
           'success': true,
           'message': 'SMS doğrulama koda gönderildi. Sabit Test Kodu: 123456',

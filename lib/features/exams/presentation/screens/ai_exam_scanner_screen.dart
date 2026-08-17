@@ -118,7 +118,7 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
               Text('Ders Seçiniz', style: AppTextStyles.h4),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _selectedSubject,
+                initialValue: _selectedSubject,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
