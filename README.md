@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="https://raw.githubusercontent.com/Majestelerinizz/odev_kontrol_sistemi/main/assets/images/matpusula_logo.png" alt="MatPusula Logo" width="160" />
+  <img src="assets/images/matpusula_logo.png" alt="MatPusula Logo" width="160" />
 
   # 🧭 MatPusula — Ödev & Deneme Sınavı Takip Platformu
 
@@ -19,9 +19,9 @@
 ## 📱 Gerçek Uygulama Ekran Görüntüleri (Authentic Mobile Screenshots)
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Majestelerinizz/odev_kontrol_sistemi/main/assets/images/screenshots/screenshot_home.jpg" alt="Ana Sayfa & Kontrol Paneli" width="260" style="border-radius:12px; margin: 4px;" />
-  <img src="https://raw.githubusercontent.com/Majestelerinizz/odev_kontrol_sistemi/main/assets/images/screenshots/screenshot_homework.jpg" alt="Ödev Yönetimi & Takip" width="260" style="border-radius:12px; margin: 4px;" />
-  <img src="https://raw.githubusercontent.com/Majestelerinizz/odev_kontrol_sistemi/main/assets/images/screenshots/screenshot_profile.jpg" alt="Profil & KVKK Ayarları" width="260" style="border-radius:12px; margin: 4px;" />
+  <img src="assets/images/screenshots/screenshot_home.jpg" alt="Ana Sayfa & Kontrol Paneli" width="260" style="border-radius:12px; margin: 4px;" />
+  <img src="assets/images/screenshots/screenshot_homework.jpg" alt="Ödev Yönetimi & Takip" width="260" style="border-radius:12px; margin: 4px;" />
+  <img src="assets/images/screenshots/screenshot_profile.jpg" alt="Profil & KVKK Ayarları" width="260" style="border-radius:12px; margin: 4px;" />
 </div>
 
 <br/>
