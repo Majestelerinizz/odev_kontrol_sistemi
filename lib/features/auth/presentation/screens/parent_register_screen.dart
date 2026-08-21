@@ -31,7 +31,7 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
   // Step 1: Ad Soyad & Telefon Numarası
   final _step1FormKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _phoneController = TextEditingController(text: '0531 563 5049');
+  final _phoneController = TextEditingController();
 
   // Step 2: SMS Doğrulama Kodu
   final _step2FormKey = GlobalKey<FormState>();

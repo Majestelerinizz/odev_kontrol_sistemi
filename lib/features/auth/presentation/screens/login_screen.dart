@@ -30,8 +30,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _teacherPasswordController = TextEditingController();
 
   // Veli alanları (ŞİFRESİZ TELEFON & SMS KODU)
-  final _parentPhoneController = TextEditingController(text: '0531 563 5049');
-  final _parentOtpController = TextEditingController(text: '123456');
+  final _parentPhoneController = TextEditingController();
+  final _parentOtpController = TextEditingController();
 
   bool _isTeacherRole = true; // true = Öğretmen, false = Veli
 
