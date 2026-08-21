@@ -17,6 +17,7 @@ const { startRealtimeSync, fullSync } = require('./sync/firebase-to-pg');
 const backupRouter = require('./routes/backup');
 const smsRouter = require('./routes/sms');
 const aiVisionRouter = require('./routes/ai-vision');
+const authRouter = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -27,6 +28,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 
 // ── Rotalar ────────────────────────────────────────────────────
+app.use('/api', authRouter);
 app.use('/api', backupRouter);
 app.use('/api', smsRouter);
 app.use('/api', aiVisionRouter);

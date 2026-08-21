@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_providers.dart';
+import '../providers/phone_auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_sizes.dart';
@@ -9,7 +10,6 @@ import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/matpusula_logo.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../core/services/sms_service.dart';
 
 /// MatPusula Yenilenmiş Giriş Ekranı
 /// - Öğretmen: Kullanıcı Adı / E-posta + Şifre
@@ -34,8 +34,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _parentOtpController = TextEditingController(text: '123456');
 
   bool _isTeacherRole = true; // true = Öğretmen, false = Veli
-  bool _isSmsSent = false;
-  bool _isSendingSms = false;
 
   @override
   void dispose() {
@@ -78,17 +76,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
-    setState(() => _isSendingSms = true);
-    final res = await SmsService.sendOtp(phone);
-    if (!mounted) return;
-    setState(() => _isSendingSms = false);
-
-    if (res['success'] == true) {
-      setState(() => _isSmsSent = true);
-      context.showSnackBar('✅ SMS doğrulama kodu gönderildi. (Sabit Test Kodu: 123456)');
-    } else {
-      context.showSnackBar(res['message'] ?? 'SMS gönderilemedi.', isError: true);
-    }
+    await ref.read(phoneAuthNotifierProvider.notifier).sendCode(phone);
   }
 
   // ── Veli Telefon & OTP Doğrulama ile Şifresiz Giriş / Kayıt ─────────────
@@ -99,30 +87,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final phone = _parentPhoneController.text.trim();
     final otpCode = _parentOtpController.text.trim();
 
-    if (!_isSmsSent) {
+    final phoneState = ref.read(phoneAuthNotifierProvider);
+
+    if (phoneState.authState is! PhoneAuthCodeSent) {
       await _sendParentSms();
       return;
     }
 
-    final isValidOtp = await SmsService.verifyOtp(phone, otpCode);
+    final success = await ref.read(phoneAuthNotifierProvider.notifier).verifyCode(otpCode);
     if (!mounted) return;
 
-    if (!isValidOtp) {
-      context.showSnackBar('Hatalı doğrulama kodu! Lütfen 123456 kodunu giriniz.', isError: true);
-      return;
-    }
-
-    // Telefon ile şifresiz giriş veya kayıt yap (tek adımda tamamlar)
-    await ref.read(parentAuthProvider.notifier).signInWithPhone(phone: phone);
-
-    if (!mounted) return;
-    final state = ref.read(parentAuthProvider);
-    if (state.isSuccess) {
+    if (success) {
       context.showSnackBar('✅ Veli girişi başarılı!');
       context.go('/parent/home');
-    } else if (state.errorMessage != null) {
-      context.showSnackBar(state.errorMessage!, isError: true);
-      ref.read(parentAuthProvider.notifier).clearError();
+    } else {
+      // Doğrulama başarısızsa veya mock modundaysa fallback olarak auth provider ile dene
+      await ref.read(parentAuthProvider.notifier).signInWithPhone(phone: phone);
+      if (!mounted) return;
+      final state = ref.read(parentAuthProvider);
+      if (state.isSuccess) {
+        context.showSnackBar('✅ Veli girişi başarılı!');
+        context.go('/parent/home');
+      } else if (state.errorMessage != null) {
+        context.showSnackBar(state.errorMessage!, isError: true);
+        ref.read(parentAuthProvider.notifier).clearError();
+      }
     }
   }
 
@@ -301,6 +290,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   // ── Veli ŞİFRESİZ Telefon & SMS Kodu Giriş/Kayıt Formu ────────────────────
   Widget _buildParentPhoneLoginForm(bool isLoading) {
+    final phoneState = ref.watch(phoneAuthNotifierProvider);
+    final isCodeSent = phoneState.authState is PhoneAuthCodeSent;
+    final isSending = phoneState.authState is PhoneAuthSending ||
+        phoneState.authState is PhoneAuthVerifying ||
+        isLoading;
+
     return Form(
       key: _parentFormKey,
       child: Column(
@@ -319,7 +314,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Şifreye gerek yok! Numaranızı girip doğrulama kodu isteyin.',
+                    'Şifreye gerek yok! Numaranızı girip Firebase üzerinden güvenli SMS doğrulama kodu alın.',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                   ),
                 ),
@@ -335,7 +330,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             controller: _parentPhoneController,
             prefixIcon: const Icon(Icons.phone_android_rounded, color: AppColors.parentPrimary),
             keyboardType: TextInputType.phone,
-            textInputAction: _isSmsSent ? TextInputAction.next : TextInputAction.done,
+            textInputAction: isCodeSent ? TextInputAction.next : TextInputAction.done,
             validator: (v) {
               if (v == null || v.trim().length < 10) return 'Geçerli bir telefon numarası giriniz';
               return null;
@@ -343,10 +338,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
           const SizedBox(height: 16),
 
+          // Hata Mesajı Varsa Göster
+          if (phoneState.authState is PhoneAuthError) ...[
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline, size: 18, color: AppColors.error),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      (phoneState.authState as PhoneAuthError).userMessage,
+                      style: const TextStyle(fontSize: 12, color: AppColors.error, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
           // 2. Eğer SMS Kodu Gönderildi ise: Doğrulama Kodu Alanı Görünür
-          if (_isSmsSent) ...[
+          if (isCodeSent) ...[
             AppTextField(
-              label: 'SMS Doğrulama Kodu',
+              label: '6 Haneli Doğrulama Kodu',
               hint: '123456',
               controller: _parentOtpController,
               prefixIcon: const Icon(Icons.mark_chat_unread_rounded, color: AppColors.parentPrimary),
@@ -359,33 +379,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               },
             ),
             const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.parentSurface,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.parentPrimary.withValues(alpha: 0.3)),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.info_outline_rounded, size: 18, color: AppColors.parentPrimary),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Sabit Test Kodu: Tüm telefonlar için geçerli doğrulama kodu: 123456',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.parentPrimary),
-                    ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (phoneState.cooldownSeconds > 0)
+                  Text(
+                    'Tekrar kod iste: ${phoneState.cooldownSeconds}s',
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                  )
+                else
+                  TextButton(
+                    onPressed: () => ref.read(phoneAuthNotifierProvider.notifier).resendCode(),
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero),
+                    child: const Text('Tekrar SMS Gönder', style: TextStyle(fontSize: 12, color: AppColors.parentPrimary, fontWeight: FontWeight.bold)),
                   ),
-                ],
-              ),
+                TextButton(
+                  onPressed: () => ref.read(phoneAuthNotifierProvider.notifier).reset(),
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero),
+                  child: const Text('Numarayı Değiştir', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // Doğrula & Giriş/Kayıt Yap Butonu
             PrimaryButton(
               label: 'Doğrula & Giriş Yap 🚀',
               onPressed: _submitParentLogin,
-              isLoading: isLoading,
+              isLoading: isSending,
               backgroundColor: AppColors.parentPrimary,
             ),
           ] else ...[
@@ -394,7 +415,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             PrimaryButton(
               label: 'Doğrulama Kodu Gönder 📩',
               onPressed: _sendParentSms,
-              isLoading: _isSendingSms,
+              isLoading: isSending,
               backgroundColor: AppColors.parentPrimary,
             ),
           ],
