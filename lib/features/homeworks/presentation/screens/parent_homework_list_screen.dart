@@ -19,7 +19,8 @@ class ParentHomeworkListScreen extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final parentUid = user?.uid ?? '';
     final studentsAsync = ref.watch(parentStudentsStreamProvider(parentUid));
-    final studentId = studentsAsync.asData?.value.firstOrNull?.id ?? parentUid;
+    final activeStudent = studentsAsync.valueOrNull?.firstOrNull;
+    final studentId = activeStudent?.id ?? parentUid;
     final assignmentsAsync = ref.watch(studentAssignmentsStreamProvider(studentId));
 
     return Scaffold(

@@ -39,11 +39,11 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
 
     // ── Veliye bağlı öğrenci ────────────────────────────────────────────────
     final studentsAsync = ref.watch(parentStudentsStreamProvider(user?.uid ?? ''));
-    final activeStudent = studentsAsync.asData?.value.firstOrNull;
+    final activeStudent = studentsAsync.valueOrNull?.firstOrNull;
 
     // ── Sınıf bilgisi ─────────────────────────────────────────────────────────
     final classAsync = ref.watch(classStreamProvider(activeStudent?.classId ?? ''));
-    final className = classAsync.asData?.value?.name ?? '';
+    final className = classAsync.valueOrNull?.name ?? '';
 
     final studentName = activeStudent != null
         ? (className.isNotEmpty
@@ -57,7 +57,7 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
 
     final greetingName = activeStudent != null
         ? '${activeStudent.name} Velisi'
-        : (user?.name.startsWith('parent_') == true ? 'Veli' : (user?.name ?? 'Veli'));
+        : (user?.name != null && !user!.name.startsWith('parent_') ? user.name : 'Veli');
 
     // ── Canlı Ödev İstatistikleri ───────────────────────────────────────────
     final assignmentsAsync = ref.watch(studentAssignmentsStreamProvider(activeStudent?.id ?? ''));

@@ -7,73 +7,18 @@ import '../../../../core/theme/app_sizes.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/exam_providers.dart';
-import '../../domain/entities/exam_result_entity.dart';
-
 import '../../../students/presentation/providers/student_providers.dart';
 
 class ParentExamListScreen extends ConsumerWidget {
   const ParentExamListScreen({super.key});
-
-  static final List<ExamResultEntity> _demoExams = [
-    ExamResultEntity(
-      id: 'demo_e1',
-      studentId: 'demo_student',
-      classId: '8-A',
-      teacherId: 'teacher_1',
-      examName: 'LGS Kurumsal Deneme #3',
-      examDate: DateTime.now().subtract(const Duration(days: 3)),
-      publisher: 'MatPusula Akademi',
-      scores: const {
-        'Matematik': SubjectScore(correct: 18, wrong: 2, blank: 0),
-        'Fen Bilimleri': SubjectScore(correct: 19, wrong: 1, blank: 0),
-        'Türkçe': SubjectScore(correct: 19, wrong: 1, blank: 0),
-      },
-      totalNet: 85.50,
-      totalScore: 442.5,
-      createdAt: DateTime.now().subtract(const Duration(days: 3)),
-    ),
-    ExamResultEntity(
-      id: 'demo_e2',
-      studentId: 'demo_student',
-      classId: '8-A',
-      teacherId: 'teacher_1',
-      examName: 'Matematik Özel Branş Denemesi #2',
-      examDate: DateTime.now().subtract(const Duration(days: 10)),
-      publisher: 'Pusula Yayınları',
-      scores: const {
-        'Matematik': SubjectScore(correct: 17, wrong: 3, blank: 0),
-        'Fen Bilimleri': SubjectScore(correct: 18, wrong: 2, blank: 0),
-        'Türkçe': SubjectScore(correct: 18, wrong: 2, blank: 0),
-      },
-      totalNet: 78.00,
-      totalScore: 415.0,
-      createdAt: DateTime.now().subtract(const Duration(days: 10)),
-    ),
-    ExamResultEntity(
-      id: 'demo_e3',
-      studentId: 'demo_student',
-      classId: '8-A',
-      teacherId: 'teacher_1',
-      examName: 'Seviye Tespit Sınavı #1',
-      examDate: DateTime.now().subtract(const Duration(days: 20)),
-      publisher: 'Okul Geneli',
-      scores: const {
-        'Matematik': SubjectScore(correct: 15, wrong: 4, blank: 1),
-        'Fen Bilimleri': SubjectScore(correct: 16, wrong: 3, blank: 1),
-        'Türkçe': SubjectScore(correct: 17, wrong: 3, blank: 0),
-      },
-      totalNet: 71.50,
-      totalScore: 388.0,
-      createdAt: DateTime.now().subtract(const Duration(days: 20)),
-    ),
-  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
     final parentUid = user?.uid ?? '';
     final studentsAsync = ref.watch(parentStudentsStreamProvider(parentUid));
-    final studentId = studentsAsync.asData?.value.firstOrNull?.id ?? parentUid;
+    final activeStudent = studentsAsync.valueOrNull?.firstOrNull;
+    final studentId = activeStudent?.id ?? '';
     final examsAsync = ref.watch(studentExamsStreamProvider(studentId));
 
     return Scaffold(
@@ -97,7 +42,8 @@ class ParentExamListScreen extends ConsumerWidget {
                         color: AppColors.parentPrimary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.bar_chart_rounded, size: 40, color: AppColors.parentPrimary),
+                      child: const Icon(Icons.bar_chart_rounded,
+                          size: 40, color: AppColors.parentPrimary),
                     ),
                     const SizedBox(height: 16),
                     Text('Henüz Deneme Sonucu Yok', style: AppTextStyles.h3),
@@ -105,7 +51,8 @@ class ParentExamListScreen extends ConsumerWidget {
                     Text(
                       'Öğretmeniniz deneme sınavı sonucu girdiğinde net grafiği ve ders detayları burada görüntülenecektir.',
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.textSecondary),
                     ),
                   ],
                 ),
@@ -120,8 +67,7 @@ class ParentExamListScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                // ── Grafik ──────────────────────────────────────────────────
+                // ── Net Gelişim Grafiği ────────────────────────────────────
                 Text('Net Gelişim Grafiği 📈', style: AppTextStyles.h3),
                 const SizedBox(height: 12),
                 Container(
@@ -145,7 +91,10 @@ class ParentExamListScreen extends ConsumerWidget {
                                 return Padding(
                                   padding: const EdgeInsets.only(top: 6),
                                   child: Text(
-                                    chronologicalExams[idx].examName.split(' ').last,
+                                    chronologicalExams[idx]
+                                        .examName
+                                        .split(' ')
+                                        .last,
                                     style: const TextStyle(fontSize: 10),
                                   ),
                                 );
@@ -154,8 +103,10 @@ class ParentExamListScreen extends ConsumerWidget {
                             },
                           ),
                         ),
-                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
                       ),
                       borderData: FlBorderData(
                         show: true,
@@ -178,7 +129,8 @@ class ParentExamListScreen extends ConsumerWidget {
                           dotData: const FlDotData(show: true),
                           belowBarData: BarAreaData(
                             show: true,
-                            color: AppColors.parentPrimary.withValues(alpha: 0.15),
+                            color:
+                                AppColors.parentPrimary.withValues(alpha: 0.15),
                           ),
                         ),
                       ],
@@ -187,7 +139,7 @@ class ParentExamListScreen extends ConsumerWidget {
                 ),
 
                 const SizedBox(height: 24),
-                Text('Geçmiş Sınavlar 📝', style: AppTextStyles.h3),
+                Text('Sınav Sonuçları Listesi 📝', style: AppTextStyles.h3),
                 const SizedBox(height: 12),
 
                 // ── Sınav Kartları ──────────────────────────────────────────
@@ -206,62 +158,111 @@ class ParentExamListScreen extends ConsumerWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(exam.examName, style: AppTextStyles.h4),
+                            Text(exam.examName,
+                                style: AppTextStyles.h4
+                                    .copyWith(fontWeight: FontWeight.bold)),
                             Text(
                               exam.examDate.toTurkishDate(),
-                              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                              style: AppTextStyles.bodySmall
+                                  .copyWith(color: AppColors.textSecondary),
                             ),
                           ],
                         ),
-                        if (exam.publisher != null) ...[
-                          const SizedBox(height: 2),
-                          Text('Yayınevi: ${exam.publisher}',
-                              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                        if (exam.publisher != null &&
+                            exam.publisher!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Yayın: ${exam.publisher}',
+                            style: AppTextStyles.bodySmall
+                                .copyWith(color: AppColors.textSecondary),
+                          ),
                         ],
                         const SizedBox(height: 12),
+                        const Divider(height: 1),
+                        const SizedBox(height: 12),
+
+                        // Net & Puan Rozetleri
                         Row(
                           children: [
                             Expanded(
                               child: Container(
-                                padding: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: AppColors.parentPrimary.withValues(alpha: 0.08),
+                                  color: AppColors.parentPrimary
+                                      .withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Column(
                                   children: [
-                                    Text('Toplam Net', style: AppTextStyles.labelSmall),
+                                    Text('Toplam Net',
+                                        style: AppTextStyles.labelSmall),
                                     const SizedBox(height: 2),
                                     Text(
                                       exam.totalNet.toStringAsFixed(2),
-                                      style: AppTextStyles.h3.copyWith(color: AppColors.parentPrimary),
+                                      style: AppTextStyles.h3.copyWith(
+                                          color: AppColors.parentPrimary),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Text('Puan', style: AppTextStyles.labelSmall),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      exam.totalScore.toStringAsFixed(1),
-                                      style: AppTextStyles.h3.copyWith(color: AppColors.accent),
-                                    ),
-                                  ],
+                            if (exam.totalScore > 0) ...[
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accent
+                                        .withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Text('Puan',
+                                          style: AppTextStyles.labelSmall),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        exam.totalScore.toStringAsFixed(1),
+                                        style: AppTextStyles.h3
+                                            .copyWith(color: AppColors.accent),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ],
                         ),
+
+                        // Ders Bazlı Doğru - Yanlış - Net Dökümü
+                        if (exam.scores.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Text('Ders Bazlı Başarı Dökümü:',
+                              style: AppTextStyles.labelMedium
+                                  .copyWith(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 8),
+                          ...exam.scores.entries.map((entry) {
+                            final score = entry.value;
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 3),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(entry.key,
+                                        style: AppTextStyles.bodySmall),
+                                  ),
+                                  Text(
+                                    '${score.correct} D  •  ${score.wrong} Y  •  ${score.net.toStringAsFixed(2)} Net',
+                                    style: AppTextStyles.labelSmall.copyWith(
+                                      color: AppColors.textPrimary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
                       ],
                     ),
                   );
@@ -271,52 +272,9 @@ class ParentExamListScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, __) => _buildDemoList(),
-      ),
-    );
-  }
-
-  Widget _buildDemoList() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSizes.pagePadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ..._demoExams.map((exam) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(exam.examName, style: AppTextStyles.h4),
-                      Text(exam.examDate.toTurkishDate(), style: AppTextStyles.bodySmall),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text('Net: ${exam.totalNet}', style: AppTextStyles.h3.copyWith(color: AppColors.parentPrimary)),
-                      ),
-                      Expanded(
-                        child: Text('Puan: ${exam.totalScore}', style: AppTextStyles.h3.copyWith(color: AppColors.accent)),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          }),
-        ],
+        error: (e, _) => Center(
+            child: Text('Deneme sonuçları yüklenemedi: $e',
+                style: const TextStyle(color: AppColors.error))),
       ),
     );
   }

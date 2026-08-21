@@ -15,12 +15,11 @@ final goalsRepositoryProvider = Provider<GoalsRepository>((ref) {
 });
 
 /// Bir öğrencinin tüm sınav sonuçlarının canlı akışı
-/// Opsiyonel teacherId parametresi ile Firestore güvenlik kurallarına uyum sağlar
-StreamProvider<List<ExamResultEntity>> studentExamsStreamProvider(String studentId, {String? teacherId}) {
-  return StreamProvider<List<ExamResultEntity>>((ref) {
-    return ref.watch(examsRepositoryProvider).getStudentExams(studentId, teacherId: teacherId);
-  });
-}
+final studentExamsStreamProvider =
+    StreamProvider.family<List<ExamResultEntity>, String>((ref, studentId) {
+  if (studentId.isEmpty) return Stream.value(const <ExamResultEntity>[]);
+  return ref.watch(examsRepositoryProvider).getStudentExams(studentId);
+});
 
 /// Bir sınıfın tüm sınav sonuçlarının canlı akışı
 /// Family parametresi: (classId, teacherId) record

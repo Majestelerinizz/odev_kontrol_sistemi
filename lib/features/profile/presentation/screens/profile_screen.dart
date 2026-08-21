@@ -302,7 +302,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         Consumer(
                           builder: (context, ref, _) {
                             final classAsync = ref.watch(classStreamProvider(st.classId));
-                            final className = classAsync.asData?.value?.name ?? '';
+                            final className = classAsync.valueOrNull?.name ?? '';
                             final subtitle = className.isNotEmpty
                                 ? '$className Sınıfı • No: ${st.schoolNumber ?? '-'}'
                                 : (st.schoolNumber != null && st.schoolNumber!.isNotEmpty
