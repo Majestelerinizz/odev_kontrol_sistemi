@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/utils/phone_number_helper.dart';
 
@@ -52,14 +53,15 @@ class PhoneAuthError extends PhoneAuthState {
 }
 
 /// Firebase Native Phone Authentication Servisi
-/// SMS OTP üretimini ve doğrulamasını tamamen Firebase Authentication'a bırakır.
+/// Web ve Mobil (Android/iOS) platformlarında Google SMS Gateway OTP gönderimini yönetir.
 class FirebasePhoneAuthService {
   final FirebaseAuth _auth;
+  ConfirmationResult? _webConfirmationResult;
 
   FirebasePhoneAuthService({FirebaseAuth? auth})
       : _auth = auth ?? FirebaseAuth.instance;
 
-  /// SMS Doğrulama Kodu Gönder
+  /// SMS Doğrulama Kodu Gönder (Web için signInWithPhoneNumber, Mobil için verifyPhoneNumber)
   Future<void> sendVerificationCode({
     required String rawPhone,
     int? forceResendingToken,
@@ -74,40 +76,48 @@ class FirebasePhoneAuthService {
       // Türkçe SMS yerelleştirmesi
       await _auth.setLanguageCode('tr');
 
-      await _auth.verifyPhoneNumber(
-        phoneNumber: e164Phone,
-        timeout: const Duration(seconds: 60),
-        forceResendingToken: forceResendingToken,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          // Instant Verification veya Android SMS Auto-Retrieval
-          try {
-            onStateChanged(const PhoneAuthVerifying());
-            final userCredential = await _auth.signInWithCredential(credential);
-            if (userCredential.user != null) {
-              final token = await userCredential.user!.getIdToken();
-              onStateChanged(PhoneAuthSignedIn(user: userCredential.user!, idToken: token));
+      if (kIsWeb) {
+        // ── FLUTTER WEB (reCAPTCHA + Google SMS Gateway) ───────────────────
+        _webConfirmationResult = await _auth.signInWithPhoneNumber(e164Phone);
+        onStateChanged(PhoneAuthCodeSent(
+          verificationId: _webConfirmationResult!.verificationId,
+          resendToken: null,
+          maskedPhone: maskedPhone,
+        ));
+      } else {
+        // ── MOBİL (Android Play Integrity + iOS APNs) ──────────────────────
+        await _auth.verifyPhoneNumber(
+          phoneNumber: e164Phone,
+          timeout: const Duration(seconds: 60),
+          forceResendingToken: forceResendingToken,
+          verificationCompleted: (PhoneAuthCredential credential) async {
+            try {
+              onStateChanged(const PhoneAuthVerifying());
+              final userCredential = await _auth.signInWithCredential(credential);
+              if (userCredential.user != null) {
+                final token = await userCredential.user!.getIdToken();
+                onStateChanged(PhoneAuthSignedIn(user: userCredential.user!, idToken: token));
+              }
+            } catch (e) {
+              onStateChanged(PhoneAuthError(userMessage: _mapFirebaseError(e)));
             }
-          } catch (e) {
-            onStateChanged(PhoneAuthError(userMessage: _mapFirebaseError(e)));
-          }
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          onStateChanged(PhoneAuthError(
-            userMessage: _mapFirebaseError(e),
-            errorCode: e.code,
-          ));
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          onStateChanged(PhoneAuthCodeSent(
-            verificationId: verificationId,
-            resendToken: resendToken,
-            maskedPhone: maskedPhone,
-          ));
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          // Timeout olduğunda kullanıcı manuel kod girmeye devam edebilir
-        },
-      );
+          },
+          verificationFailed: (FirebaseAuthException e) {
+            onStateChanged(PhoneAuthError(
+              userMessage: _mapFirebaseError(e),
+              errorCode: e.code,
+            ));
+          },
+          codeSent: (String verificationId, int? resendToken) {
+            onStateChanged(PhoneAuthCodeSent(
+              verificationId: verificationId,
+              resendToken: resendToken,
+              maskedPhone: maskedPhone,
+            ));
+          },
+          codeAutoRetrievalTimeout: (String verificationId) {},
+        );
+      }
     } catch (e) {
       onStateChanged(PhoneAuthError(userMessage: _mapFirebaseError(e)));
     }
@@ -123,12 +133,17 @@ class FirebasePhoneAuthService {
       throw const FormatException('Doğrulama kodu 6 haneli rakamlardan oluşmalıdır.');
     }
 
-    final credential = PhoneAuthProvider.credential(
-      verificationId: verificationId,
-      smsCode: cleanCode,
-    );
-
-    return await _auth.signInWithCredential(credential);
+    if (kIsWeb && _webConfirmationResult != null) {
+      // Web doğrulama
+      return await _webConfirmationResult!.confirm(cleanCode);
+    } else {
+      // Mobil doğrulama
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: cleanCode,
+      );
+      return await _auth.signInWithCredential(credential);
+    }
   }
 
   /// Firebase Hata Kodlarını Kullanıcı Dostu Türkçe Mesajlara Dönüştürür
