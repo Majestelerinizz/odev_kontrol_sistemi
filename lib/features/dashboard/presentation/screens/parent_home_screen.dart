@@ -8,6 +8,10 @@ import 'package:odev_takip/core/theme/app_sizes.dart';
 import 'package:odev_takip/core/widgets/matpusula_logo.dart';
 
 import '../../../../core/widgets/notification_permission_dialog.dart';
+import '../../../classes/presentation/providers/class_providers.dart';
+import '../../../exams/presentation/providers/exam_providers.dart';
+import '../../../homeworks/presentation/providers/homework_providers.dart';
+import '../../../messages/presentation/providers/messages_providers.dart';
 import '../../../students/presentation/providers/student_providers.dart';
 
 /// Veli ana panel ekranı.
@@ -33,19 +37,58 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
     final authState = ref.watch(authStateProvider);
     final user = authState.valueOrNull;
 
+    // ── Veliye bağlı öğrenci ────────────────────────────────────────────────
     final studentsAsync = ref.watch(parentStudentsStreamProvider(user?.uid ?? ''));
     final activeStudent = studentsAsync.asData?.value.firstOrNull;
 
+    // ── Sınıf bilgisi ─────────────────────────────────────────────────────────
+    final classAsync = ref.watch(classStreamProvider(activeStudent?.classId ?? ''));
+    final className = classAsync.asData?.value?.name ?? '';
+
     final studentName = activeStudent != null
-        ? '${activeStudent.name} (${activeStudent.classId} Sınıfı)'
-        : 'Mustafa Yıldız (8-B Sınıfı)';
+        ? (className.isNotEmpty
+            ? '${activeStudent.name} ($className Sınıfı)'
+            : activeStudent.name)
+        : 'Bağlı Öğrenci Aranıyor...';
 
-    final schoolNo = activeStudent?.schoolNumber != null
-        ? 'Okul No: ${activeStudent!.schoolNumber}'
-        : 'Okul No: 354';
+    final schoolNo = activeStudent?.schoolNumber != null && activeStudent!.schoolNumber!.isNotEmpty
+        ? 'Okul No: ${activeStudent.schoolNumber}'
+        : (activeStudent != null ? 'Kayıtlı Öğrenci' : 'Bağlantı Yok');
 
-    final teacherNoteText = activeStudent?.teacherNote ??
-        'Matematik dersinde üslü ifadeler ve çarpanlara ayırma konularında gayet başarılı.';
+    final greetingName = activeStudent != null
+        ? '${activeStudent.name} Velisi'
+        : (user?.name.startsWith('parent_') == true ? 'Veli' : (user?.name ?? 'Veli'));
+
+    // ── Canlı Ödev İstatistikleri ───────────────────────────────────────────
+    final assignmentsAsync = ref.watch(studentAssignmentsStreamProvider(activeStudent?.id ?? ''));
+    final assignments = assignmentsAsync.valueOrNull ?? [];
+    final activeHomeworkCount = assignments.where((a) => !a.isCompleted).length;
+    final completedHomeworkCount = assignments.where((a) => a.isCompleted).length;
+
+    // ── Canlı Deneme Sınavı İstatistikleri ──────────────────────────────────
+    final examsAsync = ref.watch(studentExamsStreamProvider(activeStudent?.id ?? ''));
+    final exams = examsAsync.valueOrNull ?? [];
+    final lastExam = exams.firstOrNull;
+    final lastNetStr = lastExam != null ? lastExam.totalNet.toStringAsFixed(2) : '-';
+
+    // ── Canlı Hedef Durumu ─────────────────────────────────────────────────
+    final goalAsync = ref.watch(studentGoalStreamProvider(activeStudent?.id ?? ''));
+    final goal = goalAsync.valueOrNull;
+    final goalPercentStr = goal != null
+        ? '%${goal.progressPercentage.clamp(0, 100).toStringAsFixed(0)}'
+        : (lastExam != null
+            ? '%${((lastExam.totalNet / 90.0) * 100).clamp(0, 100).toStringAsFixed(0)}'
+            : '-');
+
+    // ── Öğretmen Notu ───────────────────────────────────────────────────────
+    final teacherNoteText = (activeStudent?.teacherNote != null && activeStudent!.teacherNote!.trim().isNotEmpty)
+        ? activeStudent.teacherNote!.trim()
+        : 'Öğretmeniniz henüz özel bir değerlendirme notu girmedi.';
+
+    // ── Duyurular / Mesajlar ───────────────────────────────────────────────
+    final messagesAsync = ref.watch(parentMessagesStreamProvider);
+    final messages = messagesAsync.valueOrNull ?? [];
+    final latestMessage = messages.firstOrNull;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -87,7 +130,7 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Merhaba, ${user?.name.split(' ').first ?? 'Veli'} 👋',
+                      'Merhaba, $greetingName 👋',
                       style: AppTextStyles.h3.copyWith(color: Colors.white),
                     ),
                     const SizedBox(height: 2),
@@ -112,7 +155,7 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
             padding: const EdgeInsets.all(AppSizes.pagePadding),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // ── Çocuk seçimi ─────────────────────────────────────────────
+                // ── Çocuk Bilgi Kartı ─────────────────────────────────────────
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
@@ -165,24 +208,24 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
 
                 const SizedBox(height: 24),
 
-                // ── Bugünkü durum kartları ─────────────────────────────────
+                // ── Bugünkü Durum Kartları (Canlı Veri) ─────────────────────
                 const _ParentSectionTitle('Özet Durumu 📊'),
                 const SizedBox(height: 12),
-                const Row(
+                Row(
                   children: [
                     Expanded(
                       child: _ParentSummaryCard(
-                        label: 'Bugünkü Ödev',
-                        value: '2 Ödev',
+                        label: 'Aktif Ödev',
+                        value: '$activeHomeworkCount Ödev',
                         icon: Icons.assignment_rounded,
                         color: AppColors.parentPrimary,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: _ParentSummaryCard(
                         label: 'Tamamlanan',
-                        value: '1 Ödev',
+                        value: '$completedHomeworkCount Ödev',
                         icon: Icons.check_circle_rounded,
                         color: AppColors.success,
                       ),
@@ -190,21 +233,21 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Row(
+                Row(
                   children: [
                     Expanded(
                       child: _ParentSummaryCard(
                         label: 'Son Deneme Net',
-                        value: '85.50',
+                        value: lastNetStr,
                         icon: Icons.bar_chart_rounded,
                         color: AppColors.accent,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: _ParentSummaryCard(
                         label: 'Hedef Başarısı',
-                        value: '%88',
+                        value: goalPercentStr,
                         icon: Icons.track_changes_rounded,
                         color: AppColors.warning,
                       ),
@@ -212,7 +255,7 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                   ],
                 ),
 
-                // ── Öğretmen notu ─────────────────────────────────────────
+                // ── Öğretmen Notu (Canlı Veri) ─────────────────────────────
                 const SizedBox(height: 24),
                 const _ParentSectionTitle('Son Öğretmen Notu 📝'),
                 const SizedBox(height: 12),
@@ -254,7 +297,7 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                   ),
                 ),
 
-                // ── Son bildirimler ────────────────────────────────────────
+                // ── Son Bildirim / Duyuru (Canlı Veri) ────────────────────
                 const SizedBox(height: 24),
                 const _ParentSectionTitle('Son Duyuru & Bildirimler 🔔'),
                 const SizedBox(height: 12),
@@ -274,12 +317,12 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'LGS Kurumsal Deneme #3 Açıklandı!',
+                              latestMessage?.title ?? 'Duyuru Paneli',
                               style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Toplam 85.50 Net ile sınıfta 2. sırada.',
+                              latestMessage?.body ?? 'Henüz yeni bir duyuru veya mesaj bulunmuyor.',
                               style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
                             ),
                           ],

@@ -10,6 +10,9 @@ abstract class ClassesRepository {
   /// Sınıf güncelleme
   Future<void> updateClass(ClassEntity classEntity);
 
+  /// Tek bir sınıfın canlı akışı
+  Stream<ClassEntity?> getClassStream(String classId);
+
   /// Sınıf silme
   Future<void> deleteClass(String classId);
 }

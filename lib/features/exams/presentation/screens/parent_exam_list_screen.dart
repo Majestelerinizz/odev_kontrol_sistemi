@@ -82,9 +82,37 @@ class ParentExamListScreen extends ConsumerWidget {
         title: const Text('Çocuğumun Deneme Sonuçları'),
       ),
       body: examsAsync.when(
-        data: (realExams) {
-          final isDemo = realExams.isEmpty;
-          final exams = isDemo ? _demoExams : realExams;
+        data: (exams) {
+          if (exams.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: AppColors.parentPrimary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.bar_chart_rounded, size: 40, color: AppColors.parentPrimary),
+                    ),
+                    const SizedBox(height: 16),
+                    Text('Henüz Deneme Sonucu Yok', style: AppTextStyles.h3),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Öğretmeniniz deneme sınavı sonucu girdiğinde net grafiği ve ders detayları burada görüntülenecektir.',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           final chronologicalExams = exams.reversed.toList();
 
           return SingleChildScrollView(
@@ -92,26 +120,6 @@ class ParentExamListScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (isDemo) ...[
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 16),
-                    color: AppColors.parentPrimary.withValues(alpha: 0.1),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.stars_rounded, color: AppColors.parentPrimary, size: 18),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Örnek Deneme Sonuçları Gösteriliyor (Öğretmeniniz sınav girdiğinde otomatik güncellenir)',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.parentPrimary),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
 
                 // ── Grafik ──────────────────────────────────────────────────
                 Text('Net Gelişim Grafiği 📈', style: AppTextStyles.h3),

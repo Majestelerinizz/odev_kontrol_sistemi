@@ -41,6 +41,15 @@ class ClassesRepositoryImpl implements ClassesRepository {
   }
 
   @override
+  Stream<ClassEntity?> getClassStream(String classId) {
+    if (classId.isEmpty) return Stream.value(null);
+    return _classesRef.doc(classId).snapshots().map((doc) {
+      if (!doc.exists) return null;
+      return ClassModel.fromFirestore(doc);
+    }).handleError((_) => null);
+  }
+
+  @override
   Future<void> deleteClass(String classId) async {
     await _classesRef.doc(classId).delete();
   }

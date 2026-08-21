@@ -6,8 +6,9 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_sizes.dart';
 import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/app_text_field.dart';
-import '../../../../core/extensions/extensions.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../students/presentation/providers/student_providers.dart';
+import '../../../classes/presentation/providers/class_providers.dart';
 
 /// MatPusula Profil & Ayarlar Ekranı
 /// Öğretmen ve Veli için özel özelleştirilmiş ayarlar menüsü
@@ -21,58 +22,6 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _notificationsEnabled = true;
   bool _homeworkAlertsEnabled = true;
-
-  void _showAddChildDialog() {
-    final codeController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
-          children: [
-            Icon(Icons.person_add_rounded, color: AppColors.parentPrimary),
-            SizedBox(width: 8),
-            Text('Yeni Öğrenci/Çocuk Ekle'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Öğretmeninizden aldığınız 6 haneli davet kodunu girin:',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 16),
-            AppTextField(
-              label: 'Davet Kodu',
-              hint: 'Örn: OT-A7K9M2',
-              controller: codeController,
-              prefixIcon: const Icon(Icons.key_rounded, color: AppColors.parentPrimary),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('İptal'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.parentPrimary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () {
-              if (codeController.text.trim().isEmpty) return;
-              Navigator.pop(ctx);
-              context.showSnackBar('Davet kodu başarıyla doğrulandı ve öğrenci eklendi! 🎉');
-            },
-            child: const Text('Ekle', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showChangePasswordDialog() {
     final oldPassController = TextEditingController();
@@ -118,11 +67,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             onPressed: () {
               if (newPassController.text.length < 6) {
-                context.showSnackBar('Şifre en az 6 karakter olmalıdır', isError: true);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Şifre en az 6 karakter olmalıdır'),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
                 return;
               }
               Navigator.pop(ctx);
-              context.showSnackBar('Şifreniz başarıyla güncellendi! 🔒');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Şifreniz başarıyla güncellendi! 🔒'),
+                  backgroundColor: AppColors.success,
+                ),
+              );
             },
             child: const Text('Güncelle', style: TextStyle(color: Colors.white)),
           ),
@@ -207,7 +166,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Navigator.pop(ctx);
               await ref.read(authRepositoryProvider).deleteAccount();
               if (!mounted) return;
-              context.showSnackBar('Hesabınız ve profil verileriniz Firebase\'den kalıcı olarak silindi.');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Hesabınız ve profil verileriniz Firebase\'den kalıcı olarak silindi.'),
+                  backgroundColor: AppColors.success,
+                ),
+              );
               context.go('/welcome');
             },
             child: const Text('Hesabımı Sil', style: TextStyle(color: Colors.white)),
@@ -268,71 +232,104 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user?.name ?? (isTeacher ? 'Öğretmen Hesabı' : 'Veli Hesabı'),
-                            style: AppTextStyles.h4,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            user?.email ?? 'ornek@matpusula.com',
-                            style: AppTextStyles.bodySmall,
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: primaryColor.withAlpha(25),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              isTeacher ? '👨‍🏫 Matematik Öğretmeni' : '👨‍👩‍👧 Veli Hesabı',
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: primaryColor,
-                                fontWeight: FontWeight.bold,
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final studentsAsync = ref.watch(parentStudentsStreamProvider(user?.uid ?? ''));
+                        final parentStudents = studentsAsync.valueOrNull ?? [];
+                        final connectedStudent = parentStudents.firstOrNull;
+                        final displayName = (!isTeacher && connectedStudent != null)
+                            ? '${connectedStudent.name} Velisi'
+                            : (user?.name ?? (isTeacher ? 'Öğretmen Hesabı' : 'Veli Hesabı'));
+
+                        return Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                displayName,
+                                style: AppTextStyles.h4,
                               ),
-                            ),
+                              const SizedBox(height: 4),
+                              Text(
+                                user?.email ?? 'ornek@matpusula.com',
+                                style: AppTextStyles.bodySmall,
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withAlpha(25),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  isTeacher ? '👨‍🏫 Matematik Öğretmeni' : '👨‍👩‍👧 Veli Hesabı',
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
 
-              // ── Veli Özel: Çocuk Bağlantısı ve Yeni Çocuk Ekleme ────────
+              // ── Veli Özel: Gerçek Bağlı Çocuk Bilgisi ──────────────
               if (!isTeacher) ...[
-                _buildSettingsGroup('Öğrenci / Çocuk Bağlantıları', [
-                  ListTile(
-                    leading: const Icon(Icons.face_rounded, color: AppColors.parentPrimary),
-                    title: const Text('Ahmet Yılmaz', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: const Text('8A Sınıfı • No: 456'),
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.successLight,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'Bağlı',
-                        style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.add_circle_outline_rounded, color: AppColors.parentPrimary),
-                    title: const Text('Yeni Çocuk / Öğrenci Ekle', style: TextStyle(color: AppColors.parentPrimary, fontWeight: FontWeight.bold)),
-                    subtitle: const Text('Öğretmenden alınan davet kodu ile ekle'),
-                    trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.parentPrimary),
-                    onTap: _showAddChildDialog,
-                  ),
-                ]),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final studentsAsync = ref.watch(parentStudentsStreamProvider(user?.uid ?? ''));
+                    final parentStudents = studentsAsync.valueOrNull ?? [];
+
+                    if (parentStudents.isEmpty) {
+                      return _buildSettingsGroup('Öğrenci / Çocuk Bağlantıları', [
+                        const ListTile(
+                          leading: Icon(Icons.info_outline_rounded, color: AppColors.textSecondary),
+                          title: Text('Henüz bağlı bir öğrenci bulunmuyor'),
+                          subtitle: Text('Öğretmeninizden aldığınız davet kodu ile bağlanabilirsiniz.'),
+                        ),
+                      ]);
+                    }
+
+                    return _buildSettingsGroup('Bağlı Öğrenci Profili', [
+                      for (final st in parentStudents)
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final classAsync = ref.watch(classStreamProvider(st.classId));
+                            final className = classAsync.asData?.value?.name ?? '';
+                            final subtitle = className.isNotEmpty
+                                ? '$className Sınıfı • No: ${st.schoolNumber ?? '-'}'
+                                : (st.schoolNumber != null && st.schoolNumber!.isNotEmpty
+                                    ? 'Okul No: ${st.schoolNumber}'
+                                    : 'Kayıtlı Öğrenci');
+
+                            return ListTile(
+                              leading: const Icon(Icons.face_rounded, color: AppColors.parentPrimary),
+                              title: Text(st.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Text(subtitle),
+                              trailing: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.successLight,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Text(
+                                  'Bağlı',
+                                  style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                    ]);
+                  },
+                ),
                 const SizedBox(height: 20),
               ],
 

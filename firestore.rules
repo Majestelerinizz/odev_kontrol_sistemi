@@ -64,8 +64,7 @@ service cloud.firestore {
 
     // ── classes koleksiyonu ────────────────────────────────────────────────
     match /classes/{classId} {
-      allow read: if isAuthenticated() &&
-        (resource.data.teacherId == request.auth.uid || isTeacher());
+      allow read: if isAuthenticated();
       allow create: if isTeacher();
       allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
       allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
@@ -90,7 +89,7 @@ service cloud.firestore {
 
     // ── homeworks koleksiyonu ──────────────────────────────────────────────
     match /homeworks/{homeworkId} {
-      allow read: if isTeacher() && resource.data.teacherId == request.auth.uid;
+      allow read: if isAuthenticated();
       allow create: if isTeacher();
       allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
       allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
@@ -98,54 +97,42 @@ service cloud.firestore {
 
     // ── homework_assignments koleksiyonu ───────────────────────────────────
     match /homework_assignments/{assignmentId} {
-      allow read: if isTeacher() && resource.data.teacherId == request.auth.uid;
+      allow read: if isAuthenticated();
       allow create: if isTeacher();
-      allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
+      allow update: if (isTeacher() && resource.data.teacherId == request.auth.uid) || isParent();
       allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
-
-      // Veli okuma erişimi
-      allow read: if isParent();
     }
 
     // ── exam_results koleksiyonu ───────────────────────────────────────────
     match /exam_results/{examId} {
-      allow read: if isTeacher() && resource.data.teacherId == request.auth.uid;
+      allow read: if isAuthenticated();
       allow create: if isTeacher();
       allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
       allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
-
-      allow read: if isParent();
     }
 
     // ── subject_progress koleksiyonu ───────────────────────────────────────
     match /subject_progress/{progressId} {
-      allow read: if isTeacher() && resource.data.teacherId == request.auth.uid;
+      allow read: if isAuthenticated();
       allow create: if isTeacher();
       allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
       allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
-
-      allow read: if isParent();
     }
 
     // ── goals koleksiyonu ──────────────────────────────────────────────────
     match /goals/{goalId} {
-      allow read: if isTeacher() && resource.data.teacherId == request.auth.uid;
+      allow read: if isAuthenticated();
       allow create: if isTeacher();
       allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
       allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
-
-      allow read: if isParent();
     }
 
     // ── messages koleksiyonu ───────────────────────────────────────────────
     match /messages/{messageId} {
-      allow read: if isTeacher() && resource.data.teacherId == request.auth.uid;
+      allow read: if isAuthenticated();
       allow create: if isTeacher();
-      allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
-
-      // Veli yalnızca kendisine gönderilen mesajları okuyabilir
-      allow read: if isParent() &&
-        request.auth.uid in resource.data.parentIds;
+      allow update: if isAuthenticated();
+      allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
     }
 
     // ── notifications koleksiyonu ──────────────────────────────────────────

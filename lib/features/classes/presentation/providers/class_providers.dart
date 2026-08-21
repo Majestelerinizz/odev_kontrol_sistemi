@@ -17,6 +17,13 @@ final teacherClassesStreamProvider = StreamProvider<List<ClassEntity>>((ref) {
   return ref.watch(classesRepositoryProvider).getTeacherClasses(user.uid);
 });
 
+/// Tek bir sınıfın detay akışı
+final classStreamProvider =
+    StreamProvider.family<ClassEntity?, String>((ref, classId) {
+  if (classId.isEmpty) return Stream.value(null);
+  return ref.watch(classesRepositoryProvider).getClassStream(classId);
+});
+
 /// Sınıf Ekleme / Silme İşlemleri Notifier'ı
 class ClassNotifier extends StateNotifier<AsyncValue<void>> {
   ClassNotifier(this._repo) : super(const AsyncValue.data(null));

@@ -56,5 +56,6 @@ app.*.map.json
 # ── PostgreSQL Docker verileri ─────────────────────────────────
 postgres_data/
 
-# ── Çakışan Klasörler ──────────────────────────────────────────
+# ── Çakışan Klasörler & Firebase CLI Cache ─────────────────────
+.firebase/
 odev_kontrol_sistemi/
