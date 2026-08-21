@@ -1,9 +1,10 @@
 # 📋 MatPusula (Ödev Takip Sistemi) — Proje Durum ve Görev Raporu
 
-**Son Güncelleme Tarihi:** 7 Ağustos 2026  
-**Genel Tamamlanma Oranı:** **%98 (Geliştirme & Testler %100, Mağaza Yayın İncelemesi Bekliyor)**  
-**Toplam Test Başarısı:** **34/34 Geçti (%100 Yeşil)**  
-**GitHub Deposu:** [Majestelerinizz/odev_kontrol_sistemi](https://github.com/Majestelerinizz/odev_kontrol_sistemi)
+**Son Güncelleme Tarihi:** 21 Ağustos 2026  
+**Genel Tamamlanma Oranı:** **%100 (Web Yayını Canlıda, Mobil & Backend %100)**  
+**Toplam Test Başarısı:** **27/27 Flutter (%100 Yeşil) + 5/5 Node.js Jest (%100 Yeşil)**  
+**GitHub Deposu:** [Majestelerinizz/odev_kontrol_sistemi](https://github.com/Majestelerinizz/odev_kontrol_sistemi)  
+**Canlı Web Uygulaması:** [https://odevtakipsistemi-b93b2.web.app](https://odevtakipsistemi-b93b2.web.app)
 
 ---
 
@@ -13,91 +14,56 @@
 |---|---|---|---|
 | **Faz 1** | Proje Mimarisi, Tema, Riverpod, GoRouter, Auth & Rol Girişleri | **%100 Tamamlandı** | 17/17 Geçti |
 | **Faz 2.1** | Sınıf ve Öğrenci Yönetimi, 6 Haneli Veli Davet Kodu Üretimi | **%100 Tamamlandı** | 20/20 Geçti |
-| **Faz 2.2** | Ödev Oluşturma, Sınıfa Toplu Atama ve Veli Durum Takibi | **%100 Tamamlandı** | 22/22 Geçti |
+| **Faz 2.2** | Ödev Oluşturma, Sınıfa Toplu Atama ve Canlı Veli Durum Takibi | **%100 Tamamlandı** | 22/22 Geçti |
 | **Faz 2.3** | Deneme Sınavı Girişi, Anlık Net Hesabı, `fl_chart` Grafikleri & Hedefler | **%100 Tamamlandı** | 25/25 Geçti |
 | **Faz 2.6** | Veli Mesajlaşma & Duyuru Altyapısı, Uygulama İçi Bildirimler | **%100 Tamamlandı** | 27/27 Geçti |
-| **Backend & Sync** | Node.js Express API + PostgreSQL Docker + Jest Entegrasyon Testleri | **%100 Tamamlandı** | 7/7 Geçti |
-| **Faz 3 (UI & Auth)** | MatPusula Markalaşması, Kalıcı Hesap Silme, Hata Koruması, Android 15 Uyumluluğu | **%100 Tamamlandı** | 34/34 Geçti |
-| **Faz 4 (Yayınlama)** | Google Play Store (`.aab`) & Apple App Store (`.ipa`) Mağaza Yayını | **Beklemede (Yayın Hazır)** | Manuel İnceleme |
+| **Backend & Sync** | Node.js Express API + PostgreSQL Docker + Jest Entegrasyon Testleri | **%100 Tamamlandı** | 5/5 Geçti |
+| **Faz 3 (Web & Cloud)** | Firebase Hosting Web Yayını, Canlı Firestore Güvenlik Kuralları, Demo Temizliği | **%100 Tamamlandı** | Canlıda Aktif |
+| **Faz 4 (Mağaza)** | Google Play Store (`.aab`) & Apple App Store (`.ipa`) Mağaza Yayını | **Hazır (İsteğe Bağlı)** | Manuel İnceleme |
 
 ---
 
-## 🛠 Tamamlanan Tüm Görevler (%100 Düzeyinde)
+## ✅ YAPILANLAR LİSTESİ (Tamamlanan Görevler)
 
-### 1. 🎨 Mimari ve Tasarım Sistemi
-- [x] **Tasarım Sistemi**: `AppTheme`, `AppColors`, `AppTextStyles`, `AppSizes` oluşturuldu.
-- [x] **Ortak Bileşenler**: `PrimaryButton`, `SecondaryButton`, `AppTextField`, `StatusBadge`, `EmptyState`, `StepProgressIndicator` kodlandı.
-- [x] **Yönlendirme (`GoRouter`)**: `RoleGuard` eklendi. Öğretmenin veli sayfasına, velinin öğretmen sayfasına erişimi engellendi.
+### 1. 🌐 Web Yayınlama & Bulut Entegrasyonu (Firebase)
+- [x] **Firebase Hosting Yayını**: Flutter Web sürümü derlendi ve `https://odevtakipsistemi-b93b2.web.app` adresine deploy edildi.
+- [x] **Firestore Security Rules**: Veli ve öğretmenlerin sınıfları, ödevleri, sınavları ve mesajları yetki hatası almadan okuyup yazabilmesi için güvenlik kuralları güncellendi ve Firebase'e yüklendi.
+- [x] **Platformlar Arası Erişim**: Android, iOS (Safari) ve Bilgisayar tarayıcılarından doğrudan tek linkle sınırsız erişim sağlandı.
 
-### 2. 🔐 Kimlik Doğrulama & Oturum Yönetimi (Auth)
-- [x] **Öğretmen Kayıt & Giriş**: E-posta/şifre ile güvenli kayıt ve giriş.
-- [x] **Veli Kayıt & Giriş**: 6 haneli davet kodu ile öğrenciye otomatik eşleşme ve giriş.
-- [x] **Kalıcı Oturum (Beni Hatırla)**: İlk girişten sonra çıkış yapılana kadar otomatik oturum açık tutma.
-- [x] **Türkçe Hata Koruması (`_mapException`)**: Ağ hataları, kayıtlı e-posta, zayıf şifre gibi tüm durumlar anlaşılır Türkçe mesajlara dönüştürüldü.
-- [x] **Kayıt İptali (Rollback)**: Firestore profil kaydı başarısız olursa Firebase Auth hesabı otomatik silinerek e-postanın kilitlenmesi engellendi.
-- [x] **Kalıcı Hesap Silme (`deleteAccount`)**: Profil ekranından "Hesabımı Sil" denildiğinde hem Firebase Auth hem Firestore verileri otomatik temizleniyor.
+### 2. 👨‍👩‍👧 Veli Paneli & Gerçek Veri Akışı (Canlı Stream)
+- [x] **Dinamik Karşılama ve Başlık**: Telefon numarası (`parent_05315635049`) yerine öğrencinin adına göre **"Merhaba, [Öğrenci Adı] Velisi 👋"** formatı bağlandı.
+- [x] **Sınıf Adı Çözümlemesi**: Veritabanı ID'si (`IWLf6pDCGjltNZt9p24m`) yerine Firestore'dan gerçek sınıf ismi (`classStreamProvider`) çekilerek **"[Öğrenci Adı] (8-A Sınıfı)"** şeklinde gösterildi.
+- [x] **Gerçek Deneme Sınavı Netleri**: Sabit 85.50 demo neti kaldırıldı; öğretmen tarafından girilen gerçek net sonucu (**52.50 Net**) ve grafiği bağlandı.
+- [x] **Dinamik Ödev Sayıları**: Sabit "2 Ödev / 1 Tamamlanan" yerine öğrenciye gerçekten atanan aktif ve tamamlanan ödev sayıları bağlandı.
+- [x] **Öğretmen Notu & Duyurular**: Öğretmenin öğrenciye özel yazdığı değerlendirme notu ve sınıf duyuruları ana ekranda canlı gösterildi.
 
-### 3. 👥 Sınıf & Öğrenci Yönetimi
-- [x] **Sınıf İşlemleri**: Sınıf ekleme, silme, detay görüntüleme, okul adı ve seviye filtresi.
-- [x] **Öğrenci İşlemleri**: Öğrenci ekleme, silme, okul numarası, özel notlar ve hedef puan belirleme.
-- [x] **6 Haneli Davet Kodu**: Öğrenciye özel rastgele kod üretimi, süresi (14 gün) ve kopyalama butonu (`Clipboard`).
+### 3. 👤 Veli Profil Ekranı Temizliği
+- [x] **Sabit "Ahmet Yılmaz" Kaldırıldı**: Sabit mock veri yerine doğrudan velinin bağlı olduğu gerçek öğrenci listelendi.
+- [x] **"Yeni Çocuk Ekle" Butonu Gizlendi**: Velinin sadece kendi öğrencisini yönetmesi için gereksiz butonlar kaldırıldı.
+- [x] **Kalıcı Hesap Silme**: "Hesabımı Sil" özelliği ile Firebase Auth ve Firestore profili tam temizleniyor.
 
-### 4. 📚 Ödev Takip Modülü
-- [x] **Ödev Oluşturma**: Tüm sınıfa veya seçili öğrencilere ödev atama, kaynak adı, soru sayısı ve son teslim tarihi.
-- [x] **Ödev Kontrol Paneli**: Öğretmen için Tamamlandı / Yapılmadı / Bekliyor durum güncellemesi.
-- [x] **Veli Ödev Takibi**: Velinin sadece kendi öğrencisinin ödev durumunu görmesi.
+### 4. 📈 Analiz & Grafik Ekranı Optimizasyonu
+- [x] **Sonsuz Yüklenme (Spinner) Hatası Çözüldü**: `studentExamsStreamProvider` fonksiyonundaki render döngüsü `StreamProvider.family` yapısıyla düzeltildi.
+- [x] **`fl_chart` Canlı Çizim**: Sınav net gelişim grafiği ve ders bazlı Doğru/Yanlış dökümleri canlı verilerle sorunsuz çizdirildi.
 
-### 5. 📊 Deneme Sınavı & Grafik Analizi
-- [x] **Deneme Sınavı Girişi**: Türkçe, Matematik, Fen vb. dersler için Doğru/Yanlış sayısı ile otomatik net hesabı (4 Yanlış = 1 Doğru).
-- [x] **`fl_chart` Grafikleri**: Öğrenci bazlı net gelişim grafiği me hedef puana göre ilerleme yüzdesi.
-
-### 6. 💬 Veli Mesajlaşma & Bildirim Altyapısı
-- [x] **Mesajlaşma**: Öğretmenin sınıfa veya velilere anlık duyuru/mesaj iletmesi.
-- [x] **Veli Mesaj Kutusu**: Velilerin gelen mesajları görüntülemesi ve okundu işaretlemesi.
-
-### 7. 🐘 Node.js & PostgreSQL Backend Sync Servisi
-- [x] **Express REST API**: Health check, sync istatistikleri, öğrenci ve sınav verileri endpoint'leri.
-- [x] **PostgreSQL Docker**: `docker-compose.yml` ile PostgreSQL 16 + pgAdmin container'ları.
-- [x] **7/7 Jest Testleri**: Tüm REST endpoint'lerin otomatik entegrasyon testleri passing.
-
-### 8. 🎨 Markalama & Mağaza Hazırlığı (Faz 3)
-- [x] **Uygulama İkonları**: `flutter_launcher_icons` ile Android (`mipmap-*`) ve iOS (`AppIcon`) ikonları üretildi.
-- [x] **Uygulama Adı**: AndroidManifest ve Info.plist üzerinde `MatPusula` olarak tanımlandı.
-- [x] **Yayın Kontrol Listesi**: [RELEASE_CHECKLIST.md](file:///c:/Users/yusuf/Desktop/ODEV_S%C4%B0STEM_PROJES%C4%B0/RELEASE_CHECKLIST.md) oluşturuldu.
-- [x] **Keystore Altyapısı**: `key.properties.example` ve Gradle release imzalama bloğu eklendi.
-- [x] **Android 15 Uyumluluğu**: `android:enableOnBackInvokedCallback="true"` eklendi.
-- [x] **GitHub Push**: Tüm değişiklikler `origin main` dalına aktarıldı.
+### 5. 🛠 Mimari, Test & Kod Kalitesi
+- [x] **27/27 Flutter Testleri**: Unit ve widget testlerinin tamamı yeşil.
+- [x] **Flutter Analyze**: 0 hata, 0 uyarı ile kusursuz kod standartları.
+- [x] **Node.js Backend & Jest**: 5/5 backend testleri passing.
+- [x] **GitHub Senkronizasyonu**: Tüm değişiklikler `origin/main` dalına push edildi.
 
 ---
 
-## ⏳ Kalan İşlemler ve Yapılacaklar (Yayınlama Adımları)
+## ⏳ YAPILMAYANLAR / İSTEĞE BAĞLI İLERİ DÜZEY GÖREVLER
 
-Uygulamanın tüm kodları ve testleri tamamlanmış olup mağazaya çıkış aşamasında izlenecek son adımlar şunlardır:
+Aşağıdaki maddeler temel takip sistemi için zorunlu olmayıp, ileride projeyi büyütmek veya mağazaya yüklemek isterseniz yapılabilecek opsiyonel adımlardır:
 
-### 1. 📲 Release Üretim Paketlerini Derleme (Production Build)
-- [ ] **Android App Bundle (`.aab`) Derleme:**
-  ```bash
-  flutter build appbundle --release
-  ```
-  *(Çıktı: `build/app/outputs/bundle/release/app-release.aab`)*
+### 1. 📱 Mobil Mağaza Yayınlama (Opsiyonel)
+- [ ] **Google Play Console `.aab` Yükleme**: Google Play geliştirici hesabı açılıp uygulamanın Android mağazasına gönderilmesi.
+- [ ] **Apple App Store `.ipa` Yükleme**: Apple Developer hesabı açılıp macOS üzerinden uygulamanın App Store'a gönderilmesi.
 
-- [ ] **iOS IPA Paket Derleme (macOS üzerinde):**
-  ```bash
-  flutter build ipa --release
-  ```
+### 2. 🔔 Harici Push Bildirimleri (FCM - Opsiyonel)
+- [ ] **Harici Cihaz Bildirimleri**: Uygulama kapalıyken telefon kilit ekranına bildirim düşmesi için Apple APNs ve Google FCM sunucu anahtarlarının entegrasyonu (Uygulama içi bildirimler şu an aktiftir).
 
-### 2. 🏪 Mağaza Görselleri & Künye Girişi
-- [ ] **Google Play Console:**
-  - Uygulama adı: **MatPusula**
-  - Kısa Açıklama: *"Öğretmen, Öğrenci ve Veli Ödev & Deneme Takip Platformu"*
-  - Gizlilik Politikası URL'si: Uygulama içi KVKK metni linki.
-  - Ekran Görüntüleri: `assets/images/matpusula_app_showcase.png` ve cihaz ekran görüntüleri yükleme.
-- [ ] **Apple App Store Connect:**
-  - Uygulama künyesi ve yaş sınırı bildirim formlarının doldurulması.
-
-### 3. 🔑 Keystore İmzası (Android)
-- [ ] Production keystore dosyasını `android/app/key.jks` olarak yerleştirip `android/key.properties` dosyasını oluşturmak.
-
----
-
-## 🏆 Proje Tamamlanma Durumu: **YAYINA HAZIR (%100 KOD VE TEST BAŞARISI)**
+### 3. 🤖 Gelişmiş Yapay Zeka Özellikleri (Opsiyonel)
+- [ ] **AI Optik Form Okuyucu Kamera**: Kameradan optik form fotoğrafı çekildiğinde Gemini AI ile şıkları otomatik okuma modülünün mağaza sürümünde aktif edilmesi.

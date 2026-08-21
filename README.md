@@ -8,9 +8,10 @@
 
   [![Flutter](https://img.shields.io/badge/Flutter-3.33+-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
   [![Firebase](https://img.shields.io/badge/Firebase-Auth%20%7C%20Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
-  [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
-  [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+  [![Live Web App](https://img.shields.io/badge/Live%20Web%20App-odevtakipsistemi--b93b2.web.app-00B4D8?style=for-the-badge&logo=googlechrome&logoColor=white)](https://odevtakipsistemi-b93b2.web.app)
   [![Tests Status](https://img.shields.io/badge/Tests-32%2F32%20PASSED-4600B4?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-ve-kalite-raporu)
+
+  ### 🌐 Canlı Web Uygulaması: [https://odevtakipsistemi-b93b2.web.app](https://odevtakipsistemi-b93b2.web.app)
 
 </div>
 
