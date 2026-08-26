@@ -7,7 +7,7 @@ import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/matpusula_logo.dart';
 
 /// Hoş geldiniz ekranı.
-/// Uygulama açıldığında gösterilir; giriş veya kayıt seçenekleri sunar.
+/// Orijinal tam ekran sol hizalı tasarım korunmuştur; taşma engellenmiştir.
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
@@ -48,6 +48,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -59,16 +61,17 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSizes.pagePadding * 1.5),
-            child: FadeTransition(
-              opacity: _fadeAnim,
-              child: SlideTransition(
-                position: _slideAnim,
+          child: FadeTransition(
+            opacity: _fadeAnim,
+            child: SlideTransition(
+              position: _slideAnim,
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(AppSizes.pagePadding * 1.5),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 24),
 
                     // ── Logo & Başlık ─────────────────────────────────────
                     const MatPusulaLogo(size: 84),
@@ -76,7 +79,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
                     Text(
                       'MatPusula',
-                      style: AppTextStyles.h1.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: AppTextStyles.h1.copyWith(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -86,12 +90,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     const SizedBox(height: 12),
                     Text(
                       'Öğretmenler için merkezi sınıf yönetimi,\nveliler için şeffaf çocuk takibi.',
-                      style:
-                          AppTextStyles.bodyLarge.copyWith(color: Colors.white70),
+                      style: AppTextStyles.bodyLarge
+                          .copyWith(color: Colors.white70),
                     ),
 
                     // ── Özellik listesi ───────────────────────────────────
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 36),
                     const _FeatureItem(
                       icon: Icons.assignment_rounded,
                       text: 'Ödev takibi ve durum güncellemesi',
@@ -112,7 +116,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       text: 'Anlık bildirimler ve mesajlaşma',
                     ),
 
-                    const Spacer(),
+                    const SizedBox(height: 48),
 
                     // ── Butonlar ──────────────────────────────────────────
                     PrimaryButton(
@@ -128,7 +132,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       onPressed: () => context.push('/login'),
                       color: Colors.white,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),

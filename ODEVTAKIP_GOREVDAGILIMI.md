@@ -35,5 +35,5 @@
 * [x] **Firebase Hosting Web Yayını:** Uygulama web için derlendi ve `https://odevtakipsistemi-b93b2.web.app` adresinde sınırsız canlı kullanıma açıldı.
 * [x] **Uygulama İçi Mesajlaşma & Duyuru:** Öğretmenin sınıfa veya veliye doğrudan duyuru iletmesi ve veli mesaj kutusu tamamlandı.
 * [x] **GitHub & Versiyon Kontrolü:** Proje GitHub üzerinde (`origin/main`) sürekli güncel tutuldu.
-* [ ] *(Opsiyonel / İleride)* **Twilio Harici SMS:** Ücretli Twilio hesabı açıldığında telefon numarasına doğrudan SMS atma servisi.
+* [x] **SMS Doğrulama:** Firebase Authentication Phone Provider (Blaze planı) ile gerçekleştirildi. Harici SMS sağlayıcısı (Twilio/Netgsm) bilinçli olarak kullanılmıyor — OTP üretimi ve doğrulaması tek kaynakta, Firebase tarafında.
 * [ ] *(Opsiyonel / İleride)* **Mağaza Yayınları:** Google Play Store ve Apple App Store mağaza onay süreçleri.

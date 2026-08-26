@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // src/index.js — Ana Uygulama Giriş Noktası
 // Firebase Admin başlatma + PostgreSQL sağlık kontrolü +
-// Express server + Realtime sync başlatma + Twilio & AI Vision
+// Express server + Realtime sync başlatma + Firebase oturum doğrulama & AI Vision
 // ═══════════════════════════════════════════════════════════════
 'use strict';
 
@@ -15,7 +15,6 @@ const path = require('path');
 const { healthCheck } = require('./db/pool');
 const { startRealtimeSync, fullSync } = require('./sync/firebase-to-pg');
 const backupRouter = require('./routes/backup');
-const smsRouter = require('./routes/sms');
 const aiVisionRouter = require('./routes/ai-vision');
 const authRouter = require('./routes/auth');
 
@@ -30,7 +29,6 @@ app.use(morgan('dev'));
 // ── Rotalar ────────────────────────────────────────────────────
 app.use('/api', authRouter);
 app.use('/api', backupRouter);
-app.use('/api', smsRouter);
 app.use('/api', aiVisionRouter);
 
 // ── Kök endpoint ───────────────────────────────────────────────
@@ -40,8 +38,8 @@ app.get('/', (req, res) => {
     version: '1.2.0',
     endpoints: {
       health:       'GET  /api/health',
-      sendOtp:      'POST /api/sms/send-otp',
-      verifyOtp:    'POST /api/sms/verify-otp',
+      verifySession: 'POST /api/auth/verify-session (Firebase ID Token gerekli)',
+      me:            'GET  /api/auth/me          (Firebase ID Token gerekli)',
       aiVision:     'POST /api/ai/analyze-exam-photo',
       syncStats:    'GET  /api/sync/stats       (API Key gerekli)',
       fullSync:     'POST /api/sync/full        (API Key gerekli)',
@@ -56,11 +54,32 @@ app.get('/', (req, res) => {
 let firebaseInitialized = false;
 
 function initFirebase() {
-  const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH
-    ? path.resolve(process.cwd(), process.env.FIREBASE_SERVICE_ACCOUNT_PATH)
-    : path.join(__dirname, '..', 'serviceAccountKey.json');
+  if (admin.apps.length > 0) {
+    firebaseInitialized = true;
+    return;
+  }
 
   try {
+    // 1. Ortam değişkenlerinden yapılandırma (Production & Cloud Platformlar)
+    if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+      const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: privateKey,
+        }),
+      });
+      firebaseInitialized = true;
+      console.log('✅ Firebase Admin SDK (Ortam Değişkenleri ile) başarıyla bağlandı.');
+      return;
+    }
+
+    // 2. Dosya üzerinden yapılandırma (serviceAccountKey.json)
+    const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH
+      ? path.resolve(process.cwd(), process.env.FIREBASE_SERVICE_ACCOUNT_PATH)
+      : path.join(__dirname, '..', 'serviceAccountKey.json');
+
     const fs = require('fs');
     if (fs.existsSync(serviceAccountPath)) {
       const serviceAccount = require(serviceAccountPath);
@@ -68,9 +87,15 @@ function initFirebase() {
         credential: admin.credential.cert(serviceAccount),
       });
       firebaseInitialized = true;
-      console.log('✅ Firebase Admin SDK başarıyla bağlandı.');
+      console.log('✅ Firebase Admin SDK (serviceAccountKey.json ile) başarıyla bağlandı.');
+      return;
+    }
+
+    // 3. Test ve Emülatör / ADC ortamı
+    if (process.env.NODE_ENV === 'test') {
+      console.log('ℹ️ Test modunda Firebase Admin pasif başlatıldı.');
     } else {
-      console.warn('⚠️  serviceAccountKey.json bulunamadı. Firebase Sync pasif modda.');
+      console.warn('⚠️ serviceAccountKey.json veya FIREBASE_* ortam değişkenleri bulunamadı. Firebase Auth / Sync pasif modda.');
     }
   } catch (err) {
     console.error('❌ Firebase Admin başlatma hatası:', err.message);

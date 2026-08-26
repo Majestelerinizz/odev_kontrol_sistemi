@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/auth_providers.dart';
 import '../providers/phone_auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -10,10 +12,11 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/step_progress_indicator.dart';
+import '../../../../core/utils/phone_number_helper.dart';
 import '../../../../core/extensions/extensions.dart';
 
-/// Parolasız Veli Kayıt & Giriş Ekranı — 3 Adımlı Şifresiz Wizard Yapısı
-/// 1. Davet Kodu -> 2. Telefon Numarası -> 3. SMS Doğrulama Kodu -> Sonsuza Kadar Açık Giriş
+/// Parolasız Veli Kayıt & Giriş Ekranı — 3 Adımlı Güvenli Wizard Yapısı
+/// 1. Davet Kodu Doğrulama -> 2. Telefon Numarası -> 3. SMS OTP Doğrulama & Atomik Firestore Kaydı
 class ParentRegisterScreen extends ConsumerStatefulWidget {
   const ParentRegisterScreen({super.key});
 
@@ -40,6 +43,7 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
 
   String? _validatedCode;
   String? _studentName;
+  String? _normalizedPhone;
 
   @override
   void dispose() {
@@ -79,11 +83,36 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
     context.unfocus();
     if (!_step1FormKey.currentState!.validate()) return;
 
-    final phone = _phoneController.text.trim();
-    await ref.read(phoneAuthNotifierProvider.notifier).sendCode(phone);
+    final rawPhone = _phoneController.text.trim();
+    if (!PhoneNumberHelper.isValidTurkishMobile(rawPhone) &&
+        !PhoneNumberHelper.isValidE164(rawPhone)) {
+      context.showSnackBar(
+        'Lütfen 05XX XXX XX XX formatında geçerli bir cep telefonu numarası giriniz.',
+        isError: true,
+      );
+      return;
+    }
+
+    _normalizedPhone = PhoneNumberHelper.normalizeToE164(rawPhone);
+
+    final success = await ref
+        .read(phoneAuthNotifierProvider.notifier)
+        .sendCode(_normalizedPhone!);
 
     if (!mounted) return;
-    setState(() => _currentStep = 2);
+
+    final phoneState = ref.read(phoneAuthNotifierProvider);
+    // Android Otomatik Doğrulama (verificationCompleted): Play Services SMS'i
+    // kendisi okuyup oturumu açmış olabilir. Yine 3. adıma geçeriz, ancak orada
+    // kod alanı yerine "otomatik doğrulandı" bildirimi gösterilir.
+    if (success ||
+        phoneState.authState is PhoneAuthCodeSent ||
+        phoneState.authState is PhoneAuthSignedIn) {
+      setState(() => _currentStep = 2);
+    } else if (phoneState.authState is PhoneAuthError) {
+      final errorMsg = (phoneState.authState as PhoneAuthError).userMessage;
+      context.showSnackBar(errorMsg, isError: true);
+    }
   }
 
   void _prevStep() {
@@ -95,7 +124,7 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
     }
   }
 
-  // ── Adım 3: SMS Kodunu Doğrula ve Şifresiz Kalıcı Giriş Yap ─────────────
+  // ── Adım 3: SMS Kodunu Doğrula ve Atomik Olarak Veli Profilini Kaydet ────
   Future<void> _verifyAndRegister() async {
     context.unfocus();
     if (!_step2FormKey.currentState!.validate()) return;
@@ -103,30 +132,73 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
       context.showSnackBar(AppStrings.errorTermsRequired, isError: true);
       return;
     }
+    if (_validatedCode == null) {
+      context.showSnackBar('Davet kodu geçersiz. Lütfen ilk adıma dönünüz.',
+          isError: true);
+      setState(() => _currentStep = 0);
+      return;
+    }
 
-    final phone = _phoneController.text.trim();
     final otpCode = _otpController.text.trim();
 
-    // Firebase Phone Auth ile doğrula
-    await ref.read(phoneAuthNotifierProvider.notifier).verifyCode(otpCode);
+    // 1. Firebase Phone Auth ile OTP kodunu doğrula.
+    // Android otomatik doğrulamasında oturum Firebase tarafından zaten açılmıştır
+    // ve girilecek bir kod yoktur; bu durumda doğrulama adımı atlanır.
+    final bool isAutoVerified =
+        ref.read(phoneAuthNotifierProvider).authState is PhoneAuthSignedIn;
 
-    final autoEmail = 'parent_${phone.replaceAll(RegExp(r'\D'), '')}@matpusula.app';
-    final autoPassword = 'MatPusula_Passless_${phone.replaceAll(RegExp(r'\D'), '')}';
-
-    await ref.read(parentAuthProvider.notifier).registerParent(
-          name: _nameController.text.trim(),
-          email: autoEmail,
-          password: autoPassword,
-          inviteCode: _validatedCode!,
-        );
+    final isVerified = isAutoVerified
+        ? true
+        : await ref
+            .read(phoneAuthNotifierProvider.notifier)
+            .verifyCode(otpCode);
 
     if (!mounted) return;
-    final state = ref.read(parentAuthProvider);
-    if (state.isSuccess) {
-      context.showSnackBar('✅ Başarıyla doğrulandı! Çıkış yapana kadar hesabınız açık kalacaktır.');
+
+    // KRİTİK GÜVENLİK KURALI: OTP doğrulaması başarısızsa işlem kesinlikle durur!
+    if (!isVerified) {
+      final phoneState = ref.read(phoneAuthNotifierProvider);
+      final errorMsg = phoneState.authState is PhoneAuthError
+          ? (phoneState.authState as PhoneAuthError).userMessage
+          : 'Girdiğiniz SMS doğrulama kodu geçersiz veya süresi dolmuş.';
+      context.showSnackBar(errorMsg, isError: true);
+      return;
+    }
+
+    // 2. Doğrulanmış Firebase kullanıcısını denetle
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      context.showSnackBar('Oturum doğrulanamadı. Lütfen tekrar deneyin.',
+          isError: true);
+      return;
+    }
+
+    // Telefon numarası eşleşme kontrolü (Yetkisiz kimlik aktarımı engeli)
+    if (_normalizedPhone != null &&
+        currentUser.phoneNumber != null &&
+        currentUser.phoneNumber != _normalizedPhone) {
+      context.showSnackBar(
+        'Doğrulanan telefon numarası ile kayıt yapılan numara eşleşmiyor.',
+        isError: true,
+      );
+      return;
+    }
+
+    // 3. Atomik olarak Firestore'da veli profili oluştur, davet kodunu tüket ve öğrenciye bağla
+    final registerSuccess =
+        await ref.read(parentAuthProvider.notifier).registerParentWithPhoneAuth(
+              name: _nameController.text.trim(),
+              inviteCode: _validatedCode!,
+            );
+
+    if (!mounted) return;
+
+    if (registerSuccess) {
+      context.showSnackBar('✅ Başarıyla doğrulandı ve kaydınız tamamlandı!');
       context.go('/parent/home');
-    } else if (state.errorMessage != null) {
-      context.showSnackBar(state.errorMessage!, isError: true);
+    } else {
+      final error = ref.read(parentAuthProvider).errorMessage;
+      if (error != null) context.showSnackBar(error, isError: true);
     }
   }
 
@@ -138,7 +210,8 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: const Icon(Icons.arrow_back_rounded,
+              color: AppColors.textPrimary),
           onPressed: _prevStep,
         ),
         title: Text(
@@ -157,22 +230,24 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
                 totalSteps: 3,
                 currentStep: _currentStep,
                 primaryColor: AppColors.parentPrimary,
-                stepTitles: const ['Davet Kodu', 'Veli Bilgisi', 'SMS Doğrulama'],
+                stepTitles: const [
+                  'Davet Kodu',
+                  'Veli Bilgisi',
+                  'SMS Doğrulama'
+                ],
               ),
               const SizedBox(height: 32),
-
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: _buildCurrentStep(),
               ),
-
               const SizedBox(height: 24),
-
               Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Zaten kayıtlı mısınız? ', style: AppTextStyles.bodySmall),
+                    Text('Zaten kayıtlı mısınız? ',
+                        style: AppTextStyles.bodySmall),
                     TextButton(
                       onPressed: () => context.go('/login'),
                       child: Text(
@@ -216,20 +291,22 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
         Text('1. Davet Kodunuzu Girin', style: AppTextStyles.h3),
         const SizedBox(height: 6),
         Text(
-          'Öğretmeninizin öğrenciniz için oluşturduğu 6 haneli özel kodu girin.',
+          'Öğretmeninizin öğrenciniz için oluşturduğu özel davet kodunu girin.',
           style: AppTextStyles.bodyMedium,
         ),
         const SizedBox(height: 24),
         AppTextField(
           label: AppStrings.inviteCode,
-          hint: 'Örn: AB12CD',
+          hint: 'Örn: OT-4VHAYB veya 4VHAYB',
           controller: _codeController,
-          prefixIcon: const Icon(Icons.vpn_key_rounded, color: AppColors.textSecondary),
+          prefixIcon:
+              const Icon(Icons.vpn_key_rounded, color: AppColors.textSecondary),
           textCapitalization: TextCapitalization.characters,
-          maxLength: 8,
+          maxLength: 12,
           textInputAction: TextInputAction.done,
           onFieldSubmitted: (_) => _validateCode(),
         ),
+
         const SizedBox(height: 28),
         PrimaryButton(
           label: 'Kodu Doğrula →',
@@ -258,16 +335,19 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
               decoration: BoxDecoration(
                 color: AppColors.parentSurface,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.parentPrimary.withValues(alpha: 0.3)),
+                border: Border.all(
+                    color: AppColors.parentPrimary.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle_rounded, color: AppColors.parentPrimary, size: 20),
+                  const Icon(Icons.check_circle_rounded,
+                      color: AppColors.parentPrimary, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Öğrenci: $_studentName',
-                      style: AppTextStyles.labelLarge.copyWith(color: AppColors.parentPrimary),
+                      style: AppTextStyles.labelLarge
+                          .copyWith(color: AppColors.parentPrimary),
                     ),
                   ),
                 ],
@@ -278,7 +358,7 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
           Text('2. Veli Bilgileri', style: AppTextStyles.h3),
           const SizedBox(height: 6),
           Text(
-            'SMS doğrulama kodu alacağınız telefon numaranızı girin.',
+            'SMS doğrulama kodu alacağınız Türkiye cep telefon numaranızı girin.',
             style: AppTextStyles.bodyMedium,
           ),
           const SizedBox(height: 24),
@@ -286,11 +366,14 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
             label: 'Adınız Soyadınız',
             hint: 'Örn: Ahmet Yılmaz',
             controller: _nameController,
-            prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.textSecondary),
+            prefixIcon: const Icon(Icons.person_outline_rounded,
+                color: AppColors.textSecondary),
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.next,
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Lütfen adınızı giriniz.';
+              if (v == null || v.trim().isEmpty) {
+                return 'Lütfen adınızı giriniz.';
+              }
               return null;
             },
           ),
@@ -299,14 +382,51 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
             label: 'Telefon Numarası',
             hint: '0531 563 5049',
             controller: _phoneController,
-            prefixIcon: const Icon(Icons.phone_android_rounded, color: AppColors.textSecondary),
+            prefixIcon: const Icon(Icons.phone_android_rounded,
+                color: AppColors.textSecondary),
             keyboardType: TextInputType.phone,
             textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => _sendSmsOtp(),
             validator: (v) {
-              if (v == null || v.trim().length < 10) return 'Geçerli bir telefon numarası giriniz.';
+              if (v == null || v.trim().isEmpty) {
+                return 'Lütfen telefon numaranızı giriniz.';
+              }
+              if (!PhoneNumberHelper.isValidTurkishMobile(v) &&
+                  !PhoneNumberHelper.isValidE164(v)) {
+                return '05XX XXX XX XX formatında geçerli bir cep telefonu giriniz.';
+              }
               return null;
             },
           ),
+
+          if (phoneState.authState is PhoneAuthError) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border:
+                    Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline,
+                      size: 18, color: AppColors.error),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      (phoneState.authState as PhoneAuthError).userMessage,
+                      style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 28),
           Row(
             children: [
@@ -337,7 +457,17 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
   Widget _buildStep2() {
     final authState = ref.watch(parentAuthProvider);
     final phoneState = ref.watch(phoneAuthNotifierProvider);
-    final isVerifying = authState.isLoading || phoneState.authState is PhoneAuthVerifying;
+    final isVerifying =
+        authState.isLoading || phoneState.authState is PhoneAuthVerifying;
+
+    final maskedNumber = _normalizedPhone != null
+        ? PhoneNumberHelper.maskPhoneNumber(_normalizedPhone!)
+        : PhoneNumberHelper.maskPhoneNumber(_phoneController.text);
+
+    // Android'de Play Services SMS'i otomatik okuyup oturumu açmış olabilir.
+    // Bu durumda girilecek bir kod yoktur; kod alanı ağaçtan tamamen çıkarılır,
+    // aksi halde boş alanın validator'ı formu kalıcı olarak kilitler.
+    final isAutoVerified = phoneState.authState is PhoneAuthSignedIn;
 
     return Form(
       key: _step2FormKey,
@@ -345,40 +475,107 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
         key: const ValueKey(2),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('3. SMS Doğrulama Kodu', style: AppTextStyles.h3),
+          Text(
+            isAutoVerified ? '3. Telefon Doğrulandı' : '3. SMS Doğrulama Kodu',
+            style: AppTextStyles.h3,
+          ),
           const SizedBox(height: 6),
           Text(
-            '${_phoneController.text} numarasına Firebase üzerinden gönderilen 6 haneli doğrulama kodunu girin.',
+            isAutoVerified
+                ? '$maskedNumber numarası cihazınız tarafından otomatik olarak doğrulandı. Kaydı tamamlayabilirsiniz.'
+                : '$maskedNumber numarasına gönderilen 6 haneli doğrulama kodunu girin.',
             style: AppTextStyles.bodyMedium,
           ),
           const SizedBox(height: 24),
-          AppTextField(
-            label: '6 Haneli SMS Kodu',
-            hint: '123456',
-            controller: _otpController,
-            prefixIcon: const Icon(Icons.mark_chat_unread_rounded, color: AppColors.textSecondary),
-            keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.done,
-            validator: (v) {
-              if (v == null || v.trim().length < 6) return '6 haneli doğrulama kodunu giriniz.';
-              return null;
-            },
-          ),
-          const SizedBox(height: 10),
+          if (isAutoVerified) ...[
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+                border: Border.all(
+                    color: AppColors.success.withValues(alpha: 0.35)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.verified_rounded,
+                      color: AppColors.success, size: 22),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'SMS kodu otomatik algılandı, doğrulama tamamlandı.',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+          ] else ...[
+            AppTextField(
+              label: '6 Haneli SMS Kodu',
+              hint: '______',
+              controller: _otpController,
+              prefixIcon: const Icon(Icons.mark_chat_unread_rounded,
+                  color: AppColors.textSecondary),
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.done,
+              maxLength: 6,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(6),
+              ],
+              onFieldSubmitted: (_) => _verifyAndRegister(),
+              validator: (v) {
+                if (v == null || v.trim().length != 6) {
+                  return 'Lütfen 6 haneli doğrulama kodunu eksiksiz giriniz.';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 10),
+          ],
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (phoneState.cooldownSeconds > 0)
+              // Otomatik doğrulandıysa tekrar SMS istemek anlamsızdır ve
+              // gereksiz Blaze SMS ücreti çıkarır.
+              if (isAutoVerified)
+                const SizedBox.shrink()
+              else if (phoneState.cooldownSeconds > 0)
                 Text(
                   'Tekrar kod iste: ${phoneState.cooldownSeconds}s',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600),
                 )
               else
                 TextButton(
-                  onPressed: () => ref.read(phoneAuthNotifierProvider.notifier).resendCode(),
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero),
-                  child: const Text('Tekrar SMS Gönder', style: TextStyle(fontSize: 12, color: AppColors.parentPrimary, fontWeight: FontWeight.bold)),
+                  onPressed: () =>
+                      ref.read(phoneAuthNotifierProvider.notifier).resendCode(),
+                  style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero, minimumSize: Size.zero),
+                  child: const Text('Tekrar SMS Gönder',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.parentPrimary,
+                          fontWeight: FontWeight.bold)),
                 ),
+              TextButton(
+                onPressed: () {
+                  ref.read(phoneAuthNotifierProvider.notifier).reset();
+                  setState(() => _currentStep = 1);
+                },
+                style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, minimumSize: Size.zero),
+                child: const Text('Numarayı Değiştir',
+                    style: TextStyle(
+                        fontSize: 12, color: AppColors.textSecondary)),
+              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -392,7 +589,8 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
               const Expanded(
                 child: Text(
                   'Kullanım şartlarını ve KVKK gizlilik politikalarını onaylıyorum.',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style:
+                      TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
               ),
             ],
@@ -410,7 +608,7 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
               Expanded(
                 flex: 2,
                 child: PrimaryButton(
-                  label: 'Doğrula & Giriş Yap 🚀',
+                  label: 'Doğrula & Kaydı Tamamla 🚀',
                   onPressed: _verifyAndRegister,
                   isLoading: isVerifying,
                   backgroundColor: AppColors.parentPrimary,

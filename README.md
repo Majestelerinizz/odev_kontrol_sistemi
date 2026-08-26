@@ -9,7 +9,7 @@
   [![Flutter](https://img.shields.io/badge/Flutter-3.33+-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
   [![Firebase](https://img.shields.io/badge/Firebase-Auth%20%7C%20Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
   [![Live Web App](https://img.shields.io/badge/Live%20Web%20App-odevtakipsistemi--b93b2.web.app-00B4D8?style=for-the-badge&logo=googlechrome&logoColor=white)](https://odevtakipsistemi-b93b2.web.app)
-  [![Tests Status](https://img.shields.io/badge/Tests-32%2F32%20PASSED-4600B4?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-ve-kalite-raporu)
+  [![Tests Status](https://img.shields.io/badge/Tests-41%2F41%20PASSED-4600B4?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-ve-kalite-raporu)
 
   ### 🌐 Canlı Web Uygulaması: [https://odevtakipsistemi-b93b2.web.app](https://odevtakipsistemi-b93b2.web.app)
 
@@ -76,7 +76,7 @@ Uygulama, Google Firebase verilerinin yerel PostgreSQL veritabanına otomatik se
 
 * **Dokümantasyon & API:** Node.js Express REST API (`/api/health`, `/api/data/students`, `/api/data/exam-results`)
 * **Veritabanı:** PostgreSQL 16 Alpine + pgAdmin 4 Container'ları (`docker-compose.yml`)
-* **Testler:** Jest REST API entegrasyon testleri (`7/7 Passed`)
+* **Testler:** Jest REST API entegrasyon testleri (`5/5 Passed`)
 
 ---
 
@@ -92,9 +92,9 @@ cd backend && npm test
 
 | Test Paketi | Test Sayısı | Başarı Oranı |
 |---|---|---|
-| **Flutter Unit & Widget Tests** | 27 / 27 | **%100 PASSED** |
-| **Node.js REST API Tests** | 7 / 7 | **%100 PASSED** |
-| **Toplam Sistem Testi** | **34 / 34** | **%100 PASSED** |
+| **Flutter Unit & Widget Tests** | 36 / 36 | **%100 PASSED** |
+| **Node.js REST API Tests** | 5 / 5 | **%100 PASSED** |
+| **Toplam Sistem Testi** | **41 / 41** | **%100 PASSED** |
 
 ---
 
@@ -105,7 +105,7 @@ Sistemin ilişkisel haritasını doğrudan mobil ve yönetim katmanında görsel
 - [ ] **Okul & Sınıf Kök Düğümleri (Root Nodes):** Okul altındaki tüm 7. ve 8. sınıf branşlarının listelenmesi.
 - [ ] **Öğretmen - Öğrenci Dallanması (Branching):** Her öğretmenin sorumlu olduğu sınıfların ve öğrencilerin dinamik ağaç kırılımı.
 - [ ] **Öğrenci - Veli Yaprak Eşleşmesi (Leaves):** 6 haneli davet koduyla bağlanan velilerin öğrencinin altında görsel olarak listelenmesi.
-- [ ] **Anlık SMS & Bildirim Durum Sinyali:** Velilerin yanında Twilio SMS iletim durumlarının (✅ İletildi, ⏳ Bekliyor, ❌ Hata) canlı renkli rozetlerle gösterimi.
+- [ ] **Anlık SMS & Bildirim Durum Sinyali:** Velilerin yanında Firebase Phone Auth doğrulama durumlarının (✅ Doğrulandı, ⏳ Bekliyor, ❌ Hata) canlı renkli rozetlerle gösterimi.
 
 ---
 
@@ -140,7 +140,7 @@ cd web-dashboard
 npm install
 npm run dev
 ```
-Web paneli **http://localhost:3000** adresinde çalışarak Docker, PostgreSQL, Firebase ve Twilio SMS durumlarını anlık izlemenizi ve Okul ➔ Sınıf ➔ Öğrenci ➔ Veli hiyerarşisini görünür kılar.
+Web paneli **http://localhost:3000** adresinde çalışarak Docker, PostgreSQL ve Firebase Authentication durumlarını anlık izlemenizi ve Okul ➔ Sınıf ➔ Öğrenci ➔ Veli hiyerarşisini görünür kılar.
 
 ---
 

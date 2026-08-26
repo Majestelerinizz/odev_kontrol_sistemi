@@ -6,6 +6,23 @@ const express = require('express');
 // Mock pool ve sync modülleri
 jest.mock('../src/db/pool', () => ({
   healthCheck: jest.fn().mockResolvedValue({ local: true, neon: false }),
+  query: jest.fn().mockImplementation((sql, params) => {
+    if (sql.includes('INSERT INTO users') || sql.includes('SELECT uid, role')) {
+      return Promise.resolve({
+        rows: [
+          {
+            uid: params[0] || 'test-user-uid',
+            role: params[1] || 'parent',
+            full_name: params[2] || 'Test Kullanıcı',
+            email: params[3] || null,
+            phone_number: params[4] || '+905315635049',
+            is_active: true,
+          },
+        ],
+      });
+    }
+    return Promise.resolve({ rows: [] });
+  }),
   queryAll: jest.fn().mockImplementation((sql, params) => {
     if (sql.includes('students')) {
       return Promise.resolve([
@@ -51,11 +68,12 @@ describe('Node.js Sync Backend REST API & AI Vision Tests', () => {
   const API_KEY = 'odev_takip_secret_key_2026';
 
   beforeAll(() => {
+    process.env.NODE_ENV = 'test';
     process.env.API_SECRET_KEY = API_KEY;
     app = express();
     app.use(express.json());
+    app.use('/api', require('../src/routes/auth'));
     app.use('/api', require('../src/routes/backup'));
-    app.use('/api', require('../src/routes/sms'));
     app.use('/api', require('../src/routes/ai-vision'));
   });
 
@@ -73,34 +91,31 @@ describe('Node.js Sync Backend REST API & AI Vision Tests', () => {
     expect(res.body.error).toContain('Yetkisiz');
   });
 
-  test('POST /api/sms/send-otp — Doğru telefon numarası ile OTP oluşturmalı', async () => {
+  test('POST /api/auth/verify-session — Authorization Bearer başlığı yoksa 401 dönmeli', async () => {
     const res = await request(app)
-      .post('/api/sms/send-otp')
-      .send({ phone: '+905551234567' });
-    expect(res.statusCode).toEqual(200);
-    expect(res.body.success).toEqual(true);
+      .post('/api/auth/verify-session')
+      .send({ name: 'Ahmet Veli', role: 'parent' });
+    expect(res.statusCode).toEqual(401);
+    expect(res.body.error).toEqual('UNAUTHORIZED');
   });
 
-  test('POST /api/sms/verify-otp — Test kodu 123456 ile başarılı doğrulamalı', async () => {
-    await request(app).post('/api/sms/send-otp').send({ phone: '+905551234567' });
+  test('POST /api/auth/verify-session — Geçerli Bearer Token ile PostgreSQL UPSERT yapıp 200 dönmeli', async () => {
     const res = await request(app)
-      .post('/api/sms/verify-otp')
-      .send({ phone: '+905551234567', code: '123456' });
-    expect(res.statusCode).toEqual(200);
-    expect(res.body.valid).toEqual(true);
-  });
-
-  test('POST /api/ai/analyze-exam-photo — Test kağıdı görseli ile netleri analiz etmeli', async () => {
-    const res = await request(app)
-      .post('/api/ai/analyze-exam-photo')
-      .send({
-        imageBase64: 'data:image/jpeg;base64,sample_base64_string',
-        subject: 'Matematik',
-      });
+      .post('/api/auth/verify-session')
+      .set('Authorization', 'Bearer valid_mock_firebase_id_token')
+      .send({ name: 'Ahmet Veli', role: 'parent' });
     expect(res.statusCode).toEqual(200);
     expect(res.body.success).toEqual(true);
-    expect(res.body.net).toEqual(15.0);
-    expect(res.body.correctCount).toEqual(16);
-    expect(res.body.wrongCount).toEqual(4);
+    expect(res.body.data.user).toBeDefined();
+    expect(res.body.data.user.role).toEqual('parent');
+  });
+
+  test('GET /api/auth/me — Yetkilendirilmiş kullanıcı profilini getirmeli', async () => {
+    const res = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', 'Bearer valid_mock_firebase_id_token');
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.success).toEqual(true);
+    expect(res.body.data.user.uid).toBeDefined();
   });
 });

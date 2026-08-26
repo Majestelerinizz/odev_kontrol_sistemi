@@ -9,31 +9,28 @@ abstract class AuthRepository {
   /// Mevcut oturum açmış kullanıcı
   AppUser? get currentUser;
 
-  /// Öğretmen kaydı
+  /// Öğretmen kaydı (E-posta + Şifre)
   Future<AppUser> registerTeacher({
     required String name,
     required String email,
     required String password,
   });
 
-  /// Veli kaydı (davet koduyla)
-  Future<AppUser> registerParent({
+  /// Veli kaydı (Firebase Phone Auth ile doğrulanmış oturum + Davet Kodu)
+  /// Atomik olarak Firestore'da profil açar, davet kodunu tüketir ve öğrenciye bağlar.
+  Future<AppUser> registerParentWithPhoneAuth({
     required String name,
-    required String email,
-    required String password,
     required String inviteCode,
   });
 
-  /// E-posta/şifre ile giriş
+  /// E-posta/şifre ile giriş (Öğretmenler için)
   Future<AppUser> signInWithEmailAndPassword({
     required String email,
     required String password,
   });
 
-  /// Veli için şifresiz telefon numarası ile hızlı giriş/kayıt
-  Future<AppUser> signInOrRegisterParentWithPhone({
-    required String phone,
-  });
+  /// Veli Phone Auth oturumu sonrasında Firestore profilini getirir veya senkronize eder
+  Future<AppUser?> syncParentProfileAfterPhoneAuth();
 
   /// Çıkış
   Future<void> signOut();
@@ -41,7 +38,7 @@ abstract class AuthRepository {
   /// Hesabı hem Firebase Auth hem Firestore'dan kalıcı olarak sil
   Future<void> deleteAccount();
 
-  /// Şifre sıfırlama e-postası gönder
+  /// Şifre sıfırlama e-postası gönder (Öğretmenler için)
   Future<void> sendPasswordResetEmail(String email);
 
   /// Kullanıcı profilini Firestore'dan getir

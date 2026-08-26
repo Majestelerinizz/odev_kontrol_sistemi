@@ -9,10 +9,11 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- ── 1. KULLANICILAR ────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
     uid             TEXT PRIMARY KEY,          -- Firebase UID
-    email           TEXT NOT NULL UNIQUE,
+    email           TEXT UNIQUE,               -- E-posta (Phone Auth kullanıcıları için opsiyonel)
     full_name       TEXT NOT NULL,
     role            TEXT NOT NULL CHECK (role IN ('teacher', 'parent')),
-    phone_number    TEXT,
+    phone_number    TEXT,                      -- E.164 formatında doğrulanmış telefon numarası
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     synced_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()  -- Son Firebase sync zamanı
@@ -143,6 +144,8 @@ CREATE TABLE IF NOT EXISTS sync_log (
 );
 
 -- ── İNDEKSLER ─────────────────────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_users_phone_number      ON users(phone_number);
+CREATE INDEX IF NOT EXISTS idx_users_role              ON users(role);
 CREATE INDEX IF NOT EXISTS idx_students_teacher_id     ON students(teacher_id);
 CREATE INDEX IF NOT EXISTS idx_students_class_id       ON students(class_id);
 CREATE INDEX IF NOT EXISTS idx_homeworks_teacher_id    ON homeworks(teacher_id);

@@ -20,8 +20,7 @@ class TeacherRegisterScreen extends ConsumerStatefulWidget {
       _TeacherRegisterScreenState();
 }
 
-class _TeacherRegisterScreenState
-    extends ConsumerState<TeacherRegisterScreen> {
+class _TeacherRegisterScreenState extends ConsumerState<TeacherRegisterScreen> {
   int _currentStep = 0;
 
   final _step1FormKey = GlobalKey<FormState>();
@@ -118,11 +117,7 @@ class _TeacherRegisterScreenState
               StepProgressIndicator(
                 currentStep: _currentStep,
                 totalSteps: 3,
-                stepTitles: const [
-                  'Kişisel Bilgiler',
-                  'Güvenlik',
-                  'Tamamlama'
-                ],
+                stepTitles: const ['Kişisel Bilgiler', 'Güvenlik', 'Tamamlama'],
                 primaryColor: AppColors.teacherPrimary,
               ),
               const SizedBox(height: 28),
@@ -343,9 +338,11 @@ class _TeacherRegisterScreenState
           ),
           child: Column(
             children: [
-              _buildSummaryRow(Icons.person_rounded, 'Ad Soyad', _nameController.text),
+              _buildSummaryRow(
+                  Icons.person_rounded, 'Ad Soyad', _nameController.text),
               const Divider(height: 16),
-              _buildSummaryRow(Icons.email_rounded, 'E-posta', _emailController.text),
+              _buildSummaryRow(
+                  Icons.email_rounded, 'E-posta', _emailController.text),
               const Divider(height: 16),
               _buildSummaryRow(Icons.badge_rounded, 'Hesap Türü', 'Öğretmen'),
             ],
@@ -439,7 +436,8 @@ class _TeacherRegisterScreenState
         Expanded(
           child: Text(
             value,
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+            style:
+                AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
             textAlign: TextAlign.end,
             overflow: TextOverflow.ellipsis,
           ),

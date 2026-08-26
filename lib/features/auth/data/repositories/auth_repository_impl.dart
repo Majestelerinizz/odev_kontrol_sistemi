@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../domain/entities/app_user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../models/app_user_model.dart';
+import '../services/backend_auth_service.dart';
 
 /// AuthRepository'nin Firebase implementasyonu.
 class AuthRepositoryImpl implements AuthRepository {
@@ -10,7 +11,8 @@ class AuthRepositoryImpl implements AuthRepository {
   FirebaseFirestore? _firestoreInstance;
 
   FirebaseAuth get _auth => _authInstance ?? FirebaseAuth.instance;
-  FirebaseFirestore get _firestore => _firestoreInstance ?? FirebaseFirestore.instance;
+  FirebaseFirestore get _firestore =>
+      _firestoreInstance ?? FirebaseFirestore.instance;
 
   // ── Koleksiyon referansları ─────────────────────────────────────────────
   CollectionReference<Map<String, dynamic>> get _users =>
@@ -40,7 +42,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return null;
   }
 
-  // ── Kayıt ──────────────────────────────────────────────────────────────
+  // ── Öğretmen Kaydı ──────────────────────────────────────────────────────
 
   @override
   Future<AppUser> registerTeacher({
@@ -81,9 +83,22 @@ class AuthRepositoryImpl implements AuthRepository {
         'createdAt': now.toIso8601String(),
       });
 
+      // Backend PostgreSQL ile Firebase ID Token üzerinden oturum doğrula ve eşitle
+      try {
+        final idToken = await createdUser.getIdToken();
+        if (idToken != null) {
+          await BackendAuthService.instance.verifySession(
+            idToken: idToken,
+            name: name.trim(),
+            role: 'teacher',
+          );
+        }
+      } catch (_) {}
+
       return userModel;
     } catch (e) {
-      if (e is FirebaseAuthException && (e.code == 'email-already-in-use' || e.code == 'EMAIL_EXISTS')) {
+      if (e is FirebaseAuthException &&
+          (e.code == 'email-already-in-use' || e.code == 'EMAIL_EXISTS')) {
         try {
           final credential = await _auth.signInWithEmailAndPassword(
             email: email.trim(),
@@ -103,7 +118,9 @@ class AuthRepositoryImpl implements AuthRepository {
             updatedAt: now,
           );
 
-          await _users.doc(user.uid).set(userModel.toFirestore(), SetOptions(merge: true));
+          await _users
+              .doc(user.uid)
+              .set(userModel.toFirestore(), SetOptions(merge: true));
           await _firestore.collection('teacher_profiles').doc(user.uid).set({
             'uid': user.uid,
             'name': name.trim(),
@@ -114,7 +131,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
           return userModel;
         } catch (_) {
-          throw const AuthException('Bu e-posta adresi zaten kayıtlı. Lütfen Giriş Yap ekranından şifrenizle giriş yapınız.');
+          throw const AuthException(
+              'Bu e-posta adresi zaten kayıtlı. Lütfen Giriş Yap ekranından şifrenizle giriş yapınız.');
         }
       }
       if (createdUser != null) {
@@ -126,119 +144,235 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  // ── Veli Kaydı (Doğrulanmış Firebase Phone Auth UID + Davet Kodu) ────────
+
   @override
-  Future<AppUser> registerParent({
+  Future<AppUser> registerParentWithPhoneAuth({
     required String name,
-    required String email,
-    required String password,
     required String inviteCode,
   }) async {
-    User? createdUser;
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw const AuthException(
+          'Telefon doğrulaması bulunamadı. Lütfen önce SMS kodunu doğrulayınız.');
+    }
+
+    final phone = user.phoneNumber;
+    if (phone == null || phone.isEmpty) {
+      throw const AuthException('Doğrulanmış telefon numarası bilgisi eksik.');
+    }
+
+    final trimmedName = name.trim();
+    final cleanCode = inviteCode.trim().toUpperCase();
+    final now = DateTime.now();
+
     try {
-      // Davet kodunu doğrula
-      final codeData = await validateInviteCode(inviteCode);
-      if (codeData == null) {
-        throw const AuthException('Geçersiz davet kodu.');
-      }
+      // Display name güncelle
+      await user.updateDisplayName(trimmedName);
 
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: email.trim(),
-        password: password,
-      );
+      // Firestore Transaction ile Davet Kodu Doğrulama & Tüketme ve Profil Oluşturma (Atomik)
+      final userModel =
+          await _firestore.runTransaction<AppUser>((transaction) async {
+        var targetCode = cleanCode;
+        var codeRef = _inviteCodes.doc(targetCode);
+        var codeSnapshot = await transaction.get(codeRef);
 
-      createdUser = credential.user!;
-      await createdUser.updateDisplayName(name.trim());
+        if (!codeSnapshot.exists && !targetCode.startsWith('OT-')) {
+          targetCode = 'OT-$targetCode';
+          codeRef = _inviteCodes.doc(targetCode);
+          codeSnapshot = await transaction.get(codeRef);
+        }
 
-      final now = DateTime.now();
-      final studentId = codeData['studentId'] as String;
+        if (!codeSnapshot.exists || codeSnapshot.data() == null) {
+          throw const AuthException('Geçersiz davet kodu.');
+        }
 
-      final userModel = AppUserModel(
-        uid: createdUser.uid,
-        role: 'parent',
-        name: name.trim(),
-        email: email.trim(),
-        isActive: true,
-        createdAt: now,
-        updatedAt: now,
-      );
 
-      // Batch write — atomik işlem
-      final batch = _firestore.batch();
+        final codeData = codeSnapshot.data()!;
+        final bool isUsed = codeData['used'] as bool? ?? false;
+        if (isUsed) {
+          throw const AuthException('Bu davet kodu daha önce kullanılmış.');
+        }
 
-      batch.set(_users.doc(createdUser.uid), userModel.toFirestore());
+        final expiresAt = codeData['expiresAt'];
+        if (expiresAt != null) {
+          DateTime expiry;
+          if (expiresAt is String) {
+            expiry = DateTime.parse(expiresAt);
+          } else {
+            expiry = (expiresAt as Timestamp).toDate();
+          }
+          if (now.isAfter(expiry)) {
+            throw const AuthException(
+                'Bu davet kodunun kullanım süresi dolmuş.');
+          }
+        }
 
-      batch.set(
-        _firestore.collection('parent_profiles').doc(createdUser.uid),
-        {
-          'uid': createdUser.uid,
-          'name': name.trim(),
-          'email': email.trim(),
-          'studentIds': [studentId],
-          'createdAt': now.toIso8601String(),
-        },
-      );
+        final studentId = codeData['studentId'] as String?;
+        if (studentId == null || studentId.isEmpty) {
+          throw const AuthException(
+              'Davet kodu ile ilişkili öğrenci bulunamadı.');
+        }
 
-      batch.update(
-        _firestore.collection('students').doc(studentId),
-        {
-          'parentIds': FieldValue.arrayUnion([createdUser.uid]),
-        },
-      );
+        final studentRef = _firestore.collection('students').doc(studentId);
+        final studentSnapshot = await transaction.get(studentRef);
+        if (!studentSnapshot.exists) {
+          throw const AuthException('Öğrenci kaydı bulunamadı.');
+        }
 
-      batch.update(
-        _inviteCodes.doc(inviteCode),
-        {
+        final userRef = _users.doc(user.uid);
+        final parentProfileRef =
+            _firestore.collection('parent_profiles').doc(user.uid);
+
+        final newAppUser = AppUserModel(
+          uid: user.uid,
+          role: 'parent',
+          name: trimmedName,
+          email: user.email ?? '',
+          phone: phone,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+        );
+
+        // 1. users koleksiyonuna ekle
+        transaction.set(
+            userRef, newAppUser.toFirestore(), SetOptions(merge: true));
+
+        // 2. parent_profiles koleksiyonuna ekle
+        transaction.set(
+          parentProfileRef,
+          {
+            'uid': user.uid,
+            'name': trimmedName,
+            'phone': phone,
+            'email': user.email ?? '',
+            'studentIds': FieldValue.arrayUnion([studentId]),
+            'updatedAt': now.toIso8601String(),
+            'createdAt': now.toIso8601String(),
+          },
+          SetOptions(merge: true),
+        );
+
+        // 3. Öğrenciye veli UID'sini bağla
+        transaction.update(studentRef, {
+          'parentIds': FieldValue.arrayUnion([user.uid]),
+        });
+
+        // 4. Davet kodunu tüket
+        transaction.update(codeRef, {
           'used': true,
-          'usedBy': createdUser.uid,
+          'usedBy': user.uid,
           'usedAt': now.toIso8601String(),
-        },
-      );
+          'updatedAt': now.toIso8601String(),
+        });
 
-      await batch.commit();
+        return newAppUser;
+      });
+
+      // Backend PostgreSQL ile Firebase ID Token üzerinden oturum doğrula ve eşitle
+      try {
+        final idToken = await user.getIdToken();
+        if (idToken != null) {
+          await BackendAuthService.instance.verifySession(
+            idToken: idToken,
+            name: trimmedName,
+            role: 'parent',
+          );
+        }
+      } catch (e) {
+        // Backend sync uyarısı loglanır, akışı durdurmaz
+      }
 
       return userModel;
     } catch (e) {
-      if (e is FirebaseAuthException && (e.code == 'email-already-in-use' || e.code == 'EMAIL_EXISTS')) {
-        try {
-          final credential = await _auth.signInWithEmailAndPassword(
-            email: email.trim(),
-            password: password,
-          );
-          final user = credential.user!;
-          await user.updateDisplayName(name.trim());
-
-          final now = DateTime.now();
-          final userModel = AppUserModel(
-            uid: user.uid,
-            role: 'parent',
-            name: name.trim(),
-            email: email.trim(),
-            isActive: true,
-            createdAt: now,
-            updatedAt: now,
-          );
-
-          await _users.doc(user.uid).set(userModel.toFirestore(), SetOptions(merge: true));
-          await _firestore.collection('parent_profiles').doc(user.uid).set({
-            'uid': user.uid,
-            'name': name.trim(),
-            'email': email.trim(),
-            'createdAt': now.toIso8601String(),
-          }, SetOptions(merge: true));
-
-          return userModel;
-        } catch (_) {}
-      }
-      if (createdUser != null) {
-        try {
-          await createdUser.delete();
-        } catch (_) {}
-      }
       throw _mapException(e);
     }
   }
 
-  // ── Giriş ──────────────────────────────────────────────────────────────
+  // ── Veli Phone Auth Girişi Sonrası Profil Senkronizasyonu ─────────────────
+
+  @override
+  Future<AppUser?> syncParentProfileAfterPhoneAuth() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+
+    final phone = user.phoneNumber;
+    final now = DateTime.now();
+
+    try {
+      AppUser? resolvedUser;
+      final userDoc = await _users.doc(user.uid).get();
+      if (userDoc.exists && userDoc.data() != null) {
+        resolvedUser = AppUserModel.fromFirestore(userDoc.data()!, user.uid);
+      } else {
+        // Eğer Firestore'da profil henüz yoksa, temel veli profilini oluştur
+        final displayName =
+            user.displayName ?? (phone != null ? 'Veli ($phone)' : 'Veli');
+        final newAppUser = AppUserModel(
+          uid: user.uid,
+          role: 'parent',
+          name: displayName,
+          email: user.email ?? '',
+          phone: phone,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+        );
+
+        final batch = _firestore.batch();
+        batch.set(_users.doc(user.uid), newAppUser.toFirestore());
+        batch.set(
+          _firestore.collection('parent_profiles').doc(user.uid),
+          {
+            'uid': user.uid,
+            'name': displayName,
+            'phone': phone,
+            'studentIds': [],
+            'createdAt': now.toIso8601String(),
+            'updatedAt': now.toIso8601String(),
+          },
+        );
+
+        // Telefon numarası eşleşen öğrenci varsa otomatik ilişkilendir
+        if (phone != null && phone.isNotEmpty) {
+          final studentQuery = await _firestore
+              .collection('students')
+              .where('phone', isEqualTo: phone)
+              .get();
+
+          for (final sDoc in studentQuery.docs) {
+            batch.update(sDoc.reference, {
+              'parentIds': FieldValue.arrayUnion([user.uid]),
+            });
+          }
+        }
+
+        await batch.commit();
+        resolvedUser = newAppUser;
+      }
+
+      // Backend PostgreSQL ile Firebase ID Token üzerinden oturum doğrula ve eşitle
+      try {
+        final idToken = await user.getIdToken();
+        if (idToken != null) {
+          await BackendAuthService.instance.verifySession(
+            idToken: idToken,
+            name: resolvedUser.name,
+            role: 'parent',
+          );
+        }
+      } catch (e) {
+        // Backend sync uyarısı loglanır
+      }
+
+      return resolvedUser;
+    } catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  // ── Öğretmen E-posta/Şifre ile Giriş ────────────────────────────────────
 
   @override
   Future<AppUser> signInWithEmailAndPassword({
@@ -249,15 +383,12 @@ class AuthRepositoryImpl implements AuthRepository {
       String targetEmail = email.trim();
 
       if (!targetEmail.contains('@')) {
-        final query = await _users
-            .where('phone', isEqualTo: targetEmail)
-            .get();
+        final query = await _users.where('phone', isEqualTo: targetEmail).get();
         if (query.docs.isNotEmpty) {
           targetEmail = query.docs.first.data()['email'] ?? targetEmail;
         } else {
-          final nameQuery = await _users
-              .where('name', isEqualTo: targetEmail)
-              .get();
+          final nameQuery =
+              await _users.where('name', isEqualTo: targetEmail).get();
           if (nameQuery.docs.isNotEmpty) {
             targetEmail = nameQuery.docs.first.data()['email'] ?? targetEmail;
           }
@@ -270,7 +401,22 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       final user = await getUserProfile(_auth.currentUser!.uid);
-      if (user == null) throw const AuthException('Kullanıcı profili bulunamadı.');
+      if (user == null) {
+        throw const AuthException('Kullanıcı profili bulunamadı.');
+      }
+
+      // Backend PostgreSQL ile Firebase ID Token üzerinden oturum doğrula ve eşitle
+      try {
+        final idToken = await _auth.currentUser?.getIdToken();
+        if (idToken != null) {
+          await BackendAuthService.instance.verifySession(
+            idToken: idToken,
+            name: user.name,
+            role: user.role,
+          );
+        }
+      } catch (_) {}
+
       return user;
     } catch (e) {
       throw _mapException(e);
@@ -323,117 +469,6 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  @override
-  Future<AppUser> signInOrRegisterParentWithPhone({
-    required String phone,
-  }) async {
-    final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
-    final autoEmail = 'parent_$cleanPhone@matpusula.app';
-    final autoPassword = 'MatPusula_Passless_$cleanPhone';
-
-    // 1. Önce var olan e-posta / şifre ile giriş yapmayı dene
-    try {
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: autoEmail,
-        password: autoPassword,
-      );
-      final user = await getUserProfile(credential.user!.uid);
-      if (user != null) return user;
-    } catch (_) {}
-
-    // 2. Telefon numarası eşleşen veritabanı kullanıcısını ara
-    try {
-      final query = await _users
-          .where('phone', isEqualTo: phone.trim())
-          .limit(1)
-          .get();
-      if (query.docs.isNotEmpty) {
-        final docData = query.docs.first.data();
-        final existingEmail = docData['email'] as String?;
-        if (existingEmail != null && existingEmail.isNotEmpty) {
-          final credential = await _auth.signInWithEmailAndPassword(
-            email: existingEmail,
-            password: autoPassword,
-          );
-          final user = await getUserProfile(credential.user!.uid);
-          if (user != null) return user;
-        }
-      }
-    } catch (_) {}
-
-    // 3. Kullanıcı yoksa otomatik şifresiz Veli hesabı oluştur
-    User? createdUser;
-    try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: autoEmail,
-        password: autoPassword,
-      );
-      createdUser = credential.user!;
-      final displayName = 'Veli (${phone.trim()})';
-      await createdUser.updateDisplayName(displayName);
-
-      final now = DateTime.now();
-      final userModel = AppUserModel(
-        uid: createdUser.uid,
-        role: 'parent',
-        name: displayName,
-        email: autoEmail,
-        phone: phone.trim(),
-        isActive: true,
-        createdAt: now,
-        updatedAt: now,
-      );
-
-      final batch = _firestore.batch();
-      batch.set(_users.doc(createdUser.uid), userModel.toFirestore());
-      batch.set(
-        _firestore.collection('parent_profiles').doc(createdUser.uid),
-        {
-          'uid': createdUser.uid,
-          'name': displayName,
-          'email': autoEmail,
-          'phone': phone.trim(),
-          'createdAt': now.toIso8601String(),
-        },
-      );
-
-      // Eşleşen gerçek öğrenci varsa veliye bağla
-      try {
-        final studentQuery = await _firestore
-            .collection('students')
-            .where('phone', isEqualTo: phone.trim())
-            .get();
-
-        for (final sDoc in studentQuery.docs) {
-          batch.update(sDoc.reference, {
-            'parentIds': FieldValue.arrayUnion([createdUser.uid]),
-          });
-        }
-      } catch (_) {}
-
-      await batch.commit();
-
-      return userModel;
-    } catch (e) {
-      if (e is FirebaseAuthException && (e.code == 'email-already-in-use' || e.code == 'EMAIL_EXISTS')) {
-        try {
-          final credential = await _auth.signInWithEmailAndPassword(
-            email: autoEmail,
-            password: autoPassword,
-          );
-          final user = await getUserProfile(credential.user!.uid);
-          if (user != null) return user;
-        } catch (_) {}
-      }
-      if (createdUser != null) {
-        try {
-          await createdUser.delete();
-        } catch (_) {}
-      }
-      throw _mapException(e);
-    }
-  }
-
   // ── Profil getir ────────────────────────────────────────────────────────
 
   @override
@@ -447,15 +482,16 @@ class AuthRepositoryImpl implements AuthRepository {
 
     final fbUser = _auth.currentUser;
     if (fbUser != null && fbUser.uid == uid) {
-      final email = fbUser.email ?? '';
-      final isParent = email.startsWith('parent_') || email.contains('parent');
-      final role = isParent ? 'parent' : 'teacher';
+      final phone = fbUser.phoneNumber;
+      final role = (phone != null && phone.isNotEmpty) ? 'parent' : 'teacher';
 
       return AppUserModel(
         uid: uid,
         role: role,
-        name: fbUser.displayName ?? (email.isNotEmpty ? email.split('@').first : 'Kullanıcı'),
-        email: email,
+        name: fbUser.displayName ??
+            (phone != null ? 'Veli ($phone)' : 'Kullanıcı'),
+        email: fbUser.email ?? '',
+        phone: phone,
         isActive: true,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
@@ -469,12 +505,21 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Map<String, dynamic>?> validateInviteCode(String code) async {
     try {
-      final doc = await _inviteCodes.doc(code).get();
+      final cleanCode = code.trim().toUpperCase();
+      if (cleanCode.isEmpty) return null;
+
+      var doc = await _inviteCodes.doc(cleanCode).get();
+      if (!doc.exists && !cleanCode.startsWith('OT-')) {
+        doc = await _inviteCodes.doc('OT-$cleanCode').get();
+      }
+
       if (!doc.exists || doc.data() == null) return null;
 
       final data = doc.data()!;
       final used = data['used'] as bool? ?? false;
-      if (used) throw const AuthException('Bu davet kodu daha önce kullanılmış.');
+      if (used) {
+        throw const AuthException('Bu davet kodu daha önce kullanılmış.');
+      }
 
       final expiresAt = data['expiresAt'];
       if (expiresAt != null) {
@@ -496,6 +541,7 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+
   // ── Genel Hata Dönüştürücü ──────────────────────────────────────────────
 
   Exception _mapException(Object e) {
@@ -510,17 +556,24 @@ class AuthRepositoryImpl implements AuthRepository {
           const AuthException('E-posta veya şifre hatalı.'),
         'invalid-email' =>
           const AuthException('Geçersiz e-posta adresi biçimi.'),
-        'email-already-in-use' =>
-          const AuthException('Bu e-posta adresi zaten kullanılıyor. Giriş yapmayı deneyin.'),
-        'weak-password' =>
-          const AuthException('Şifreniz çok zayıf. En az 6 karakter olmalıdır.'),
+        'email-already-in-use' => const AuthException(
+            'Bu e-posta adresi zaten kullanılıyor. Giriş yapmayı deneyin.'),
+        'invalid-phone-number' =>
+          const AuthException('Geçersiz telefon numarası girdiniz.'),
+        'invalid-verification-code' =>
+          const AuthException('Girdiğiniz SMS doğrulama kodu hatalı.'),
+        'session-expired' || 'code-expired' => const AuthException(
+            'Doğrulama kodunun süresi dolmuş. Lütfen tekrar kod isteyiniz.'),
+        'weak-password' => const AuthException(
+            'Şifreniz çok zayıf. En az 6 karakter olmalıdır.'),
         'user-disabled' =>
           const AuthException('Hesabınız devre dışı bırakılmıştır.'),
-        'network-request-failed' =>
-          const AuthException('İnternet bağlantısı kurulamadı. Bağlantınızı kontrol edin.'),
-        'too-many-requests' =>
-          const AuthException('Çok fazla hatalı deneme yapıldı. Lütfen daha sonra tekrar deneyin.'),
-        _ => AuthException('Giriş/Kayıt başarısız (${e.code}). Lütfen tekrar deneyin.'),
+        'network-request-failed' => const AuthException(
+            'İnternet bağlantısı kurulamadı. Bağlantınızı kontrol edin.'),
+        'too-many-requests' => const AuthException(
+            'Çok fazla hatalı deneme yapıldı. Lütfen daha sonra tekrar deneyin.'),
+        _ => AuthException(
+            'İşlem başarısız (${e.code}): ${e.message ?? 'Lütfen tekrar deneyin.'}'),
       };
     }
 
@@ -531,7 +584,8 @@ class AuthRepositoryImpl implements AuthRepository {
       if (e.code == 'unavailable' || e.code == 'network-request-failed') {
         return const AuthException('Sunucuya veya internete erişilemiyor.');
       }
-      return AuthException('İşlem başarısız (${e.code}): ${e.message ?? 'Lütfen tekrar deneyin.'}');
+      return AuthException(
+          'İşlem başarısız (${e.code}): ${e.message ?? 'Lütfen tekrar deneyin.'}');
     }
 
     return AuthException(e.toString().replaceAll('Exception: ', ''));

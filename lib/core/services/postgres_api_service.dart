@@ -17,7 +17,8 @@ class PostgresApiService {
   // Geliştirme: Android emülatör → host PC'ye ulaşmak için 10.0.2.2
   // Gerçek cihaz: bilgisayarınızın yerel IP adresi (örn: 192.168.1.x)
   static const String _baseUrl = 'http://10.0.2.2:3001/api';
-  static const String _apiKey  = 'odev_takip_secret_key_2026'; // .env ile eşleşmeli
+  static const String _apiKey =
+      'odev_takip_secret_key_2026'; // .env ile eşleşmeli
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',

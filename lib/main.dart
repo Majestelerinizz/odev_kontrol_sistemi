@@ -1,9 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'app/app.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,24 +26,20 @@ Future<void> main() async {
   ]);
 
   // ── Firebase başlatma ─────────────────────────────────────────────────────
-  try {
-    if (kIsWeb) {
-      await Firebase.initializeApp(
-        options: const FirebaseOptions(
-          apiKey: "AIzaSyDx03qPyKBzQUb97dW_j2cN1kbBbQL0sZM",
-          appId: "1:1063947496038:web:c424f96a4fa7ed77711ba7",
-          messagingSenderId: "1063947496038",
-          projectId: "odevtakipsistemi-b93b2",
-          authDomain: "odevtakipsistemi-b93b2.firebaseapp.com",
-          storageBucket: "odevtakipsistemi-b93b2.firebasestorage.app",
-        ),
-      );
-    } else {
-      await Firebase.initializeApp();
-    }
-  } catch (e) {
-    debugPrint('Firebase initialize warning: $e');
-  }
+  // Yapılandırma, `flutterfire configure` tarafından üretilen
+  // firebase_options.dart dosyasından gelir. Elle gömülü config KULLANILMAZ:
+  // Phone Auth'un çalışması için platform başına doğru appId/apiKey zorunludur
+  // (Web reCAPTCHA, Android Play Integrity, iOS APNs bu kimliklere bağlıdır).
+  //
+  // Burada bilinçli olarak try/catch YOK: Firebase başlatılamazsa Auth ve
+  // Firestore'un tamamı çalışmaz, hatanın sessizce yutulması yerine görünür
+  // olması gerekir.
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // SMS doğrulama mesajlarının ve reCAPTCHA arayüzünün Türkçe gelmesi için
+  await FirebaseAuth.instance.setLanguageCode('tr');
 
   runApp(
     const ProviderScope(

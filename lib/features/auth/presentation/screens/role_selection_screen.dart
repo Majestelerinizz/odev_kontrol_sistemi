@@ -45,82 +45,104 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: const Icon(Icons.arrow_back_rounded,
+              color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnim,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSizes.pagePadding * 1.5),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppStrings.roleSelectionTitle,
-                  style: AppTextStyles.h1,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  AppStrings.roleSelectionSubtitle,
-                  style: AppTextStyles.bodyMedium,
-                ),
-                const SizedBox(height: 40),
-
-                // ── Öğretmen kartı ────────────────────────────────────────
-                _RoleCard(
-                  title: AppStrings.roleTeacher,
-                  description: AppStrings.teacherRoleDesc,
-                  icon: Icons.person_rounded,
-                  primaryColor: AppColors.teacherPrimary,
-                  surfaceColor: AppColors.teacherSurface,
-                  features: const [
-                    'Sınıf ve öğrenci yönetimi',
-                    'Ödev ve deneme takibi',
-                    'Veli bilgilendirme',
-                  ],
-                  onTap: () => context.push('/register/teacher'),
-                ),
-                const SizedBox(height: 20),
-
-                // ── Veli kartı ────────────────────────────────────────────
-                _RoleCard(
-                  title: AppStrings.roleParent,
-                  description: AppStrings.parentRoleDesc,
-                  icon: Icons.family_restroom_rounded,
-                  primaryColor: AppColors.parentPrimary,
-                  surfaceColor: AppColors.parentSurface,
-                  features: const [
-                    'Çocuğunun ödev durumunu görün',
-                    'Deneme sonuçlarını takip edin',
-                    'Öğretmen mesajlarını okuyun',
-                  ],
-                  onTap: () => context.push('/register/parent'),
-                ),
-
-                const Spacer(),
-
-                // ── Giriş bağlantısı ─────────────────────────────────────
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Zaten hesabınız var mı? ',
-                      style: AppTextStyles.bodyMedium,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: FadeTransition(
+              opacity: _fadeAnim,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSizes.pagePadding * 1.5,
+                      vertical: 16,
                     ),
-                    TextButton(
-                      onPressed: () => context.push('/login'),
-                      child: Text(
-                        AppStrings.login,
-                        style: AppTextStyles.labelLarge.copyWith(
-                          color: AppColors.teacherPrimary,
+                    physics: const BouncingScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight - 32,
+                      ),
+                      child: IntrinsicHeight(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppStrings.roleSelectionTitle,
+                              style: AppTextStyles.h1,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              AppStrings.roleSelectionSubtitle,
+                              style: AppTextStyles.bodyMedium,
+                            ),
+                            const SizedBox(height: 32),
+
+                            // ── Öğretmen kartı ────────────────────────────────────────
+                            _RoleCard(
+                              title: AppStrings.roleTeacher,
+                              description: AppStrings.teacherRoleDesc,
+                              icon: Icons.person_rounded,
+                              primaryColor: AppColors.teacherPrimary,
+                              surfaceColor: AppColors.teacherSurface,
+                              features: const [
+                                'Sınıf ve öğrenci yönetimi',
+                                'Ödev ve deneme takibi',
+                                'Veli bilgilendirme',
+                              ],
+                              onTap: () => context.push('/register/teacher'),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // ── Veli kartı ────────────────────────────────────────────
+                            _RoleCard(
+                              title: AppStrings.roleParent,
+                              description: AppStrings.parentRoleDesc,
+                              icon: Icons.family_restroom_rounded,
+                              primaryColor: AppColors.parentPrimary,
+                              surfaceColor: AppColors.parentSurface,
+                              features: const [
+                                'Çocuğunun ödev durumunu görün',
+                                'Deneme sonuçlarını takip edin',
+                                'Öğretmen mesajlarını okuyun',
+                              ],
+                              onTap: () => context.push('/register/parent'),
+                            ),
+
+                            const SizedBox(height: 24),
+                            const Spacer(),
+
+                            // ── Giriş bağlantısı ─────────────────────────────────────
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Zaten hesabınız var mı? ',
+                                  style: AppTextStyles.bodyMedium,
+                                ),
+                                TextButton(
+                                  onPressed: () => context.push('/login'),
+                                  child: Text(
+                                    AppStrings.login,
+                                    style: AppTextStyles.labelLarge.copyWith(
+                                      color: AppColors.teacherPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ],
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -196,7 +218,8 @@ class _RoleCardState extends State<_RoleCard> {
                       color: widget.surfaceColor,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Icon(widget.icon, color: widget.primaryColor, size: 28),
+                    child:
+                        Icon(widget.icon, color: widget.primaryColor, size: 28),
                   ),
                   const SizedBox(width: 14),
                   Expanded(

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/utils/phone_number_helper.dart';
 import '../../data/services/firebase_phone_auth_service.dart';
 import 'auth_providers.dart';
 
@@ -62,21 +63,66 @@ class PhoneAuthNotifier extends StateNotifier<PhoneAuthUiState> {
     });
   }
 
-  /// SMS Kodu Gönder
-  Future<void> sendCode(String phone) async {
-    state = state.copyWith(currentPhone: phone);
+  /// SMS Kodu Gönder (E.164 doğrulaması ile)
+  Future<bool> sendCode(String phone) async {
+    final clean = phone.trim();
+    if (clean.isEmpty) {
+      state = state.copyWith(
+        authState: const PhoneAuthError(
+            userMessage: 'Lütfen telefon numaranızı giriniz.'),
+      );
+      return false;
+    }
+
+    if (!PhoneNumberHelper.isValidTurkishMobile(clean) &&
+        !PhoneNumberHelper.isValidE164(clean)) {
+      state = state.copyWith(
+        authState: const PhoneAuthError(
+          userMessage:
+              'Geçersiz telefon numarası. Lütfen 05XX XXX XX XX formatında 10 haneli geçerli cep numaranızı girin.',
+        ),
+      );
+      return false;
+    }
+
+    String e164Phone;
+    try {
+      e164Phone = PhoneNumberHelper.normalizeToE164(clean);
+    } catch (_) {
+      state = state.copyWith(
+        authState: const PhoneAuthError(
+            userMessage: 'Telefon numarası formatı geçersiz.'),
+      );
+      return false;
+    }
+
+    state = state.copyWith(
+      currentPhone: e164Phone,
+      authState: const PhoneAuthSending(),
+    );
+
+    final completer = Completer<bool>();
 
     await _phoneAuthService.sendVerificationCode(
-      rawPhone: phone,
+      rawPhone: e164Phone,
       onStateChanged: (newAuthState) {
         state = state.copyWith(authState: newAuthState);
         if (newAuthState is PhoneAuthCodeSent) {
           _startCooldownTimer();
+          if (!completer.isCompleted) completer.complete(true);
         } else if (newAuthState is PhoneAuthSignedIn) {
           _handleSuccessfulAuth();
+          if (!completer.isCompleted) completer.complete(true);
+        } else if (newAuthState is PhoneAuthError) {
+          if (!completer.isCompleted) completer.complete(false);
         }
       },
     );
+
+    // Eğer timeout olursa veya senkron tamamlanmadıysa
+    return completer.isCompleted
+        ? await completer.future
+        : (state.authState is PhoneAuthCodeSent);
   }
 
   /// Kodu Tekrar Gönder
@@ -86,6 +132,8 @@ class PhoneAuthNotifier extends StateNotifier<PhoneAuthUiState> {
     final codeSentState = state.authState is PhoneAuthCodeSent
         ? state.authState as PhoneAuthCodeSent
         : null;
+
+    state = state.copyWith(authState: const PhoneAuthSending());
 
     await _phoneAuthService.sendVerificationCode(
       rawPhone: state.currentPhone!,
@@ -103,15 +151,30 @@ class PhoneAuthNotifier extends StateNotifier<PhoneAuthUiState> {
 
   /// Kullanıcının girdiği 6 haneli OTP kodunu doğrula
   Future<bool> verifyCode(String code) async {
-    if (state.authState is! PhoneAuthCodeSent) return false;
+    if (state.authState is! PhoneAuthCodeSent) {
+      state = state.copyWith(
+        authState: const PhoneAuthError(
+            userMessage: 'Lütfen önce doğrulama kodu isteyiniz.'),
+      );
+      return false;
+    }
     final codeSent = state.authState as PhoneAuthCodeSent;
+
+    final cleanCode = code.trim();
+    if (cleanCode.length != 6 || !RegExp(r'^\d{6}$').hasMatch(cleanCode)) {
+      state = state.copyWith(
+        authState: const PhoneAuthError(
+            userMessage: 'Doğrulama kodu 6 haneli rakamlardan oluşmalıdır.'),
+      );
+      return false;
+    }
 
     state = state.copyWith(authState: const PhoneAuthVerifying());
 
     try {
       final credential = await _phoneAuthService.verifyOtpCode(
         verificationId: codeSent.verificationId,
-        smsCode: code,
+        smsCode: cleanCode,
       );
 
       if (credential.user != null) {
@@ -122,11 +185,18 @@ class PhoneAuthNotifier extends StateNotifier<PhoneAuthUiState> {
         await _handleSuccessfulAuth();
         return true;
       }
+      state = state.copyWith(
+        authState: const PhoneAuthError(
+            userMessage: 'Doğrulama başarısız oldu. Kullanıcı oluşturulamadı.'),
+      );
       return false;
     } catch (e) {
-      final message = e is FormatException
-          ? e.message
-          : 'Doğrulama kodu geçersiz veya süresi dolmuş.';
+      final String message;
+      if (e is FormatException) {
+        message = e.message;
+      } else {
+        message = FirebasePhoneAuthService.mapFirebaseError(e);
+      }
       state = state.copyWith(
         authState: PhoneAuthError(userMessage: message),
       );
@@ -147,7 +217,8 @@ class PhoneAuthNotifier extends StateNotifier<PhoneAuthUiState> {
   }
 }
 
-final firebasePhoneAuthServiceProvider = Provider<FirebasePhoneAuthService>((ref) {
+final firebasePhoneAuthServiceProvider =
+    Provider<FirebasePhoneAuthService>((ref) {
   return FirebasePhoneAuthService();
 });
 

@@ -81,11 +81,22 @@ service cloud.firestore {
 
     // ── invite_codes koleksiyonu ───────────────────────────────────────────
     match /invite_codes/{code} {
-      // Veliler kayıt olmadan önce davet kodunu doğrular (oturum açılmamış olabilir)
-      allow read: if true;
+      // get: Veli, kayıt olmadan önce ELİNDEKİ kodu tek doküman olarak doğrular.
+      // Bu adımda oturum henüz açılmamıştır (telefon doğrulaması sonraki adım).
+      allow get: if true;
+
+      // list: Koleksiyonu sorgulama/listeleme yalnızca öğretmene açıktır.
+      // Açık bırakılırsa oturumsuz bir istemci TÜM davet kodlarını çekebilir.
+      allow list: if isTeacher();
+
       allow create: if isTeacher();
-      allow update: if true;
+
+      // update: Kodu "kullanıldı" olarak işaretleme, telefon doğrulaması
+      // tamamlanmış (oturum açmış) istemcinin transaction'ı içinde gerçekleşir.
+      // Eskiden "if true" idi: oturumsuz herkes kodları tahrif edebiliyordu.
+      allow update: if isAuthenticated();
     }
+
 
     // ── homeworks koleksiyonu ──────────────────────────────────────────────
     match /homeworks/{homeworkId} {

@@ -134,54 +134,47 @@ class ParentAuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> registerParent({
+  /// Doğrulanmış Firebase Phone Auth oturumu ile veli profili oluşturur ve davet kodunu tüketir
+  Future<bool> registerParentWithPhoneAuth({
     required String name,
-    required String email,
-    required String password,
     required String inviteCode,
   }) async {
     state = state.loading;
     try {
-      await _repo.registerParent(
+      await _repo.registerParentWithPhoneAuth(
         name: name,
-        email: email,
-        password: password,
         inviteCode: inviteCode,
       );
       state = state.success;
+      return true;
     } on AuthException catch (e) {
       state = state.error(e.message);
+      return false;
     } catch (_) {
-      state = state.error('Beklenmeyen bir hata oluştu.');
+      state =
+          state.error('Veli kaydı oluşturulurken beklenmeyen bir hata oluştu.');
+      return false;
     }
   }
 
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) async {
+  /// Telefon ile başarılı OTP doğrulaması sonrasında Firestore profilini eşitler
+  Future<bool> syncParentProfile() async {
     state = state.loading;
     try {
-      await _repo.signInWithEmailAndPassword(email: email, password: password);
-      state = state.success;
+      final user = await _repo.syncParentProfileAfterPhoneAuth();
+      if (user != null) {
+        state = state.success;
+        return true;
+      }
+      state = state.error('Kullanıcı profili senkronize edilemedi.');
+      return false;
     } on AuthException catch (e) {
       state = state.error(e.message);
+      return false;
     } catch (_) {
-      state = state.error('Beklenmeyen bir hata oluştu.');
-    }
-  }
-
-  Future<void> signInWithPhone({
-    required String phone,
-  }) async {
-    state = state.loading;
-    try {
-      await _repo.signInOrRegisterParentWithPhone(phone: phone);
-      state = state.success;
-    } on AuthException catch (e) {
-      state = state.error(e.message);
-    } catch (_) {
-      state = state.error('Telefon ile giriş yapılırken bir hata oluştu.');
+      state =
+          state.error('Giriş profili senkronize edilirken bir hata oluştu.');
+      return false;
     }
   }
 
