@@ -147,9 +147,10 @@ class _CreateExamResultScreenState
                   studentsAsync.when(
                     data: (students) {
                       if (students.isEmpty) {
-                        return const Text(
+                        return Text(
                             'Bu sınıfta henüz öğrenci kaydı yok.',
-                            style: TextStyle(color: AppColors.warning));
+                            style: AppTextStyles.bodyMedium
+                                .copyWith(color: AppColors.warning));
                       }
                       _selectedStudentId ??= students.first.id;
 

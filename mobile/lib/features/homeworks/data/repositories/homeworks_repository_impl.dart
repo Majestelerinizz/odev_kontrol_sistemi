@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../models/homework_model.dart';
 import '../models/homework_assignment_model.dart';
 import '../../domain/entities/homework_entity.dart';
@@ -21,14 +22,12 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
     if (teacherId.isEmpty) return Stream.value([]);
     return _homeworksRef
         .where('teacherId', isEqualTo: teacherId)
+        .orderBy('createdAt', descending: true)
+        .limit(AppConstants.pageSize)
         .snapshots()
-        .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => HomeworkModel.fromFirestore(doc))
-          .toList();
-      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return list;
-    }).handleError((_) => <HomeworkEntity>[]);
+        .map((snapshot) => snapshot.docs
+            .map((doc) => HomeworkModel.fromFirestore(doc))
+            .toList());
   }
 
   @override
@@ -36,14 +35,12 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
     if (classId.isEmpty) return Stream.value([]);
     return _homeworksRef
         .where('classId', isEqualTo: classId)
+        .orderBy('dueDate', descending: true)
+        .limit(AppConstants.pageSize)
         .snapshots()
-        .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => HomeworkModel.fromFirestore(doc))
-          .toList();
-      list.sort((a, b) => b.dueDate.compareTo(a.dueDate));
-      return list;
-    }).handleError((_) => <HomeworkEntity>[]);
+        .map((snapshot) => snapshot.docs
+            .map((doc) => HomeworkModel.fromFirestore(doc))
+            .toList());
   }
 
   @override
@@ -52,11 +49,11 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
     if (homeworkId.isEmpty) return Stream.value([]);
     return _assignmentsRef
         .where('homeworkId', isEqualTo: homeworkId)
+        .limit(AppConstants.pageSize)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => HomeworkAssignmentModel.fromFirestore(doc))
-            .toList())
-        .handleError((_) => <HomeworkAssignmentEntity>[]);
+            .toList());
   }
 
   @override
@@ -65,26 +62,42 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
     if (studentId.isEmpty) return Stream.value([]);
     return _assignmentsRef
         .where('studentId', isEqualTo: studentId)
+        .orderBy('updatedAt', descending: true)
+        .limit(AppConstants.pageSize)
         .snapshots()
-        .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => HomeworkAssignmentModel.fromFirestore(doc))
-          .toList();
-      list.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-      return list;
-    }).handleError((_) => <HomeworkAssignmentEntity>[]);
+        .map((snapshot) => snapshot.docs
+            .map((doc) => HomeworkAssignmentModel.fromFirestore(doc))
+            .toList());
   }
 
   @override
   Future<HomeworkEntity?> getHomeworkById(String homeworkId) async {
-    try {
-      if (homeworkId.isEmpty) return null;
-      final doc = await _homeworksRef.doc(homeworkId).get();
-      if (!doc.exists) return null;
-      return HomeworkModel.fromFirestore(doc);
-    } catch (_) {
-      return null;
-    }
+    if (homeworkId.isEmpty) return null;
+    final doc = await _homeworksRef.doc(homeworkId).get();
+    if (!doc.exists) return null;
+    return HomeworkModel.fromFirestore(doc);
+  }
+
+  @override
+  Future<Map<String, HomeworkEntity>> getHomeworksByIds(
+      List<String> homeworkIds) async {
+    final unique = homeworkIds.where((id) => id.isNotEmpty).toSet().toList();
+    if (unique.isEmpty) return {};
+
+    // Tekil get: veli list sorgusu (whereIn) rules ile kırılmasın;
+    // yetkisiz/eksik dokümanlar atlanır.
+    final result = <String, HomeworkEntity>{};
+    await Future.wait(unique.map((id) async {
+      try {
+        final doc = await _homeworksRef.doc(id).get();
+        if (doc.exists) {
+          result[id] = HomeworkModel.fromFirestore(doc);
+        }
+      } catch (_) {
+        // permission-denied veya ağ — kart başlıksız kalabilir
+      }
+    }));
+    return result;
   }
 
   @override
@@ -104,30 +117,33 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
       dueDate: homework.dueDate,
       attachmentUrls: homework.attachmentUrls,
       assignedToAll: homework.assignedToAll,
+      studentIds: List<String>.from(studentIds),
       createdAt: homework.createdAt,
     );
 
-    // 1. Ödevi ekle
     final docRef = await _homeworksRef.add(model.toFirestore());
     final homeworkId = docRef.id;
 
-    // 2. Her öğrenci için atomik batch ile homework_assignments oluştur
-    final batch = _firestore.batch();
-    for (final studentId in studentIds) {
-      final assignmentRef = _assignmentsRef.doc();
-      final assignmentModel = HomeworkAssignmentModel(
-        id: assignmentRef.id,
-        homeworkId: homeworkId,
-        studentId: studentId,
-        classId: homework.classId,
-        teacherId: homework.teacherId,
-        status: 'pending',
-        updatedAt: DateTime.now(),
-      );
-      batch.set(assignmentRef, assignmentModel.toFirestore());
+    for (var i = 0; i < studentIds.length; i += 400) {
+      final end =
+          i + 400 > studentIds.length ? studentIds.length : i + 400;
+      final chunk = studentIds.sublist(i, end);
+      final batch = _firestore.batch();
+      for (final studentId in chunk) {
+        final assignmentRef = _assignmentsRef.doc();
+        final assignmentModel = HomeworkAssignmentModel(
+          id: assignmentRef.id,
+          homeworkId: homeworkId,
+          studentId: studentId,
+          classId: homework.classId,
+          teacherId: homework.teacherId,
+          status: 'pending',
+          updatedAt: DateTime.now(),
+        );
+        batch.set(assignmentRef, assignmentModel.toFirestore());
+      }
+      await batch.commit();
     }
-
-    await batch.commit();
     return homeworkId;
   }
 
@@ -155,16 +171,18 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
 
   @override
   Future<void> deleteHomework(String homeworkId) async {
-    // 1. Ödevi sil
-    await _homeworksRef.doc(homeworkId).delete();
-
-    // 2. İlgili atamaları sil
     final assignments =
         await _assignmentsRef.where('homeworkId', isEqualTo: homeworkId).get();
-    final batch = _firestore.batch();
-    for (final doc in assignments.docs) {
-      batch.delete(doc.reference);
+    for (var i = 0; i < assignments.docs.length; i += 400) {
+      final end = i + 400 > assignments.docs.length
+          ? assignments.docs.length
+          : i + 400;
+      final batch = _firestore.batch();
+      for (final doc in assignments.docs.sublist(i, end)) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
     }
-    await batch.commit();
+    await _homeworksRef.doc(homeworkId).delete();
   }
 }

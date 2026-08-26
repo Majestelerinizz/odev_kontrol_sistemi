@@ -3,7 +3,7 @@ class AppStrings {
   AppStrings._();
 
   // ── Genel ─────────────────────────────────────────────────────────────────
-  static const String appName = 'Ödev Takip';
+  static const String appName = 'Eduly';
   static const String ok = 'Tamam';
   static const String cancel = 'İptal';
   static const String save = 'Kaydet';

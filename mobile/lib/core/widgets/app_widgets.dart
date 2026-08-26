@@ -127,7 +127,7 @@ class EmptyState extends StatelessWidget {
               child: Icon(
                 icon ?? Icons.inbox_rounded,
                 size: 40,
-                color: AppColors.textDisabled,
+                color: AppColors.textTertiary,
               ),
             ),
             const SizedBox(height: 16),

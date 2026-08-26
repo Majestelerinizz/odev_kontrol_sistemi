@@ -6,7 +6,7 @@ abstract class AuthRepository {
   /// Oturum durumu akışı
   Stream<AppUser?> get authStateChanges;
 
-  /// Mevcut oturum açmış kullanıcı
+  /// Mevcut oturum açmış kullanıcı (son bilinen profil; stream ile güncellenir)
   AppUser? get currentUser;
 
   /// Öğretmen kaydı
@@ -24,15 +24,12 @@ abstract class AuthRepository {
     required String inviteCode,
   });
 
-  /// E-posta/şifre ile giriş
+  /// E-posta/şifre ile giriş.
+  /// [expectedRole] verilirse profil rolü eşleşmezse oturum kapatılır.
   Future<AppUser> signInWithEmailAndPassword({
     required String email,
     required String password,
-  });
-
-  /// Veli için şifresiz telefon numarası ile hızlı giriş/kayıt
-  Future<AppUser> signInOrRegisterParentWithPhone({
-    required String phone,
+    String? expectedRole,
   });
 
   /// Çıkış

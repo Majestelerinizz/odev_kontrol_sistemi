@@ -46,7 +46,8 @@ class AuthRepository {
       if (user == null) {
         await _auth.signOut();
         throw const AuthException(
-          'Bu hesap yönetici paneline erişim yetkisine sahip değil.',
+          'Bu hesap yönetici paneline erişim yetkisine sahip değil '
+          '(admin rolü yok veya hesap pasif).',
         );
       }
       return user;
@@ -75,12 +76,15 @@ class AuthRepository {
     final role = data['role'] as String? ?? '';
     if (role != AdminConstants.roleAdmin) return null;
 
+    final isActive = data['isActive'] as bool? ?? true;
+    if (!isActive) return null;
+
     return AdminUser(
       uid: uid,
       role: role,
       name: data['name'] as String? ?? '',
       email: data['email'] as String? ?? '',
-      isActive: data['isActive'] as bool? ?? true,
+      isActive: isActive,
       createdAt: _parseDate(data['createdAt']),
     );
   }

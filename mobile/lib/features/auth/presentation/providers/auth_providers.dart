@@ -82,7 +82,11 @@ class TeacherAuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = state.loading;
     try {
-      await _repo.signInWithEmailAndPassword(email: email, password: password);
+      await _repo.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+        expectedRole: 'teacher',
+      );
       state = state.success;
     } on AuthException catch (e) {
       state = state.error(e.message);
@@ -162,26 +166,16 @@ class ParentAuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = state.loading;
     try {
-      await _repo.signInWithEmailAndPassword(email: email, password: password);
+      await _repo.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+        expectedRole: 'parent',
+      );
       state = state.success;
     } on AuthException catch (e) {
       state = state.error(e.message);
     } catch (_) {
       state = state.error('Beklenmeyen bir hata oluştu.');
-    }
-  }
-
-  Future<void> signInWithPhone({
-    required String phone,
-  }) async {
-    state = state.loading;
-    try {
-      await _repo.signInOrRegisterParentWithPhone(phone: phone);
-      state = state.success;
-    } on AuthException catch (e) {
-      state = state.error(e.message);
-    } catch (_) {
-      state = state.error('Telefon ile giriş yapılırken bir hata oluştu.');
     }
   }
 

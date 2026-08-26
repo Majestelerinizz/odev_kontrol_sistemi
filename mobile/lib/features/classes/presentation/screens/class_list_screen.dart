@@ -62,14 +62,15 @@ class ClassListScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(
           child: Text('Sınıflar yüklenemedi: $err',
-              style: const TextStyle(color: AppColors.error)),
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error)),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddClassDialog(context, ref, user?.uid ?? ''),
         backgroundColor: AppColors.teacherPrimary,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Yeni Sınıf', style: TextStyle(color: Colors.white)),
+        icon: const Icon(Icons.add_rounded, color: AppColors.textOnPrimary),
+        label: Text('Yeni Sınıf',
+            style: AppTextStyles.buttonMedium),
       ),
     );
   }
@@ -285,8 +286,9 @@ class _ClassCard extends StatelessWidget {
                         ListTile(
                           leading: const Icon(Icons.delete_outline_rounded,
                               color: AppColors.error),
-                          title: const Text('Sınıfı Sil',
-                              style: TextStyle(color: AppColors.error)),
+                          title: Text('Sınıfı Sil',
+                              style: AppTextStyles.bodyMedium
+                                  .copyWith(color: AppColors.error)),
                           onTap: () {
                             Navigator.pop(ctx);
                             onDelete();

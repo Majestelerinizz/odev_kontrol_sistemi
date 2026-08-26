@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/entities/message_entity.dart';
 import '../models/message_model.dart';
 
@@ -58,7 +59,6 @@ class MessagesRepository {
       }
     }
 
-    // Uniq parent ID'ler
     final uniqueParentIds = targetParentIds.toSet().toList();
 
     final messageRef = _firestore.collection('messages').doc();
@@ -77,15 +77,20 @@ class MessagesRepository {
       createdAt: DateTime.now(),
     );
 
-    final batch = _firestore.batch();
-    batch.set(messageRef, messageModel.toFirestore());
+    // Firestore batch max 500 ops: 1 message + N notifications
+    final firstBatch = _firestore.batch();
+    firstBatch.set(messageRef, messageModel.toFirestore());
 
-    // Velilere anlık uygulama içi bildirim (`notifications`) üret
-    for (final parentId in uniqueParentIds) {
+    var index = 0;
+    const roomForNotifs = 449;
+    final firstEnd = uniqueParentIds.length < roomForNotifs
+        ? uniqueParentIds.length
+        : roomForNotifs;
+    for (; index < firstEnd; index++) {
       final notifRef = _firestore.collection('notifications').doc();
-      batch.set(notifRef, {
-        'userId': parentId,
-        'title': '📩 $title',
+      firstBatch.set(notifRef, {
+        'userId': uniqueParentIds[index],
+        'title': title,
         'body': body,
         'type': 'message',
         'data': {'messageId': messageRef.id},
@@ -93,8 +98,27 @@ class MessagesRepository {
         'createdAt': FieldValue.serverTimestamp(),
       });
     }
+    await firstBatch.commit();
 
-    await batch.commit();
+    while (index < uniqueParentIds.length) {
+      final batch = _firestore.batch();
+      final end = (index + 450) > uniqueParentIds.length
+          ? uniqueParentIds.length
+          : index + 450;
+      for (; index < end; index++) {
+        final notifRef = _firestore.collection('notifications').doc();
+        batch.set(notifRef, {
+          'userId': uniqueParentIds[index],
+          'title': title,
+          'body': body,
+          'type': 'message',
+          'data': {'messageId': messageRef.id},
+          'isRead': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+      await batch.commit();
+    }
   }
 
   /// Öğretmenin gönderdiği tüm mesajlar akışı
@@ -102,14 +126,12 @@ class MessagesRepository {
     return _firestore
         .collection('messages')
         .where('teacherId', isEqualTo: teacherId)
+        .orderBy('createdAt', descending: true)
+        .limit(AppConstants.pageSize)
         .snapshots()
-        .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => MessageModel.fromFirestore(doc))
-          .toList();
-      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return list;
-    });
+        .map((snapshot) => snapshot.docs
+            .map((doc) => MessageModel.fromFirestore(doc))
+            .toList());
   }
 
   /// Velinin aldığı tüm öğretmen mesajları akışı
@@ -117,13 +139,11 @@ class MessagesRepository {
     return _firestore
         .collection('messages')
         .where('parentIds', arrayContains: parentId)
+        .orderBy('createdAt', descending: true)
+        .limit(AppConstants.pageSize)
         .snapshots()
-        .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => MessageModel.fromFirestore(doc))
-          .toList();
-      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return list;
-    });
+        .map((snapshot) => snapshot.docs
+            .map((doc) => MessageModel.fromFirestore(doc))
+            .toList());
   }
 }

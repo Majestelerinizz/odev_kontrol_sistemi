@@ -1,4 +1,4 @@
-# MatPusula Admin — Manuel Seed Rehberi
+# Eduly Admin — Manuel Seed Rehberi
 
 Admin hesapları uygulama içinden oluşturulmaz. İlk süper kullanıcı Firebase Console üzerinden manuel eklenir.
 
@@ -23,7 +23,7 @@ Admin hesapları uygulama içinden oluşturulmaz. İlk süper kullanıcı Fireba
 }
 ```
 
-5. Admin paneli çalıştır:
+5. Local panel:
 
 ```bash
 cd web-panel
@@ -31,7 +31,14 @@ flutter pub get
 flutter run -d chrome
 ```
 
-6. Yukarıdaki e-posta/şifre ile giriş yap.
+6. Canlı Hosting (Faz B — [HANDOFF.md](HANDOFF.md)):
+
+```bash
+cd web-panel && flutter build web --release && cd ..
+firebase deploy --only hosting
+```
+
+URL örneği: `https://odevtakipsistemi-b93b2.web.app`
 
 ## Cloud Functions (toplu push)
 
@@ -45,5 +52,6 @@ firebase deploy --only functions
 ## Notlar
 
 - `teacher` veya `parent` hesapları admin panele **giremez**.
-- Toplu push için mobil kullanıcıların FCM token kaydetmiş olması gerekir (uygulama açılışında bildirim izni).
-- Admin panel salt okunurdur; öğretmen işlemleri mobil uygulamada yapılır.
+- `isActive: false` admin hesapları reddedilir.
+- Toplu push için mobil kullanıcıların FCM token kaydetmiş olması gerekir.
+- Admin panel salt okunur gözetimdir; öğretmen işlemleri mobil uygulamada yapılır.

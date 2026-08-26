@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-/// MatPusula Özel Vektörel Logo ve Amblem Widget'ı (Panel 1 Birebir Çizimi)
-class MatPusulaLogo extends StatelessWidget {
-  const MatPusulaLogo({
+/// Eduly Özel Vektörel Logo ve Amblem Widget'ı
+class EdulyLogo extends StatelessWidget {
+  const EdulyLogo({
     super.key,
     this.size = 80,
     this.useImageAsset = true,
@@ -30,14 +30,14 @@ class MatPusulaLogo extends StatelessWidget {
         ),
         child: ClipOval(
           child: Image.asset(
-            'assets/images/matpusula_logo.png',
+            'assets/images/eduly_logo.png',
             width: size,
             height: size,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
               return CustomPaint(
                 size: Size(size, size),
-                painter: _MatPusulaCompassPainter(),
+                painter: _EdulyCompassPainter(),
               );
             },
           ),
@@ -47,13 +47,13 @@ class MatPusulaLogo extends StatelessWidget {
 
     return CustomPaint(
       size: Size(size, size),
-      painter: _MatPusulaCompassPainter(),
+      painter: _EdulyCompassPainter(),
     );
   }
 }
 
-/// MatPusula Vektörel Pusula Çizici (Kırmızı İğneli Geometrik Pusula)
-class _MatPusulaCompassPainter extends CustomPainter {
+/// Eduly Vektörel Pusula Çizici (Kırmızı İğneli Geometrik Pusula)
+class _EdulyCompassPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);

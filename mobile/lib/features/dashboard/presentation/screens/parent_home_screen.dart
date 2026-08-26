@@ -6,7 +6,7 @@ import 'package:odev_takip/core/theme/app_colors.dart';
 import 'package:odev_takip/core/theme/app_text_styles.dart';
 import 'package:odev_takip/core/theme/app_sizes.dart';
 import 'package:odev_takip/core/widgets/app_widgets.dart';
-import 'package:odev_takip/core/widgets/matpusula_logo.dart';
+import 'package:odev_takip/core/widgets/eduly_logo.dart';
 
 import '../../../../core/widgets/notification_permission_dialog.dart';
 import '../../../students/presentation/providers/student_providers.dart';
@@ -39,14 +39,15 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
 
     final studentName = activeStudent != null
         ? '${activeStudent.name} (${activeStudent.classId} Sınıfı)'
-        : 'Mustafa Yıldız (8-B Sınıfı)';
+        : 'Henüz bağlı öğrenci yok';
 
     final schoolNo = activeStudent?.schoolNumber != null
         ? 'Okul No: ${activeStudent!.schoolNumber}'
-        : 'Okul No: 354';
+        : '';
 
-    final teacherNoteText = activeStudent?.teacherNote ??
-        'Matematik dersinde üslü ifadeler ve çarpanlara ayırma konularında gayet başarılı.';
+    final teacherNoteText = activeStudent?.teacherNote?.trim().isNotEmpty == true
+        ? activeStudent!.teacherNote!
+        : 'Öğretmen notu henüz eklenmedi.';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -74,10 +75,10 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                   children: [
                     Row(
                       children: [
-                        const MatPusulaLogo(size: 28),
+                        const EdulyLogo(size: 28),
                         const SizedBox(width: 8),
                         Text(
-                          'MatPusula',
+                          'Eduly',
                           style: AppTextStyles.h4.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -89,12 +90,14 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                     const SizedBox(height: 6),
                     Text(
                       'Merhaba, ${user?.name.split(' ').first ?? 'Veli'} 👋',
-                      style: AppTextStyles.h3.copyWith(color: Colors.white),
+                      style: AppTextStyles.h3
+                          .copyWith(color: AppColors.textOnPrimary),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Çocuğunuzun güncel durumu aşağıda.',
-                      style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+                      style: AppTextStyles.bodySmall
+                          .copyWith(color: AppColors.textOnPrimaryMuted),
                     ),
                   ],
                 ),
@@ -102,7 +105,8 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                icon: const Icon(Icons.notifications_outlined,
+                    color: AppColors.textOnPrimary),
                 onPressed: () => context.push('/parent/notifications'),
               ),
               const SizedBox(width: 4),
@@ -157,7 +161,11 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                         ),
                         child: Text(
                           schoolNo,
-                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.parentPrimary),
+                          style: AppTextStyles.labelSmall.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.parentPrimary,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ],

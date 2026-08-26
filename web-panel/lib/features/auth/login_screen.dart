@@ -67,10 +67,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset('assets/matpusula_logo.png', height: 56),
+                    Image.asset('assets/eduly_logo.png', height: 56),
                     const SizedBox(height: 16),
                     const Text(
-                      'MatPusula Admin',
+                      'Eduly Admin',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,

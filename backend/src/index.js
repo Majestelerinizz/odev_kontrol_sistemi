@@ -34,7 +34,7 @@ app.use('/api', aiVisionRouter);
 // ── Kök endpoint ───────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.json({
-    service: '📋 MatPusula — Backend & AI Vision Sync Engine',
+    service: '📋 Eduly — Backend & AI Vision Sync Engine',
     version: '1.2.0',
     endpoints: {
       health:       'GET  /api/health',

@@ -15,6 +15,7 @@ class HomeworkEntity {
     required this.dueDate,
     this.attachmentUrls = const [],
     this.assignedToAll = true,
+    this.studentIds = const [],
     required this.createdAt,
   });
 
@@ -29,6 +30,8 @@ class HomeworkEntity {
   final DateTime dueDate;
   final List<String> attachmentUrls;
   final bool assignedToAll;
+  /// Atanan öğrenci id'leri (Firestore rules + veli okuma için denormalize).
+  final List<String> studentIds;
   final DateTime createdAt;
 
   bool get isOverdue => DateTime.now().isAfter(dueDate);
@@ -45,6 +48,7 @@ class HomeworkEntity {
     DateTime? dueDate,
     List<String>? attachmentUrls,
     bool? assignedToAll,
+    List<String>? studentIds,
     DateTime? createdAt,
   }) {
     return HomeworkEntity(
@@ -59,6 +63,7 @@ class HomeworkEntity {
       dueDate: dueDate ?? this.dueDate,
       attachmentUrls: attachmentUrls ?? this.attachmentUrls,
       assignedToAll: assignedToAll ?? this.assignedToAll,
+      studentIds: studentIds ?? this.studentIds,
       createdAt: createdAt ?? this.createdAt,
     );
   }

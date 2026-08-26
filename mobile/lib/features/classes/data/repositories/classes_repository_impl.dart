@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../models/class_model.dart';
 import '../../domain/entities/class_entity.dart';
 import '../../domain/repositories/classes_repository.dart';
@@ -17,6 +18,7 @@ class ClassesRepositoryImpl implements ClassesRepository {
     if (teacherId.isEmpty) return Stream.value([]);
     return _classesRef
         .where('teacherId', isEqualTo: teacherId)
+        .limit(AppConstants.pageSize)
         .snapshots()
         .map((snapshot) {
       final list = snapshot.docs
@@ -24,7 +26,7 @@ class ClassesRepositoryImpl implements ClassesRepository {
           .toList();
       list.sort((a, b) => a.name.compareTo(b.name));
       return list;
-    }).handleError((_) => <ClassEntity>[]);
+    });
   }
 
   @override

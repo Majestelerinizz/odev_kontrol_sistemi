@@ -1,14 +1,15 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:odev_takip/features/auth/presentation/providers/auth_providers.dart';
 import 'package:odev_takip/core/theme/app_colors.dart';
 import 'package:odev_takip/core/theme/app_text_styles.dart';
-import 'package:odev_takip/core/widgets/matpusula_logo.dart';
+import 'package:odev_takip/core/widgets/eduly_logo.dart';
 
 /// Splash ekranı.
-/// Logo gösterir ve 1.2s sonra otomatik olarak hoş geldiniz veya ana ekrana yönlendirir.
+/// Logo gösterir; auth/profil hazır olunca hoş geldiniz veya ana ekrana yönlendirir.
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -22,6 +23,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late Animation<double> _fadeAnim;
   late Animation<double> _scaleAnim;
   Timer? _timer;
+  Timer? _profileWaitTimer;
   bool _navigated = false;
 
   @override
@@ -48,10 +50,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   void _performNavigation() {
     if (_navigated || !mounted) return;
-    _navigated = true;
 
     final authState = ref.read(authStateProvider);
     final user = authState.valueOrNull;
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    // Firebase oturumu var, profil henüz stream'de değil — bekle
+    if (firebaseUser != null && user == null) {
+      _profileWaitTimer ??= Timer(const Duration(seconds: 8), () async {
+        if (!mounted || _navigated) return;
+        // Profil gelmedi: bozuk hesap — çıkış yap, welcome'a git
+        try {
+          await ref.read(authRepositoryProvider).signOut();
+        } catch (_) {}
+        if (!mounted || _navigated) return;
+        _navigated = true;
+        context.go('/welcome');
+      });
+      return;
+    }
+
+    _navigated = true;
+    _profileWaitTimer?.cancel();
 
     if (user != null) {
       context.go(user.isTeacher ? '/teacher/home' : '/parent/home');
@@ -63,6 +83,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   void dispose() {
     _timer?.cancel();
+    _profileWaitTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -85,17 +106,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const MatPusulaLogo(size: 104),
+                const EdulyLogo(size: 104),
                 const SizedBox(height: 20),
                 Text(
-                  'MatPusula',
-                  style: AppTextStyles.h1.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                  'Eduly',
+                  style: AppTextStyles.h1.copyWith(
+                    color: AppColors.textOnPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Geleceğini Matematikle Şekillendir',
-                  style:
-                      AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
+                  'Ödev & Eğitim Takip Platformu',
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textOnPrimaryMuted),
                 ),
               ],
             ),

@@ -181,7 +181,7 @@ class AnalyticsGraphScreen extends ConsumerWidget {
                                       padding: const EdgeInsets.only(top: 6),
                                       child: Text(
                                         chronologicalExams[idx].examName,
-                                        style: const TextStyle(fontSize: 10),
+                                        style: AppTextStyles.caption,
                                       ),
                                     );
                                   }

@@ -1,5 +1,5 @@
 # 🚀 Android Studio Kurulum & Çalıştırma Kılavuzu
-## Ödev Takip Sistemi — MatPusula
+## Ödev Takip Sistemi — Eduly
 
 Bu kılavuz, projeyi Android Studio'da açıp çalıştırmak ve
 PostgreSQL sync sistemini aktif etmek için gereken tüm adımları içerir.

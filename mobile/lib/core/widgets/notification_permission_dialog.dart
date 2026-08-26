@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/fcm_service.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,7 +22,7 @@ class NotificationPermissionDialog extends ConsumerWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => NotificationPermissionDialog(),
+      builder: (ctx) => const NotificationPermissionDialog(),
     );
   }
 
@@ -47,34 +48,40 @@ class NotificationPermissionDialog extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Bildirim İzni 🔔',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              'Bildirim İzni',
+              style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
         ],
       ),
-      content: const Text(
+      content: Text(
         'Ödev güncellemeleri, deneme sınavı sonuçları ve anlık mesajlar hakkında hemen bilgi sahibi olmak için anlık bildirimlere izin verin.',
-        style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
+        style: AppTextStyles.bodySmall,
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Daha Sonra', style: TextStyle(color: AppColors.textSecondary)),
+          child: Text(
+            'Daha Sonra',
+            style: AppTextStyles.labelLarge
+                .copyWith(color: AppColors.textSecondary),
+          ),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.teacherPrimary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           ),
           onPressed: () async {
             Navigator.pop(context);
             final uid = ref.read(authStateProvider).valueOrNull?.uid;
             if (uid != null) {
-              final granted = await FcmService.requestPermissionAndSaveToken(uid);
+              final granted =
+                  await FcmService.requestPermissionAndSaveToken(uid);
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -83,12 +90,16 @@ class NotificationPermissionDialog extends ConsumerWidget {
                         ? 'Bildirim izni verildi ve cihaz kaydedildi.'
                         : 'Bildirim izni verilmedi.',
                   ),
-                  backgroundColor: granted ? AppColors.success : AppColors.warning,
+                  backgroundColor:
+                      granted ? AppColors.success : AppColors.warning,
                 ),
               );
             }
           },
-          child: const Text('İzin Ver', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          child: Text(
+            'İzin Ver',
+            style: AppTextStyles.buttonMedium,
+          ),
         ),
       ],
     );

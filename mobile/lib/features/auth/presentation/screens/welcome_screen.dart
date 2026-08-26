@@ -4,7 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_sizes.dart';
 import '../../../../core/widgets/app_buttons.dart';
-import '../../../../core/widgets/matpusula_logo.dart';
+import '../../../../core/widgets/eduly_logo.dart';
 
 /// Hoş geldiniz ekranı.
 /// Uygulama açıldığında gösterilir; giriş veya kayıt seçenekleri sunar.
@@ -71,23 +71,27 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     const SizedBox(height: 40),
 
                     // ── Logo & Başlık ─────────────────────────────────────
-                    const MatPusulaLogo(size: 84),
+                    const EdulyLogo(size: 84),
                     const SizedBox(height: 24),
 
                     Text(
-                      'MatPusula',
-                      style: AppTextStyles.h1.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                      'Eduly',
+                      style: AppTextStyles.h1.copyWith(
+                        color: AppColors.textOnPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Ödev & Eğitim Takip Sistemi',
-                      style: AppTextStyles.h4.copyWith(color: Colors.white70),
+                      style: AppTextStyles.h4
+                          .copyWith(color: AppColors.textOnPrimaryMuted),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       'Öğretmenler için merkezi sınıf yönetimi,\nveliler için şeffaf çocuk takibi.',
-                      style:
-                          AppTextStyles.bodyLarge.copyWith(color: Colors.white70),
+                      style: AppTextStyles.bodyLarge
+                          .copyWith(color: AppColors.textOnPrimaryMuted),
                     ),
 
                     // ── Özellik listesi ───────────────────────────────────

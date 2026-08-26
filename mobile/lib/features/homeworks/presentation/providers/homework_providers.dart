@@ -39,6 +39,13 @@ final homeworkDetailProvider =
   return ref.watch(homeworksRepositoryProvider).getHomeworkById(homeworkId);
 });
 
+/// Birden fazla ödev detayını tek seferde getir (veli listesi N+1 önleme)
+final homeworksByIdsProvider =
+    FutureProvider.family<Map<String, HomeworkEntity>, List<String>>(
+        (ref, ids) {
+  return ref.watch(homeworksRepositoryProvider).getHomeworksByIds(ids);
+});
+
 /// Ödev oluşturma ve durum güncelleme Notifier'ı
 class HomeworkNotifier extends StateNotifier<AsyncValue<void>> {
   HomeworkNotifier(this._repo) : super(const AsyncValue.data(null));

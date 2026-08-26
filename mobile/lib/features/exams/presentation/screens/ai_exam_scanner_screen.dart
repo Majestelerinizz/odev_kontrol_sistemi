@@ -8,7 +8,7 @@ import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/services/ai_vision_service.dart';
 
-/// MatPusula — AI Vision Yapay Zeka ile Fotoğraftan Ödev ve Deneme Analiz Ekranı
+/// Eduly — AI Vision Yapay Zeka ile Fotoğraftan Ödev ve Deneme Analiz Ekranı
 class AiExamScannerScreen extends ConsumerStatefulWidget {
   const AiExamScannerScreen({super.key});
 
@@ -35,20 +35,21 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
       _analysisResult = null;
     });
 
-    // Yapay zeka tarama simülasyonu gecikmesi
-    await Future.delayed(const Duration(seconds: 2));
-
     final result = await AiVisionService.analyzeExamPhoto(
       imageBase64: 'sample_base64_data',
       subject: _selectedSubject,
     );
 
-    if (mounted) {
-      setState(() {
-        _isScanning = false;
-        _analysisResult = result;
-      });
-      context.showSnackBar('✨ Gemini AI Yapay Zeka fotoğraf analizini tamamladı!');
+    if (!mounted) return;
+    setState(() {
+      _isScanning = false;
+      _analysisResult = result['success'] == true ? result : null;
+    });
+    if (result['success'] != true) {
+      context.showSnackBar(
+        result['error']?.toString() ?? 'AI analizi kullanılamıyor.',
+        isError: true,
+      );
     }
   }
 
@@ -94,16 +95,17 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
                         children: [
                           Text(
                             'Yapay Zeka Sınav Tarayıcı',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                            style: AppTextStyles.h4.copyWith(
+                              color: AppColors.textOnPrimary,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           SizedBox(height: 4),
                           Text(
                             'Test kağıdı veya optik formun fotoğrafını çekin, Gemini AI netlerinizi saniyeler içinde hesaplasın.',
-                            style: TextStyle(color: Colors.white70, fontSize: 12),
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.textOnPrimaryMuted,
+                            ),
                           ),
                         ],
                       ),
@@ -158,15 +160,14 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
                             SizedBox(height: 16),
                             Text(
                               'Gemini AI Fotoğrafı Analiz Ediyor...',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                              style: AppTextStyles.h4.copyWith(
                                 color: AppColors.teacherPrimary,
                               ),
                             ),
                             SizedBox(height: 4),
                             Text(
                               'Doğru, yanlış ve net sayıları çıkarılıyor',
-                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              style: AppTextStyles.caption,
                             ),
                           ],
                         )
@@ -186,18 +187,14 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            const Text(
+                            Text(
                               'Fotoğraf Çek veya Galeriden Seç',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: AppColors.textPrimary,
-                              ),
+                              style: AppTextStyles.h4,
                             ),
                             const SizedBox(height: 4),
-                            const Text(
+                            Text(
                               'Test sayfasını net bir açıyla hizalayın',
-                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              style: AppTextStyles.caption,
                             ),
                           ],
                         ),
@@ -253,7 +250,7 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
                         ),
                         child: Text(
                           '💡 ${_analysisResult!['notes']}',
-                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          style: AppTextStyles.bodySmall,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -278,7 +275,7 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
   Widget _buildStatBadge(String label, String value, Color color) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+        Text(label, style: AppTextStyles.caption),
         const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -288,11 +285,7 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
           ),
           child: Text(
             value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: color,
-            ),
+            style: AppTextStyles.h4.copyWith(color: color),
           ),
         ),
       ],

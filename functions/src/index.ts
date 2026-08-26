@@ -24,8 +24,12 @@ interface BroadcastRequest {
 
 async function assertAdmin(uid: string): Promise<void> {
   const doc = await db.collection("users").doc(uid).get();
-  if (!doc.exists || doc.data()?.role !== "admin") {
+  const data = doc.data();
+  if (!doc.exists || data?.role !== "admin") {
     throw new HttpsError("permission-denied", "Yalnızca admin bu işlemi yapabilir.");
+  }
+  if (data?.isActive === false) {
+    throw new HttpsError("permission-denied", "Hesabınız pasif durumda.");
   }
 }
 

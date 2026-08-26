@@ -52,6 +52,8 @@ describe('Node.js Sync Backend REST API & AI Vision Tests', () => {
 
   beforeAll(() => {
     process.env.API_SECRET_KEY = API_KEY;
+    process.env.ALLOW_TEST_OTP = 'true';
+    delete process.env.GEMINI_API_KEY;
     app = express();
     app.use(express.json());
     app.use('/api', require('../src/routes/backup'));
@@ -90,7 +92,7 @@ describe('Node.js Sync Backend REST API & AI Vision Tests', () => {
     expect(res.body.valid).toEqual(true);
   });
 
-  test('POST /api/ai/analyze-exam-photo — Test kağıdı görseli ile netleri analiz etmeli', async () => {
+  test('POST /api/ai/analyze-exam-photo — API anahtarı yoksa sahte net dönmemeli', async () => {
     const res = await request(app)
       .post('/api/ai/analyze-exam-photo')
       .send({
@@ -98,9 +100,7 @@ describe('Node.js Sync Backend REST API & AI Vision Tests', () => {
         subject: 'Matematik',
       });
     expect(res.statusCode).toEqual(200);
-    expect(res.body.success).toEqual(true);
-    expect(res.body.net).toEqual(15.0);
-    expect(res.body.correctCount).toEqual(16);
-    expect(res.body.wrongCount).toEqual(4);
+    expect(res.body.success).toEqual(false);
+    expect(res.body.error).toBeTruthy();
   });
 });

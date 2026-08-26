@@ -17,6 +17,9 @@ abstract class HomeworksRepository {
   /// Tek ödev detayını getirme
   Future<HomeworkEntity?> getHomeworkById(String homeworkId);
 
+  /// Birden fazla ödevi batch getir (N+1 önleme)
+  Future<Map<String, HomeworkEntity>> getHomeworksByIds(List<String> homeworkIds);
+
   /// Yeni ödev oluşturma ve sınıftaki öğrencilere atama
   Future<String> createHomework({
     required HomeworkEntity homework,

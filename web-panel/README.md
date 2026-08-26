@@ -1,17 +1,30 @@
-# web_panel
+# Eduly Admin (web-panel)
 
-A new Flutter project.
+Flutter Web süper kullanıcı paneli. Öğretmen/veli mobil uygulamasının kopyası değildir.
 
-## Getting Started
+## Özellikler
 
-This project is a starting point for a Flutter application.
+- Yalnızca `role=admin` giriş
+- Genel bakış istatistikleri, öğretmen/öğrenci listeleri, aktivite, toplu FCM broadcast
 
-A few resources to get you started if this is your first Flutter project:
+## Geliştirme
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```bash
+cd web-panel
+flutter pub get
+flutter run -d chrome
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Üretim derlemesi (Hosting)
+
+```bash
+cd web-panel
+flutter pub get
+flutter build web --release
+```
+
+Çıktı: `web-panel/build/web` — `firebase.json` hosting `public` yolu buraya işaret eder.
+
+Canlı deploy için kök `HANDOFF.md` Faz B runbook'una bakın (Firebase CLI gerekir).
+
+Admin hesabı: kök [`ADMIN_SEED.md`](../ADMIN_SEED.md).

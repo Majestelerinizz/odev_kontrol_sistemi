@@ -217,7 +217,8 @@ class StudentDetailScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(
           child: Text('Öğrenci bilgisi yüklenemedi: $err',
-              style: const TextStyle(color: AppColors.error)),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(color: AppColors.error)),
         ),
       ),
     );
@@ -252,12 +253,12 @@ class _InviteCodeDisplay extends StatelessWidget {
                   color: AppColors.successLight,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
+                child: Text(
                   'Aktif',
-                  style: TextStyle(
-                      color: AppColors.success,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold),
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: AppColors.success,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],

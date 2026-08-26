@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,31 +25,33 @@ import '../features/exams/presentation/screens/teacher_exam_list_screen.dart';
 import '../features/exams/presentation/screens/create_exam_result_screen.dart';
 import '../features/analytics/presentation/screens/analytics_graph_screen.dart';
 import '../features/exams/presentation/screens/parent_exam_list_screen.dart';
-import '../features/exams/presentation/screens/ai_exam_scanner_screen.dart';
 import '../features/messages/presentation/screens/teacher_new_message_screen.dart';
 import '../features/messages/presentation/screens/teacher_messages_history_screen.dart';
 import '../features/messages/presentation/screens/parent_messages_list_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 
+/// GoRouter'ı auth değişiminde yeniden yaratmadan yenilemek için.
+class _RouterRefresh extends ChangeNotifier {
+  void ping() => notifyListeners();
+}
+
 /// Uygulama router'ı.
 /// GoRouter ile rol tabanlı yönlendirme ve RoleGuard mantığı.
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final refresh = _RouterRefresh();
+  ref.listen(authStateProvider, (_, __) => refresh.ping());
+  ref.onDispose(refresh.dispose);
 
   return GoRouter(
     initialLocation: '/splash',
-    debugLogDiagnostics: true,
+    debugLogDiagnostics: kDebugMode,
+    refreshListenable: refresh,
     redirect: (context, state) {
-      final isLoggedIn = authState.valueOrNull != null;
+      final authState = ref.read(authStateProvider);
       final user = authState.valueOrNull;
-      final isLoading = authState.isLoading;
-
-      // Yükleniyor — bekle
-      if (isLoading) return null;
-
+      final firebaseUser = FirebaseAuth.instance.currentUser;
       final location = state.uri.toString();
 
-      // Auth sayfaları
       final isAuthPage = location.startsWith('/login') ||
           location.startsWith('/register') ||
           location.startsWith('/role-selection') ||
@@ -55,22 +59,29 @@ final routerProvider = Provider<GoRouter>((ref) {
           location.startsWith('/welcome') ||
           location.startsWith('/splash');
 
-      // Giriş yoksa ve splash/kök dizindeyse welcome'a yönlendir
+      // Stream / profil yüklenirken welcome'a atma
+      if (authState.isLoading) return null;
+
+      // Auth oturumu var, Firestore profili henüz yok — korumalı rotaya alma
+      if (firebaseUser != null && user == null) {
+        if (isAuthPage) return null;
+        return '/splash';
+      }
+
+      final isLoggedIn = user != null;
+
       if (!isLoggedIn && (location == '/splash' || location == '/')) {
         return '/welcome';
       }
 
-      // Giriş yoksa ve auth sayfası dışında ise welcome'a yönlendir
       if (!isLoggedIn && !isAuthPage) return '/welcome';
 
-      // Giriş varsa rol tabanlı yönlendir
       if (isLoggedIn) {
         if (isAuthPage) {
-          return user!.isTeacher ? '/teacher/home' : '/parent/home';
+          return user.isTeacher ? '/teacher/home' : '/parent/home';
         }
 
-        // Rol karışıklığı — öğretmen veli paneline giremez ve vice versa
-        if (user!.isTeacher && location.startsWith('/parent')) {
+        if (user.isTeacher && location.startsWith('/parent')) {
           return '/teacher/home';
         }
         if (user.isParent && location.startsWith('/teacher')) {
@@ -158,10 +169,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/teacher/exams/create',
             builder: (context, state) => const CreateExamResultScreen(),
-          ),
-          GoRoute(
-            path: '/teacher/exams/scan',
-            builder: (context, state) => const AiExamScannerScreen(),
           ),
           GoRoute(
             path: '/teacher/analytics/:studentId',

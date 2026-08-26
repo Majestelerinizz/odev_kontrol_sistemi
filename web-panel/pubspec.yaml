@@ -1,5 +1,5 @@
 name: web_panel
-description: MatPusula süper kullanıcı (admin) web paneli. Öğretmen/öğrenci gözetimi ve toplu push.
+description: Eduly süper kullanıcı (admin) web paneli. Öğretmen/öğrenci gözetimi ve toplu push.
 publish_to: 'none'
 version: 0.2.0+1
 
@@ -28,4 +28,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/matpusula_logo.png
+    - assets/eduly_logo.png

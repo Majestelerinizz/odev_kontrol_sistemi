@@ -1,4 +1,4 @@
-# 🌿 MatPusula — Git Branch & Çalışma Rehberi
+# 🌿 Eduly — Git Branch & Çalışma Rehberi
 
 Bu proje, ana kod tabanını (`main`) korumak ve ekip üyelerinin birbirinin kodunu ezmeden eşzamanlı geliştirmeler yapabilmesi amacıyla **Branch Bazlı Çalışma Modeli (Git Flow)** ile yapılandırılmıştır.
 

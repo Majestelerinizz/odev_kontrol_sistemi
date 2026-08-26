@@ -15,12 +15,14 @@ class HomeworkModel extends HomeworkEntity {
     required super.dueDate,
     super.attachmentUrls,
     super.assignedToAll,
+    super.studentIds,
     required super.createdAt,
   });
 
   factory HomeworkModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
     final rawAttachments = data['attachmentUrls'] as List<dynamic>? ?? [];
+    final rawStudents = data['studentIds'] as List<dynamic>? ?? [];
     return HomeworkModel(
       id: doc.id,
       teacherId: data['teacherId'] as String? ?? '',
@@ -33,6 +35,7 @@ class HomeworkModel extends HomeworkEntity {
       dueDate: (data['dueDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
       attachmentUrls: rawAttachments.map((e) => e.toString()).toList(),
       assignedToAll: data['assignedToAll'] as bool? ?? true,
+      studentIds: rawStudents.map((e) => e.toString()).toList(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -49,6 +52,7 @@ class HomeworkModel extends HomeworkEntity {
       'dueDate': Timestamp.fromDate(dueDate),
       'attachmentUrls': attachmentUrls,
       'assignedToAll': assignedToAll,
+      'studentIds': studentIds,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }

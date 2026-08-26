@@ -63,7 +63,8 @@ class AppConstants {
   static const int pageSize = 20;
 
   // ── Uygulama bilgileri ────────────────────────────────────────────────────
-  static const String supportEmail = 'destek@odevtakip.com';
-  static const String privacyPolicyUrl = 'https://odevtakip.com/gizlilik';
-  static const String termsUrl = 'https://odevtakip.com/kosullar';
+  static const String supportEmail = 'destek@eduly.app';
+  static const String privacyPolicyUrl = 'https://odevtakipsistemi-b93b2.web.app/privacy.html';
+  static const String termsUrl = 'https://odevtakipsistemi-b93b2.web.app/terms.html';
+  static const String storeSupportUrl = 'https://odevtakipsistemi-b93b2.web.app/support.html';
 }

@@ -35,11 +35,6 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
         title: const Text('Deneme Sınavı Sonuçları'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.camera_enhance_rounded),
-            tooltip: 'AI Kamera ile Fotoğraf Tara',
-            onPressed: () => context.push('/teacher/exams/scan'),
-          ),
-          IconButton(
             icon: const Icon(Icons.post_add_rounded),
             tooltip: 'Sonuç Gir',
             onPressed: () => context.push('/teacher/exams/create'),
@@ -62,6 +57,16 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
           final examsAsync = ref.watch(classExamsStreamProvider(
             (classId: _selectedClassId!, teacherId: teacherId),
           ));
+          final studentsAsync = ref.watch(
+            classStudentsStreamProvider((
+              classId: _selectedClassId!,
+              teacherId: teacherId,
+            )),
+          );
+          final nameMap = {
+            for (final s in studentsAsync.valueOrNull ?? const [])
+              s.id: s.name,
+          };
 
           return Column(
             children: [
@@ -99,7 +104,7 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
                         subtitle:
                             'Seçili sınıf için henüz deneme sonucu girilmedi.',
                         icon: Icons.assignment_late_rounded,
-                        action: () => context.push('/teacher/exams/new'),
+                        action: () => context.push('/teacher/exams/create'),
                         actionLabel: 'Deneme Sonucu Gir',
                       );
                     }
@@ -112,6 +117,7 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
                         final exam = exams[index];
                         return _TeacherExamCard(
                           exam: exam,
+                          studentName: nameMap[exam.studentId] ?? 'Öğrenci',
                           onAnalyticsTap: () => context.push(
                               '/teacher/analytics/${exam.studentId}'),
                           onDelete: () => _confirmDeleteExam(context, exam),
@@ -123,7 +129,8 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
                       const Center(child: CircularProgressIndicator()),
                   error: (err, __) => Center(
                       child: Text('Sınavlar yüklenemedi: $err',
-                          style: const TextStyle(color: AppColors.error))),
+                          style: AppTextStyles.bodyMedium
+                              .copyWith(color: AppColors.error))),
                 ),
               ),
             ],
@@ -133,11 +140,11 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
         error: (err, __) => Center(child: Text('Sınıflar yüklenemedi: $err')),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/teacher/exams/new'),
+        onPressed: () => context.push('/teacher/exams/create'),
         backgroundColor: AppColors.teacherPrimary,
-        icon: const Icon(Icons.add_chart_rounded, color: Colors.white),
-        label: const Text('Deneme Sonucu Gir',
-            style: TextStyle(color: Colors.white)),
+        icon: const Icon(Icons.add_chart_rounded,
+            color: AppColors.textOnPrimary),
+        label: Text('Deneme Sonucu Gir', style: AppTextStyles.buttonMedium),
       ),
     );
   }
@@ -169,22 +176,21 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
   }
 }
 
-class _TeacherExamCard extends ConsumerWidget {
+class _TeacherExamCard extends StatelessWidget {
   const _TeacherExamCard({
     required this.exam,
+    required this.studentName,
     required this.onAnalyticsTap,
     required this.onDelete,
   });
 
   final ExamResultEntity exam;
+  final String studentName;
   final VoidCallback onAnalyticsTap;
   final VoidCallback onDelete;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final studentAsync = ref.watch(studentStreamProvider(exam.studentId));
-    final studentName = studentAsync.valueOrNull?.name ?? 'Yükleniyor...';
-
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

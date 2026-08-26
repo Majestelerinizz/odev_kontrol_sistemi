@@ -38,7 +38,7 @@ class AdminShell extends ConsumerWidget {
     if (mode == AdminLayoutMode.mobile) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('MatPusula Admin'),
+          title: const Text('Eduly Admin'),
           actions: [
             IconButton(
               tooltip: 'Çıkış',
@@ -82,7 +82,7 @@ class AdminShell extends ConsumerWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Image.asset('assets/matpusula_logo.png', height: 32),
+                  Image.asset('assets/eduly_logo.png', height: 32),
                   if (extended) ...[
                     const SizedBox(width: 10),
                     const Text(
@@ -177,7 +177,7 @@ class _AdminDrawer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.asset('assets/matpusula_logo.png', height: 40),
+                Image.asset('assets/eduly_logo.png', height: 40),
                 const SizedBox(height: 12),
                 const Text(
                   'Yönetici Paneli',

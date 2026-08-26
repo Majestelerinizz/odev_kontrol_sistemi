@@ -40,11 +40,11 @@ class StepProgressIndicator extends StatelessWidget {
                       ? primaryColor
                       : isActive
                           ? primaryColor.withAlpha(38)
-                          : Colors.grey.shade200,
+                          : AppColors.surfaceVariant,
                   border: Border.all(
                     color: isActive || isCompleted
                         ? primaryColor
-                        : Colors.grey.shade300,
+                        : AppColors.border,
                     width: 2,
                   ),
                 ),
@@ -52,7 +52,7 @@ class StepProgressIndicator extends StatelessWidget {
                   child: isCompleted
                       ? const Icon(
                           Icons.check_rounded,
-                          color: Colors.white,
+                          color: AppColors.textOnPrimary,
                           size: 20,
                         )
                       : Text(
@@ -60,8 +60,8 @@ class StepProgressIndicator extends StatelessWidget {
                           style: AppTextStyles.labelLarge.copyWith(
                             color: isActive
                                 ? primaryColor
-                                : Colors.grey.shade600,
-                            fontWeight: FontWeight.bold,
+                                : AppColors.textTertiary,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                 ),
@@ -77,7 +77,7 @@ class StepProgressIndicator extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(2),
-                    color: isPassed ? primaryColor : Colors.grey.shade300,
+                    color: isPassed ? primaryColor : AppColors.border,
                   ),
                 ),
               );

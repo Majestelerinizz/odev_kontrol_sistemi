@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -43,6 +44,25 @@ Future<void> main() async {
     }
   } catch (e) {
     debugPrint('Firebase initialize warning: $e');
+  }
+
+  // Crashlytics: web'de yok; debug'da kapalı (gürültüyü önle)
+  if (!kIsWeb) {
+    final crashlyticsEnabled = !kDebugMode;
+    await FirebaseCrashlytics.instance
+        .setCrashlyticsCollectionEnabled(crashlyticsEnabled);
+    FlutterError.onError = (details) {
+      FlutterError.presentError(details);
+      if (crashlyticsEnabled) {
+        FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+      }
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      if (crashlyticsEnabled) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      }
+      return true;
+    };
   }
 
   await FcmService.initialize();

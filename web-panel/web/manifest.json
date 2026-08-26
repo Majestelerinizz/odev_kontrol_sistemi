@@ -1,11 +1,11 @@
 {
-    "name": "MatPusula Panel",
-    "short_name": "MatPusula",
+    "name": "Eduly Admin",
+    "short_name": "Eduly",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#4F46E5",
-    "theme_color": "#4F46E5",
-    "description": "MatPusula öğretmen web paneli",
+    "background_color": "#0F766E",
+    "theme_color": "#0F766E",
+    "description": "Eduly süper kullanıcı gözetim paneli",
     "orientation": "any",
     "prefer_related_applications": false,
     "icons": [

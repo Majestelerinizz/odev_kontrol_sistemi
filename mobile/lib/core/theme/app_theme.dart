@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_sizes.dart';
+import 'app_text_styles.dart';
 
 /// Uygulama tema tanımları.
 /// Öğretmen ve Veli için ayrı renk varyantları içerir.
@@ -12,7 +12,6 @@ class AppTheme {
   static ThemeData teacherTheme() => _buildTheme(
         seedColor: AppColors.teacherPrimary,
         primaryColor: AppColors.teacherPrimary,
-        primaryLight: AppColors.teacherLight,
         primarySurface: AppColors.teacherSurface,
       );
 
@@ -20,7 +19,6 @@ class AppTheme {
   static ThemeData parentTheme() => _buildTheme(
         seedColor: AppColors.parentPrimary,
         primaryColor: AppColors.parentPrimary,
-        primaryLight: AppColors.parentLight,
         primarySurface: AppColors.parentSurface,
       );
 
@@ -30,61 +28,46 @@ class AppTheme {
   static ThemeData _buildTheme({
     required Color seedColor,
     required Color primaryColor,
-    required Color primaryLight,
     required Color primarySurface,
   }) {
-    final baseTextTheme = GoogleFonts.nunitoTextTheme();
+    // Tek kaynak: AppTextStyles → ThemeData.textTheme
+    final textTheme = TextTheme(
+      displayLarge: AppTextStyles.h1,
+      displayMedium: AppTextStyles.h2,
+      displaySmall: AppTextStyles.h3,
+      headlineLarge: AppTextStyles.h1,
+      headlineMedium: AppTextStyles.h2,
+      headlineSmall: AppTextStyles.h3,
+      titleLarge: AppTextStyles.h3,
+      titleMedium: AppTextStyles.h4,
+      titleSmall: AppTextStyles.labelLarge,
+      bodyLarge: AppTextStyles.bodyLarge,
+      bodyMedium: AppTextStyles.bodyMedium,
+      bodySmall: AppTextStyles.bodySmall,
+      labelLarge: AppTextStyles.buttonMedium,
+      labelMedium: AppTextStyles.labelMedium,
+      labelSmall: AppTextStyles.labelSmall,
+    );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
         seedColor: seedColor,
         primary: primaryColor,
-        onPrimary: Colors.white,
+        onPrimary: AppColors.textOnPrimary,
         secondary: AppColors.accent,
         error: AppColors.error,
         surface: AppColors.surface,
         onSurface: AppColors.textPrimary,
+        onSurfaceVariant: AppColors.textSecondary,
       ),
 
       // ── Scaffold ──────────────────────────────────────────────────────────
       scaffoldBackgroundColor: AppColors.background,
 
       // ── Typography ────────────────────────────────────────────────────────
-      textTheme: baseTextTheme.copyWith(
-        displayLarge: baseTextTheme.displayLarge?.copyWith(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w800,
-        ),
-        headlineLarge: baseTextTheme.headlineLarge?.copyWith(
-          fontSize: 28,
-          fontWeight: FontWeight.w800,
-          color: AppColors.textPrimary,
-        ),
-        headlineMedium: baseTextTheme.headlineMedium?.copyWith(
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-        ),
-        titleLarge: baseTextTheme.titleLarge?.copyWith(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-        ),
-        bodyLarge: baseTextTheme.bodyLarge?.copyWith(
-          fontSize: 16,
-          color: AppColors.textPrimary,
-        ),
-        bodyMedium: baseTextTheme.bodyMedium?.copyWith(
-          fontSize: 16,
-          color: AppColors.textSecondary,
-        ),
-        labelLarge: baseTextTheme.labelLarge?.copyWith(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-        ),
-      ),
+      textTheme: textTheme,
+      primaryTextTheme: textTheme,
 
       // ── AppBar ────────────────────────────────────────────────────────────
       appBarTheme: AppBarTheme(
@@ -94,11 +77,7 @@ class AppTheme {
         scrolledUnderElevation: 1,
         shadowColor: AppColors.shadow,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.nunito(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-        ),
+        titleTextStyle: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
         iconTheme: const IconThemeData(
           color: AppColors.textPrimary,
           size: AppSizes.iconMd,
@@ -111,15 +90,12 @@ class AppTheme {
         indicatorColor: primarySurface,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return GoogleFonts.nunito(
-              fontSize: 12,
+            return AppTextStyles.labelSmall.copyWith(
               fontWeight: FontWeight.w700,
               color: primaryColor,
             );
           }
-          return GoogleFonts.nunito(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+          return AppTextStyles.labelSmall.copyWith(
             color: AppColors.textSecondary,
           );
         }),
@@ -128,7 +104,9 @@ class AppTheme {
             return IconThemeData(color: primaryColor, size: AppSizes.iconMd);
           }
           return const IconThemeData(
-              color: AppColors.textSecondary, size: AppSizes.iconMd);
+            color: AppColors.textSecondary,
+            size: AppSizes.iconMd,
+          );
         }),
         elevation: 0,
         shadowColor: AppColors.shadow,
@@ -140,17 +118,14 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.textOnPrimary,
           minimumSize:
               const Size(double.infinity, AppSizes.primaryButtonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
           ),
           elevation: 0,
-          textStyle: GoogleFonts.nunito(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle: AppTextStyles.buttonLarge,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         ),
       ),
@@ -165,10 +140,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
           ),
           side: BorderSide(color: primaryColor, width: 1.5),
-          textStyle: GoogleFonts.nunito(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle: AppTextStyles.buttonLarge.copyWith(color: primaryColor),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         ),
       ),
@@ -177,12 +149,8 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primaryColor,
-          minimumSize:
-              const Size(0, AppSizes.minimumTouchTarget),
-          textStyle: GoogleFonts.nunito(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          minimumSize: const Size(0, AppSizes.minimumTouchTarget),
+          textStyle: AppTextStyles.labelLarge.copyWith(color: primaryColor),
         ),
       ),
 
@@ -212,19 +180,9 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppSizes.inputRadius),
           borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
-        hintStyle: GoogleFonts.nunito(
-          fontSize: 16,
-          color: AppColors.textDisabled,
-        ),
-        labelStyle: GoogleFonts.nunito(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
-        ),
-        errorStyle: GoogleFonts.nunito(
-          fontSize: 13,
-          color: AppColors.error,
-        ),
+        hintStyle: AppTextStyles.inputHint,
+        labelStyle: AppTextStyles.inputLabel,
+        errorStyle: AppTextStyles.inputError,
       ),
 
       // ── Card ───────────────────────────────────────────────────────────────
@@ -250,10 +208,7 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceVariant,
         selectedColor: primarySurface,
-        labelStyle: GoogleFonts.nunito(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
+        labelStyle: AppTextStyles.labelMedium,
         side: const BorderSide(color: AppColors.border),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.chipRadius),
@@ -263,9 +218,8 @@ class AppTheme {
       // ── SnackBar ───────────────────────────────────────────────────────────
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.textPrimary,
-        contentTextStyle: GoogleFonts.nunito(
-          color: Colors.white,
-          fontSize: 14,
+        contentTextStyle: AppTextStyles.bodySmall.copyWith(
+          color: AppColors.textOnPrimary,
           fontWeight: FontWeight.w500,
         ),
         shape: RoundedRectangleBorder(
@@ -281,23 +235,15 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.dialogRadius),
         ),
-        titleTextStyle: GoogleFonts.nunito(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-        ),
-        contentTextStyle: GoogleFonts.nunito(
-          fontSize: 16,
-          color: AppColors.textSecondary,
-          height: 1.5,
-        ),
+        titleTextStyle: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+        contentTextStyle: AppTextStyles.bodyMedium,
         elevation: 8,
       ),
 
       // ── FloatingActionButton ──────────────────────────────────────────────
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.textOnPrimary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -313,13 +259,16 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         ),
         tileColor: Colors.transparent,
+        titleTextStyle: AppTextStyles.h4,
+        subtitleTextStyle: AppTextStyles.bodySmall,
+        iconColor: AppColors.textSecondary,
       ),
 
       // ── Switch ─────────────────────────────────────────────────────────────
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) return primaryColor;
-          return AppColors.textDisabled;
+          return AppColors.textTertiary;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) return primarySurface;

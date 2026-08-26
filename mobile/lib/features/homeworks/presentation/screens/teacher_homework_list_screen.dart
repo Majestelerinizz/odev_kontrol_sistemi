@@ -63,9 +63,12 @@ class _TeacherHomeworkListScreenState
                   label: Text(subject),
                   selected: isSelected,
                   selectedColor: AppColors.teacherPrimary,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.textPrimary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  labelStyle: AppTextStyles.labelMedium.copyWith(
+                    color: isSelected
+                        ? AppColors.textOnPrimary
+                        : AppColors.textPrimary,
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500,
                   ),
                   onSelected: (selected) {
                     if (selected) setState(() => _selectedSubject = subject);
@@ -115,7 +118,8 @@ class _TeacherHomeworkListScreenState
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (err, stack) => Center(
                 child: Text('Ödevler yüklenemedi: $err',
-                    style: const TextStyle(color: AppColors.error)),
+                    style: AppTextStyles.bodyMedium
+                        .copyWith(color: AppColors.error)),
               ),
             ),
           ),
@@ -124,8 +128,8 @@ class _TeacherHomeworkListScreenState
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/teacher/homeworks/new'),
         backgroundColor: AppColors.teacherPrimary,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Yeni Ödev', style: TextStyle(color: Colors.white)),
+        icon: const Icon(Icons.add_rounded, color: AppColors.textOnPrimary),
+        label: Text('Yeni Ödev', style: AppTextStyles.buttonMedium),
       ),
     );
   }
@@ -233,11 +237,13 @@ class _TeacherHomeworkCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Kontrol Et & Durum Güncelle',
-                      style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.teacherPrimary,
-                          fontWeight: FontWeight.w600)),
+                  Text(
+                    'Kontrol Et & Durum Güncelle',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: AppColors.teacherPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.delete_outline_rounded,
                         size: 20, color: AppColors.error),

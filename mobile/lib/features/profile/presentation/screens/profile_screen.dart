@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/theme/app_sizes.dart';
@@ -9,7 +11,7 @@ import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 
-/// MatPusula Profil & Ayarlar Ekranı
+/// Eduly Profil & Ayarlar Ekranı
 /// Öğretmen ve Veli için özel özelleştirilmiş ayarlar menüsü
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -39,9 +41,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Öğretmeninizden aldığınız 6 haneli davet kodunu girin:',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: AppTextStyles.bodySmall,
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -67,7 +69,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Navigator.pop(ctx);
               context.showSnackBar('Davet kodu başarıyla doğrulandı ve öğrenci eklendi! 🎉');
             },
-            child: const Text('Ekle', style: TextStyle(color: Colors.white)),
+            child: Text('Ekle', style: AppTextStyles.buttonMedium),
           ),
         ],
       ),
@@ -124,7 +126,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Navigator.pop(ctx);
               context.showSnackBar('Şifreniz başarıyla güncellendi! 🔒');
             },
-            child: const Text('Güncelle', style: TextStyle(color: Colors.white)),
+            child: Text('Güncelle', style: AppTextStyles.buttonMedium),
           ),
         ],
       ),
@@ -143,34 +145,43 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Text('Gizlilik Politikası & KVKK'),
           ],
         ),
-        content: const SingleChildScrollView(
+        content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Ödev Takip Sistemi (MatPusula) Gizlilik Bildirimi',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                'Eduly Gizlilik Bildirimi',
+                style: AppTextStyles.labelLarge,
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 '1. Kişisel Verilerin İşlenmesi:\nKullanıcıların adı, e-posta adresi ve rol bilgileri yalnızca uygulama içi ödev, sınav ve duyuru süreçlerinin yürütülmesi amacıyla işlenir.\n\n'
                 '2. Veri Güvenliği:\nTüm veriler Google Firebase bulut altyapısında şifreli ve yetkilendirilmiş erişim kuralları (Firestore Security Rules) ile korunur.\n\n'
                 '3. Üçüncü Taraflarla Paylaşım:\nVerileriniz hiçbir reklam veren veya 3. taraf pazarlama şirketleri ile paylaşılmaz.\n\n'
                 '4. Haklarınız:\nHesabınızı dilediğiniz zaman silebilir veya verilerinizin silinmesini talep edebilirsiniz.',
-                style: TextStyle(fontSize: 13, height: 1.4, color: AppColors.textSecondary),
+                style: AppTextStyles.bodySmall,
               ),
             ],
           ),
         ),
         actions: [
+          TextButton(
+            onPressed: () async {
+              final uri = Uri.parse(AppConstants.privacyPolicyUrl);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
+            child: const Text('Tam metin'),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.info,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Okudum ve Anladım', style: TextStyle(color: Colors.white)),
+            child: Text('Okudum ve Anladım', style: AppTextStyles.buttonMedium),
           ),
         ],
       ),
@@ -189,9 +200,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Text('Hesabı Sil?'),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Hesabınızı sildiğinizde profil verileriniz ve bağlantılarınız sistemden kalıcı olarak temizlenir. Bu işlem geri alınamaz.',
-          style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
+          style: AppTextStyles.bodyMedium
+              .copyWith(color: AppColors.textPrimary),
         ),
         actions: [
           TextButton(
@@ -210,7 +222,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               context.showSnackBar('Hesabınız ve profil verileriniz Firebase\'den kalıcı olarak silindi.');
               context.go('/welcome');
             },
-            child: const Text('Hesabımı Sil', style: TextStyle(color: Colors.white)),
+            child: Text('Hesabımı Sil', style: AppTextStyles.buttonMedium),
           ),
         ],
       ),
@@ -278,7 +290,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            user?.email ?? 'ornek@matpusula.com',
+                            user?.email ?? 'ornek@eduly.com',
                             style: AppTextStyles.bodySmall,
                           ),
                           const SizedBox(height: 8),
@@ -290,7 +302,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              isTeacher ? '👨‍🏫 Matematik Öğretmeni' : '👨‍👩‍👧 Veli Hesabı',
+                              isTeacher ? '👨‍🏫 Öğretmen Hesabı' : '👨‍👩‍👧 Veli Hesabı',
                               style: AppTextStyles.labelSmall.copyWith(
                                 color: primaryColor,
                                 fontWeight: FontWeight.bold,
@@ -310,7 +322,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 _buildSettingsGroup('Öğrenci / Çocuk Bağlantıları', [
                   ListTile(
                     leading: const Icon(Icons.face_rounded, color: AppColors.parentPrimary),
-                    title: const Text('Ahmet Yılmaz', style: TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text('Ahmet Yılmaz',
+                        style: AppTextStyles.h4),
                     subtitle: const Text('8A Sınıfı • No: 456'),
                     trailing: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -318,16 +331,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         color: AppColors.successLight,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Bağlı',
-                        style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: AppColors.success,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.add_circle_outline_rounded, color: AppColors.parentPrimary),
-                    title: const Text('Yeni Çocuk / Öğrenci Ekle', style: TextStyle(color: AppColors.parentPrimary, fontWeight: FontWeight.bold)),
+                    title: Text(
+                      'Yeni Çocuk / Öğrenci Ekle',
+                      style: AppTextStyles.labelLarge
+                          .copyWith(color: AppColors.parentPrimary),
+                    ),
                     subtitle: const Text('Öğretmenden alınan davet kodu ile ekle'),
                     trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.parentPrimary),
                     onTap: _showAddChildDialog,
@@ -340,7 +360,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               _buildSettingsGroup('Bildirim Ayarları', [
                 SwitchListTile(
                   secondary: Icon(Icons.notifications_active_rounded, color: primaryColor),
-                  title: const Text('Anlık Bildirimler', style: TextStyle(fontWeight: FontWeight.w600)),
+                  title: Text('Anlık Bildirimler',
+                      style: AppTextStyles.labelLarge),
                   subtitle: const Text('Duyuru ve mesaj bildirimlerini al'),
                   value: _notificationsEnabled,
                   activeThumbColor: primaryColor,
@@ -349,7 +370,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const Divider(height: 1),
                 SwitchListTile(
                   secondary: Icon(Icons.assignment_turned_in_rounded, color: primaryColor),
-                  title: const Text('Ödev & Deneme Uyarıları', style: TextStyle(fontWeight: FontWeight.w600)),
+                  title: Text('Ödev & Deneme Uyarıları',
+                      style: AppTextStyles.labelLarge),
                   subtitle: const Text('Yaklaşan ödev ve deneme hatırlatmaları'),
                   value: _homeworkAlertsEnabled,
                   activeThumbColor: primaryColor,
@@ -440,7 +462,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       title: Text(title, style: AppTextStyles.labelLarge),
       subtitle: Text(subtitle, style: AppTextStyles.bodySmall),
       trailing: const Icon(Icons.chevron_right_rounded,
-          color: AppColors.textDisabled),
+          color: AppColors.textTertiary),
       onTap: onTap,
     );
   }

@@ -41,7 +41,7 @@ async function sendOtp(phoneNumber) {
   if (client) {
     try {
       await client.messages.create({
-        body: `[MatPusula] Doğrulama kodunuz: ${otpCode}. Bu kod 5 dakika süreyle geçerlidir.`,
+        body: `[Eduly] Doğrulama kodunuz: ${otpCode}. Bu kod 5 dakika süreyle geçerlidir.`,
         from: fromPhone,
         to: formattedPhone,
       });
@@ -58,22 +58,26 @@ async function sendOtp(phoneNumber) {
 }
 
 /**
- * Kullanıcı tarafından girilen OTP kodunu doğrular (123456 sabit test kodu her zaman geçerlidir)
+ * Kullanıcı tarafından girilen OTP kodunu doğrular.
+ * Sabit test kodu (123456) yalnızca ALLOW_TEST_OTP=true iken geçerlidir.
  */
 function verifyOtp(phoneNumber, code) {
   const formattedPhone = phoneNumber.trim().replace(/\s+/g, '');
   const cleanCode = code.trim();
+  const allowTestOtp = process.env.ALLOW_TEST_OTP === 'true';
 
-  // Sabit test kodu her telefon numarası için geçerlidir
-  if (cleanCode === '123456') {
+  if (allowTestOtp && cleanCode === '123456') {
     otpStore.delete(formattedPhone);
-    return { valid: true, message: 'Telefon numarası başarıyla doğrulandı (Sabit Test Kodu).' };
+    return { valid: true, message: 'Telefon numarası başarıyla doğrulandı (Test Kodu).' };
   }
 
   const entry = otpStore.get(formattedPhone);
 
   if (!entry) {
-    return { valid: false, message: 'Doğrulama kodu bulunamadı. Lütfen tekrar SMS isteyin veya sabit test kodu (123456) kullanın.' };
+    return {
+      valid: false,
+      message: 'Doğrulama kodu bulunamadı. Lütfen tekrar SMS isteyin.',
+    };
   }
 
   if (Date.now() > entry.expiresAt) {

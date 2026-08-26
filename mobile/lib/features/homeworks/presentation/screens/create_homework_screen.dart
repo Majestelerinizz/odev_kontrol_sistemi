@@ -75,10 +75,10 @@ class _CreateHomeworkScreenState extends ConsumerState<CreateHomeworkScreen> {
                     Text('Önce Bir Sınıf Oluşturmalısınız',
                         style: AppTextStyles.h3),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Ödev verebilmek için sistemde en az bir sınıfınızın bulunması gerekir.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: AppTextStyles.bodyMedium,
                     ),
                     const SizedBox(height: 20),
                     PrimaryButton(

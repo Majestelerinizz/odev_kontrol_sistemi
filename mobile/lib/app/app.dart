@@ -20,19 +20,25 @@ class _AppState extends ConsumerState<App> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(authStateProvider, (_, next) {
+    ref.listen(authStateProvider, (prev, next) {
+      final prevUid = prev?.valueOrNull?.uid;
       final uid = next.valueOrNull?.uid;
       if (uid != null && uid != _lastSyncedUid) {
         _lastSyncedUid = uid;
         FcmService.syncTokenForUser(uid);
       }
-      if (uid == null) _lastSyncedUid = null;
+      if (uid == null) {
+        if (prevUid != null) {
+          FcmService.clearTokenForUser(prevUid);
+        }
+        _lastSyncedUid = null;
+      }
     });
 
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'MatPusula',
+      title: 'Eduly',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: router,

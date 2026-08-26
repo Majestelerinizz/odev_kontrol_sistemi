@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../models/student_model.dart';
 import '../models/invite_code_model.dart';
 import '../../domain/entities/student_entity.dart';
@@ -28,6 +29,7 @@ class StudentsRepositoryImpl implements StudentsRepository {
     }
 
     return query
+        .limit(AppConstants.pageSize)
         .snapshots()
         .map((snapshot) {
       final list = snapshot.docs
@@ -35,7 +37,7 @@ class StudentsRepositoryImpl implements StudentsRepository {
           .toList();
       list.sort((a, b) => a.name.compareTo(b.name));
       return list;
-    }).handleError((_) => <StudentEntity>[]);
+    });
   }
 
   @override
@@ -44,7 +46,7 @@ class StudentsRepositoryImpl implements StudentsRepository {
     return _studentsRef.doc(studentId).snapshots().map((doc) {
       if (!doc.exists) return null;
       return StudentModel.fromFirestore(doc);
-    }).handleError((_) => null);
+    });
   }
 
   @override
@@ -52,12 +54,13 @@ class StudentsRepositoryImpl implements StudentsRepository {
     if (parentUid.isEmpty) return Stream.value([]);
     return _studentsRef
         .where('parentIds', arrayContains: parentUid)
+        .limit(AppConstants.pageSize)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
           .map((doc) => StudentModel.fromFirestore(doc))
           .toList();
-    }).handleError((_) => <StudentEntity>[]);
+    });
   }
 
   @override

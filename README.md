@@ -1,8 +1,8 @@
 <div align="center">
 
-  <img src="mobile/assets/images/matpusula_logo.png" alt="MatPusula Logo" width="160" />
+  <img src="mobile/assets/images/eduly_logo.png" alt="Eduly Logo" width="160" />
 
-  # 🧭 MatPusula — Ödev & Deneme Sınavı Takip Platformu
+  # 🧭 Eduly — Ödev & Deneme Sınavı Takip Platformu
 
   **Modern, Hızlı ve Güvenli Öğretmen & Veli İletişim Portalı**
 
@@ -10,7 +10,7 @@
   [![Firebase](https://img.shields.io/badge/Firebase-Auth%20%7C%20Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
   [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
   [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
-  [![Tests Status](https://img.shields.io/badge/Tests-34%2F34%20PASSED-4600B4?style=for-the-badge&logo=checkmarx&logoColor=white)](#-test-ve-kalite-raporu)
+  [![Tests Status](https://img.shields.io/badge/CI-GitHub%20Actions-4600B4?style=for-the-badge&logo=github&logoColor=white)](.github/workflows/ci.yml)
 
 </div>
 
@@ -58,7 +58,7 @@ functions/                # Cloud Functions (toplu FCM push: sendBroadcast)
 backend/                  # (opsiyonel/legacy) PostgreSQL sync; admin panel buna bağlı değil
 ```
 
-Admin panel: öğretmen/öğrenci listeleme, platform istatistikleri, aktivite akışı ve filtreli toplu push. **Öğretmen web kopyası değildir.** Manuel admin oluşturma: [ADMIN_SEED.md](ADMIN_SEED.md).
+Admin panel: öğretmen/öğrenci listeleme, platform istatistikleri, aktivite akışı ve filtreli toplu push. **Öğretmen web kopyası değildir.** Manuel admin: [ADMIN_SEED.md](ADMIN_SEED.md). Tasarım handoff + Firebase canlı deploy runbook: [HANDOFF.md](HANDOFF.md).
 
 ---
 
@@ -81,9 +81,11 @@ cd backend && npm test
 
 | Test Paketi | Test Sayısı | Başarı Oranı |
 |---|---|---|
-| **Flutter Unit & Widget Tests** | 27 / 27 | **%100 PASSED** |
-| **Node.js REST API Tests** | 7 / 7 | **%100 PASSED** |
-| **Toplam Sistem Testi** | **34 / 34** | **%100 PASSED** |
+| **Flutter Unit & Widget Tests** (`mobile`) | `flutter test` | CI |
+| **Flutter Web Panel** (`web-panel`) | `flutter test` | CI |
+| **Node.js REST API Tests** (`backend`) | `npm test` | CI |
+
+Otomatik koşum: [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
 ---
 
@@ -119,10 +121,12 @@ flutter run -d chrome
 
 ```bash
 cd web-panel
-flutter build web --release --wasm
+flutter build web --release
 ```
 
-Panel yalnızca `role=admin` hesapları kabul eder. İlk admin hesabı için [ADMIN_SEED.md](ADMIN_SEED.md). Toplu push için `functions/` deploy edilmeli (`firebase deploy --only functions`).
+Panel yalnızca `role=admin` (+ aktif) hesapları kabul eder. İlk admin: [ADMIN_SEED.md](ADMIN_SEED.md).
+
+Canlı Hosting / rules / functions deploy adımları: **[HANDOFF.md](HANDOFF.md)** (Faz B — Firebase CLI gerekir).
 
 ### 3. Backend & PostgreSQL (Opsiyonel)
 
@@ -135,4 +139,4 @@ cd backend && npm install && npm start
 
 ## 📄 Lisans ve Telif Hakkı
 
-© 2026 **MatPusula**. Tüm hakları saklıdır.
+© 2026 **Eduly**. Tüm hakları saklıdır.

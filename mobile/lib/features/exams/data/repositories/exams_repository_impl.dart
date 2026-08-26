@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../models/exam_result_model.dart';
 import '../../domain/entities/exam_result_entity.dart';
 import '../../domain/repositories/exams_repository.dart';
@@ -20,14 +21,12 @@ class ExamsRepositoryImpl implements ExamsRepository {
       query = query.where('teacherId', isEqualTo: teacherId);
     }
     return query
+        .orderBy('examDate', descending: true)
+        .limit(AppConstants.pageSize)
         .snapshots()
-        .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => ExamResultModel.fromFirestore(doc))
-          .toList();
-      list.sort((a, b) => b.examDate.compareTo(a.examDate));
-      return list;
-    }).handleError((_) => <ExamResultEntity>[]);
+        .map((snapshot) => snapshot.docs
+            .map((doc) => ExamResultModel.fromFirestore(doc))
+            .toList());
   }
 
   @override
@@ -38,14 +37,12 @@ class ExamsRepositoryImpl implements ExamsRepository {
       query = query.where('teacherId', isEqualTo: teacherId);
     }
     return query
+        .orderBy('examDate', descending: true)
+        .limit(AppConstants.pageSize)
         .snapshots()
-        .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => ExamResultModel.fromFirestore(doc))
-          .toList();
-      list.sort((a, b) => b.examDate.compareTo(a.examDate));
-      return list;
-    }).handleError((_) => <ExamResultEntity>[]);
+        .map((snapshot) => snapshot.docs
+            .map((doc) => ExamResultModel.fromFirestore(doc))
+            .toList());
   }
 
   @override

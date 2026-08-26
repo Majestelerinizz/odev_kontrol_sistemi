@@ -1,6 +1,6 @@
 {
-  "name": "matpusula-functions",
-  "description": "MatPusula Cloud Functions — admin broadcast",
+  "name": "eduly-functions",
+  "description": "Eduly Cloud Functions — admin broadcast",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",

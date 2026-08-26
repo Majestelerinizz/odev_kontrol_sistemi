@@ -1,7 +1,7 @@
 {
   "name": "odevtakip-sync-backend",
   "version": "1.0.0",
-  "description": "Firebase → PostgreSQL gerçek zamanlı sync servisi — Ödev Takip Sistemi",
+  "description": "Firebase → PostgreSQL gerçek zamanlı sync servisi — Eduly (opsiyonel/legacy)",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -19,7 +19,7 @@
     "morgan": "^1.10.0",
     "chalk": "^4.1.2",
     "twilio": "^5.2.0",
-    "@google/genai": "^0.1.1"
+    "@google/genai": "^1.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.4",

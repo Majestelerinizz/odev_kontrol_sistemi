@@ -109,9 +109,10 @@ class HomeworkDetailScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Öğrenci Kontrol Listesi', style: AppTextStyles.h4),
-                    const Text('Durumu değiştirmek için tıklayın',
-                        style: TextStyle(
-                            fontSize: 12, color: AppColors.textSecondary)),
+                    Text(
+                      'Durumu değiştirmek için tıklayın',
+                      style: AppTextStyles.caption,
+                    ),
                   ],
                 ),
               ),
@@ -214,9 +215,10 @@ class _StudentAssignmentRow extends StatelessWidget {
             backgroundColor: AppColors.teacherPrimary.withValues(alpha: 0.1),
             child: Text(
               student.name.isNotEmpty ? student.name[0].toUpperCase() : '?',
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.teacherPrimary),
+              style: AppTextStyles.labelLarge.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.teacherPrimary,
+              ),
             ),
           ),
           const SizedBox(width: 12),

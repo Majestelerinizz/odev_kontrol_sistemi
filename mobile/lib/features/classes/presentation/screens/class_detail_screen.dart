@@ -106,9 +106,11 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => const Center(
-                child: Text('Öğrenci bilgisi yüklenemedi. Lütfen tekrar giriş yapın.',
-                    style: TextStyle(color: AppColors.textSecondary)),
+              error: (err, stack) => Center(
+                child: Text(
+                  'Öğrenci bilgisi yüklenemedi. Lütfen tekrar giriş yapın.',
+                  style: AppTextStyles.bodyMedium,
+                ),
               ),
             ),
           ),
@@ -117,8 +119,9 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddStudentDialog(context, user?.uid ?? ''),
         backgroundColor: AppColors.teacherPrimary,
-        icon: const Icon(Icons.person_add_rounded, color: Colors.white),
-        label: const Text('Öğrenci Ekle', style: TextStyle(color: Colors.white)),
+        icon: const Icon(Icons.person_add_rounded,
+            color: AppColors.textOnPrimary),
+        label: Text('Öğrenci Ekle', style: AppTextStyles.buttonMedium),
       ),
     );
   }
