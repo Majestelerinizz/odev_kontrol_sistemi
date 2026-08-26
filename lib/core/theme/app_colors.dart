@@ -29,10 +29,10 @@ class AppColors {
   static const Color infoLight = Color(0xFFDBEAFE);
 
   // ── Ödev durum renkleri ───────────────────────────────────────────────────
-  static const Color statusPending = Color(0xFFF59E0B);   // Bekliyor
+  static const Color statusPending = Color(0xFFF59E0B); // Bekliyor
   static const Color statusCompleted = Color(0xFF16A34A); // Tamamlandı
-  static const Color statusMissed = Color(0xFFDC2626);    // Yapılmadı
-  static const Color statusOverdue = Color(0xFF991B1B);   // Gecikti
+  static const Color statusMissed = Color(0xFFDC2626); // Yapılmadı
+  static const Color statusOverdue = Color(0xFF991B1B); // Gecikti
 
   // ── Nötr / zemin ──────────────────────────────────────────────────────────
   static const Color background = Color(0xFFF6F8FC);

@@ -23,9 +23,8 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
         .where('teacherId', isEqualTo: teacherId)
         .snapshots()
         .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => HomeworkModel.fromFirestore(doc))
-          .toList();
+      final list =
+          snapshot.docs.map((doc) => HomeworkModel.fromFirestore(doc)).toList();
       list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return list;
     }).handleError((_) => <HomeworkEntity>[]);
@@ -38,9 +37,8 @@ class HomeworksRepositoryImpl implements HomeworksRepository {
         .where('classId', isEqualTo: classId)
         .snapshots()
         .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => HomeworkModel.fromFirestore(doc))
-          .toList();
+      final list =
+          snapshot.docs.map((doc) => HomeworkModel.fromFirestore(doc)).toList();
       list.sort((a, b) => b.dueDate.compareTo(a.dueDate));
       return list;
     }).handleError((_) => <HomeworkEntity>[]);

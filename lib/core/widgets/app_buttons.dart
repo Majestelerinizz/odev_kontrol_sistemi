@@ -136,7 +136,8 @@ class SecondaryButton extends StatelessWidget {
                   Flexible(
                     child: Text(
                       label,
-                      style: AppTextStyles.buttonLarge.copyWith(color: btnColor),
+                      style:
+                          AppTextStyles.buttonLarge.copyWith(color: btnColor),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),

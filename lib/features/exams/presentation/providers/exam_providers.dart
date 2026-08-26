@@ -23,9 +23,11 @@ final studentExamsStreamProvider =
 
 /// Bir sınıfın tüm sınav sonuçlarının canlı akışı
 /// Family parametresi: (classId, teacherId) record
-final classExamsStreamProvider =
-    StreamProvider.family<List<ExamResultEntity>, ({String classId, String teacherId})>((ref, params) {
-  return ref.watch(examsRepositoryProvider).getClassExams(params.classId, teacherId: params.teacherId);
+final classExamsStreamProvider = StreamProvider.family<List<ExamResultEntity>,
+    ({String classId, String teacherId})>((ref, params) {
+  return ref
+      .watch(examsRepositoryProvider)
+      .getClassExams(params.classId, teacherId: params.teacherId);
 });
 
 /// Öğrencinin aktif hedefinin canlı akışı

@@ -13,7 +13,8 @@ class AiExamScannerScreen extends ConsumerStatefulWidget {
   const AiExamScannerScreen({super.key});
 
   @override
-  ConsumerState<AiExamScannerScreen> createState() => _AiExamScannerScreenState();
+  ConsumerState<AiExamScannerScreen> createState() =>
+      _AiExamScannerScreenState();
 }
 
 class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
@@ -48,7 +49,8 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
         _isScanning = false;
         _analysisResult = result;
       });
-      context.showSnackBar('✨ Gemini AI Yapay Zeka fotoğraf analizini tamamladı!');
+      context
+          .showSnackBar('✨ Gemini AI Yapay Zeka fotoğraf analizini tamamladı!');
     }
   }
 
@@ -60,7 +62,8 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary),
+          icon: const Icon(Icons.arrow_back_ios_new,
+              color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -103,7 +106,8 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
                           SizedBox(height: 4),
                           Text(
                             'Test kağıdı veya optik formun fotoğrafını çekin, Gemini AI netlerinizi saniyeler içinde hesaplasın.',
-                            style: TextStyle(color: Colors.white70, fontSize: 12),
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 12),
                           ),
                         ],
                       ),
@@ -154,7 +158,8 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
                       ? const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            CircularProgressIndicator(color: AppColors.teacherPrimary),
+                            CircularProgressIndicator(
+                                color: AppColors.teacherPrimary),
                             SizedBox(height: 16),
                             Text(
                               'Gemini AI Fotoğrafı Analiz Ediyor...',
@@ -166,7 +171,8 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
                             SizedBox(height: 4),
                             Text(
                               'Doğru, yanlış ve net sayıları çıkarılıyor',
-                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              style: TextStyle(
+                                  fontSize: 12, color: AppColors.textSecondary),
                             ),
                           ],
                         )
@@ -176,7 +182,8 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: AppColors.teacherPrimary.withValues(alpha: 0.1),
+                                color: AppColors.teacherPrimary
+                                    .withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -197,7 +204,8 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
                             const SizedBox(height: 4),
                             const Text(
                               'Test sayfasını net bir açıyla hizalayın',
-                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              style: TextStyle(
+                                  fontSize: 12, color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -226,7 +234,8 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.verified_rounded, color: AppColors.success),
+                          const Icon(Icons.verified_rounded,
+                              color: AppColors.success),
                           const SizedBox(width: 8),
                           Text(
                             'AI Analiz Sonucu (${_analysisResult!['subject']})',
@@ -238,10 +247,20 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildStatBadge('Doğru', '${_analysisResult!['correctCount']}', AppColors.success),
-                          _buildStatBadge('Yanlış', '${_analysisResult!['wrongCount']}', AppColors.error),
-                          _buildStatBadge('Boş', '${_analysisResult!['emptyCount']}', AppColors.warning),
-                          _buildStatBadge('Net', '${_analysisResult!['net']}', AppColors.teacherPrimary),
+                          _buildStatBadge(
+                              'Doğru',
+                              '${_analysisResult!['correctCount']}',
+                              AppColors.success),
+                          _buildStatBadge(
+                              'Yanlış',
+                              '${_analysisResult!['wrongCount']}',
+                              AppColors.error),
+                          _buildStatBadge(
+                              'Boş',
+                              '${_analysisResult!['emptyCount']}',
+                              AppColors.warning),
+                          _buildStatBadge('Net', '${_analysisResult!['net']}',
+                              AppColors.teacherPrimary),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -253,14 +272,16 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
                         ),
                         child: Text(
                           '💡 ${_analysisResult!['notes']}',
-                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          style: const TextStyle(
+                              fontSize: 13, color: AppColors.textSecondary),
                         ),
                       ),
                       const SizedBox(height: 20),
                       PrimaryButton(
                         label: 'Netleri Sınav Formuna Aktar',
                         onPressed: () {
-                          context.showSnackBar('Netler deneme sınavı formuna aktarıldı!');
+                          context.showSnackBar(
+                              'Netler deneme sınavı formuna aktarıldı!');
                           context.pop();
                         },
                       ),
@@ -278,7 +299,9 @@ class _AiExamScannerScreenState extends ConsumerState<AiExamScannerScreen> {
   Widget _buildStatBadge(String label, String value, Color color) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+        Text(label,
+            style:
+                const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
         const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),

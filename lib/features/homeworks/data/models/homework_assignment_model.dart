@@ -37,7 +37,8 @@ class HomeworkAssignmentModel extends HomeworkAssignmentEntity {
       'classId': classId,
       'teacherId': teacherId,
       'status': status,
-      'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
+      'completedAt':
+          completedAt != null ? Timestamp.fromDate(completedAt!) : null,
       'teacherNote': teacherNote,
       'updatedAt': Timestamp.fromDate(updatedAt),
     };

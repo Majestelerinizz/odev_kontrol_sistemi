@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_text_styles.dart';
@@ -31,6 +32,7 @@ class AppTextField extends StatefulWidget {
     this.textCapitalization = TextCapitalization.none,
     this.onTap,
     this.helperText,
+    this.inputFormatters,
   });
 
   final String? label;
@@ -56,6 +58,7 @@ class AppTextField extends StatefulWidget {
   final TextCapitalization textCapitalization;
   final VoidCallback? onTap;
   final String? helperText;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -104,6 +107,7 @@ class _AppTextFieldState extends State<AppTextField> {
           focusNode: widget.focusNode,
           textCapitalization: widget.textCapitalization,
           onTap: widget.onTap,
+          inputFormatters: widget.inputFormatters,
           style: AppTextStyles.inputText,
           decoration: InputDecoration(
             hintText: widget.hint,
@@ -118,7 +122,8 @@ class _AppTextFieldState extends State<AppTextField> {
                       color: AppColors.textSecondary,
                       size: AppSizes.iconMd,
                     ),
-                    onPressed: () => setState(() => _obscureText = !_obscureText),
+                    onPressed: () =>
+                        setState(() => _obscureText = !_obscureText),
                   )
                 : widget.suffixIcon,
             helperText: widget.helperText,

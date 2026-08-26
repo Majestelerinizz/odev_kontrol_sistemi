@@ -76,9 +76,8 @@ class InviteCodeGenerator {
       buffer.write(_chars[seed % _chars.length]);
       seed = seed ~/ _chars.length + (seed % 7 + 1) * 31;
     }
-    final classInitial = className.isNotEmpty
-        ? className[0].toUpperCase()
-        : 'A';
+    final classInitial =
+        className.isNotEmpty ? className[0].toUpperCase() : 'A';
     return 'OT-$gradeLevel$classInitial-$buffer';
   }
 }

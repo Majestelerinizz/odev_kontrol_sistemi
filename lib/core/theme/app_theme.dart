@@ -177,8 +177,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primaryColor,
-          minimumSize:
-              const Size(0, AppSizes.minimumTouchTarget),
+          minimumSize: const Size(0, AppSizes.minimumTouchTarget),
           textStyle: GoogleFonts.nunito(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -307,8 +306,7 @@ class AppTheme {
       // ── ListTile ───────────────────────────────────────────────────────────
       listTileTheme: ListTileThemeData(
         minLeadingWidth: 0,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         ),

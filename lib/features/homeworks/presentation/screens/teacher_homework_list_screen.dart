@@ -65,7 +65,8 @@ class _TeacherHomeworkListScreenState
                   selectedColor: AppColors.teacherPrimary,
                   labelStyle: TextStyle(
                     color: isSelected ? Colors.white : AppColors.textPrimary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                   onSelected: (selected) {
                     if (selected) setState(() => _selectedSubject = subject);
@@ -211,15 +212,17 @@ class _TeacherHomeworkCard extends StatelessWidget {
                       color: homework.isOverdue
                           ? AppColors.error
                           : AppColors.textSecondary,
-                      fontWeight:
-                          homework.isOverdue ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: homework.isOverdue
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 10),
               Text(homework.title, style: AppTextStyles.h4),
-              if (homework.sourceName != null || homework.questionRange != null) ...[
+              if (homework.sourceName != null ||
+                  homework.questionRange != null) ...[
                 const SizedBox(height: 4),
                 Text(
                   '${homework.sourceName ?? ''} ${homework.questionRange != null ? "• Soru: ${homework.questionRange}" : ""}',

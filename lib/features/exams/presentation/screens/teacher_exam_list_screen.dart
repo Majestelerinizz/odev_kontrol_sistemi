@@ -51,7 +51,8 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
           if (classes.isEmpty) {
             return EmptyState(
               title: 'Henüz Sınıfınız Yok',
-              subtitle: 'Sınav sonucu girebilmek için önce bir sınıf oluşturun.',
+              subtitle:
+                  'Sınav sonucu girebilmek için önce bir sınıf oluşturun.',
               icon: Icons.bar_chart_rounded,
               action: () => context.go('/teacher/classes'),
               actionLabel: 'Sınıflarıma Git',
@@ -80,7 +81,8 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
                   items: classes
                       .map((c) => DropdownMenuItem(
                             value: c.id,
-                            child: Text('${c.name} (${c.studentCount} Öğrenci)'),
+                            child:
+                                Text('${c.name} (${c.studentCount} Öğrenci)'),
                           ))
                       .toList(),
                   onChanged: (val) {
@@ -112,8 +114,8 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
                         final exam = exams[index];
                         return _TeacherExamCard(
                           exam: exam,
-                          onAnalyticsTap: () => context.push(
-                              '/teacher/analytics/${exam.studentId}'),
+                          onAnalyticsTap: () => context
+                              .push('/teacher/analytics/${exam.studentId}'),
                           onDelete: () => _confirmDeleteExam(context, exam),
                         );
                       },
@@ -147,7 +149,8 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('${exam.examName} Kaydı Silinsin mi?'),
-        content: const Text('Bu sınav sonucunu silmek istediğinize emin misiniz?'),
+        content:
+            const Text('Bu sınav sonucunu silmek istediğinize emin misiniz?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -156,9 +159,7 @@ class _TeacherExamListScreenState extends ConsumerState<TeacherExamListScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await ref
-                  .read(examNotifierProvider.notifier)
-                  .deleteExam(exam.id);
+              await ref.read(examNotifierProvider.notifier).deleteExam(exam.id);
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text('Sil'),
@@ -259,8 +260,8 @@ class _TeacherExamCard extends ConsumerWidget {
                       const SizedBox(height: 2),
                       Text(
                         exam.totalScore.toStringAsFixed(1),
-                        style: AppTextStyles.h3
-                            .copyWith(color: AppColors.accent),
+                        style:
+                            AppTextStyles.h3.copyWith(color: AppColors.accent),
                       ),
                     ],
                   ),

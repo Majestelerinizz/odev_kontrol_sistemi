@@ -47,8 +47,10 @@ class AppStrings {
 
   // ── Rol seçimi ────────────────────────────────────────────────────────────
   static const String roleSelectionTitle = 'Rolünüzü Seçin';
-  static const String roleSelectionSubtitle = 'Devam etmek için rolünüzü seçiniz';
-  static const String teacherRoleDesc = 'Sınıflarınızı ve öğrencilerinizi yönetin';
+  static const String roleSelectionSubtitle =
+      'Devam etmek için rolünüzü seçiniz';
+  static const String teacherRoleDesc =
+      'Sınıflarınızı ve öğrencilerinizi yönetin';
   static const String parentRoleDesc = 'Çocuğunuzun gelişimini takip edin';
 
   // ── Sınıf ─────────────────────────────────────────────────────────────────
@@ -141,7 +143,8 @@ class AppStrings {
   static const String changePassword = 'Şifre Değiştir';
   static const String deleteAccount = 'Hesabı Sil';
   static const String settings = 'Ayarlar';
-  static const String logoutConfirm = 'Çıkış yapmak istediğinizden emin misiniz?';
+  static const String logoutConfirm =
+      'Çıkış yapmak istediğinizden emin misiniz?';
   static const String deleteAccountConfirm =
       'Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.';
 
@@ -157,26 +160,36 @@ class AppStrings {
   static const String errorWeakPassword = 'Şifreniz çok zayıf.';
   static const String errorInviteCodeRequired = 'Davet kodu zorunludur.';
   static const String errorInviteCodeInvalid = 'Geçersiz davet kodu.';
-  static const String errorInviteCodeExpired = 'Bu davet kodunun süresi dolmuş.';
-  static const String errorInviteCodeUsed = 'Bu davet kodu daha önce kullanılmış.';
-  static const String errorNoAccess = 'Bu öğrenciye erişim yetkiniz bulunmuyor.';
-  static const String errorNetwork = 'İnternet bağlantısı kurulamadı. Lütfen tekrar deneyin.';
-  static const String errorSaveFailed = 'Kaydedilemedi. Bilgileri kontrol edip tekrar deneyin.';
-  static const String errorUnknown = 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
+  static const String errorInviteCodeExpired =
+      'Bu davet kodunun süresi dolmuş.';
+  static const String errorInviteCodeUsed =
+      'Bu davet kodu daha önce kullanılmış.';
+  static const String errorNoAccess =
+      'Bu öğrenciye erişim yetkiniz bulunmuyor.';
+  static const String errorNetwork =
+      'İnternet bağlantısı kurulamadı. Lütfen tekrar deneyin.';
+  static const String errorSaveFailed =
+      'Kaydedilemedi. Bilgileri kontrol edip tekrar deneyin.';
+  static const String errorUnknown =
+      'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
   static const String errorHomeworkTitleRequired = 'Ödev başlığı zorunludur.';
   static const String errorSubjectRequired = 'Ders seçimi zorunludur.';
-  static const String errorDueDatePast = 'Teslim tarihi geçmiş bir tarih olamaz.';
-  static const String errorSelectStudents = 'En az bir öğrenci veya tüm sınıf seçilmelidir.';
+  static const String errorDueDatePast =
+      'Teslim tarihi geçmiş bir tarih olamaz.';
+  static const String errorSelectStudents =
+      'En az bir öğrenci veya tüm sınıf seçilmelidir.';
   static const String errorNegativeNumber = 'Negatif değer girilemez.';
   static const String errorClassNameRequired = 'Sınıf adı zorunludur.';
   static const String errorStudentNameRequired = 'Öğrenci adı zorunludur.';
   static const String errorClassRequired = 'Sınıf seçimi zorunludur.';
-  static const String errorTermsRequired = 'Kullanım koşullarını kabul etmelisiniz.';
+  static const String errorTermsRequired =
+      'Kullanım koşullarını kabul etmelisiniz.';
 
   // ── Başarı mesajları ──────────────────────────────────────────────────────
   static const String successSaved = 'Başarıyla kaydedildi.';
   static const String successDeleted = 'Başarıyla silindi.';
-  static const String successPasswordReset = 'Şifre sıfırlama bağlantısı e-postanıza gönderildi.';
+  static const String successPasswordReset =
+      'Şifre sıfırlama bağlantısı e-postanıza gönderildi.';
   static const String successInviteCodeCopied = 'Davet kodu kopyalandı.';
   static const String successMessageSent = 'Mesaj başarıyla gönderildi.';
   static const String successHomeworkAdded = 'Ödev başarıyla eklendi.';

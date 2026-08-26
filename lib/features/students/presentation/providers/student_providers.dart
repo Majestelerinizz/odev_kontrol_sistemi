@@ -11,15 +11,17 @@ final studentsRepositoryProvider = Provider<StudentsRepository>((ref) {
 
 /// Sınıfa göre öğrencilerin canlı akışı
 /// Family parametresi: (classId, teacherId) record
-final classStudentsStreamProvider =
-    StreamProvider.family<List<StudentEntity>, ({String classId, String teacherId})>((ref, params) {
+final classStudentsStreamProvider = StreamProvider.family<List<StudentEntity>,
+    ({String classId, String teacherId})>((ref, params) {
   final teacherId = params.teacherId.isNotEmpty
       ? params.teacherId
       : (FirebaseAuth.instance.currentUser?.uid ?? '');
   if (teacherId.isEmpty) {
     return Stream.value(const <StudentEntity>[]);
   }
-  return ref.watch(studentsRepositoryProvider).getClassStudents(params.classId, teacherId: teacherId);
+  return ref
+      .watch(studentsRepositoryProvider)
+      .getClassStudents(params.classId, teacherId: teacherId);
 });
 
 /// Tek öğrenci akışı

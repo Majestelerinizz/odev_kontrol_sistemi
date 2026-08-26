@@ -35,10 +35,9 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final teacherId = user?.uid ?? FirebaseAuth.instance.currentUser?.uid ?? '';
-    final studentsAsync =
-        ref.watch(classStudentsStreamProvider(
-          (classId: widget.classId, teacherId: teacherId),
-        ));
+    final studentsAsync = ref.watch(classStudentsStreamProvider(
+      (classId: widget.classId, teacherId: teacherId),
+    ));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -107,7 +106,8 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (err, stack) => const Center(
-                child: Text('Öğrenci bilgisi yüklenemedi. Lütfen tekrar giriş yapın.',
+                child: Text(
+                    'Öğrenci bilgisi yüklenemedi. Lütfen tekrar giriş yapın.',
                     style: TextStyle(color: AppColors.textSecondary)),
               ),
             ),
@@ -118,7 +118,8 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
         onPressed: () => _showAddStudentDialog(context, user?.uid ?? ''),
         backgroundColor: AppColors.teacherPrimary,
         icon: const Icon(Icons.person_add_rounded, color: Colors.white),
-        label: const Text('Öğrenci Ekle', style: TextStyle(color: Colors.white)),
+        label:
+            const Text('Öğrenci Ekle', style: TextStyle(color: Colors.white)),
       ),
     );
   }
@@ -183,19 +184,18 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
             label: 'Kaydet',
             onPressed: () async {
               if (formKey.currentState!.validate()) {
-                final success = await ref
-                    .read(studentNotifierProvider.notifier)
-                    .addStudent(
-                      classId: widget.classId,
-                      teacherId: teacherId,
-                      name: nameController.text.trim(),
-                      schoolNumber: numberController.text.trim().isEmpty
-                          ? null
-                          : numberController.text.trim(),
-                      teacherNote: noteController.text.trim().isEmpty
-                          ? null
-                          : noteController.text.trim(),
-                    );
+                final success =
+                    await ref.read(studentNotifierProvider.notifier).addStudent(
+                          classId: widget.classId,
+                          teacherId: teacherId,
+                          name: nameController.text.trim(),
+                          schoolNumber: numberController.text.trim().isEmpty
+                              ? null
+                              : numberController.text.trim(),
+                          teacherNote: noteController.text.trim().isEmpty
+                              ? null
+                              : noteController.text.trim(),
+                        );
                 if (context.mounted) {
                   Navigator.pop(ctx);
                   if (success) {

@@ -4,7 +4,9 @@ import 'package:odev_takip/features/goals/domain/entities/goal_entity.dart';
 
 void main() {
   group('SubjectScore & ExamResultEntity Tests', () {
-    test('SubjectScore net hesabı otomatik doğru yapılır (16 D, 4 Y = 15.0 Net)', () {
+    test(
+        'SubjectScore net hesabı otomatik doğru yapılır (16 D, 4 Y = 15.0 Net)',
+        () {
       const score = SubjectScore(correct: 16, wrong: 4, blank: 0);
       expect(score.net, 15.0);
       expect(score.totalQuestions, 20);
@@ -34,7 +36,9 @@ void main() {
   });
 
   group('GoalEntity Tests', () {
-    test('Hedef kalan değer (remainingValue) ve yüzde (progressPercentage) doğru hesaplanır', () {
+    test(
+        'Hedef kalan değer (remainingValue) ve yüzde (progressPercentage) doğru hesaplanır',
+        () {
       final goal = GoalEntity(
         id: 'goal_1',
         studentId: 'student_1',

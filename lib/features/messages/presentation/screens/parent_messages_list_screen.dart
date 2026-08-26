@@ -38,7 +38,8 @@ class ParentMessagesListScreen extends ConsumerWidget {
             return const EmptyState(
               icon: Icons.mark_email_read_outlined,
               title: 'Henüz Duyuru Yok',
-              subtitle: 'Öğretmenleriniz tarafından henüz bir duyuru paylaşılmadı.',
+              subtitle:
+                  'Öğretmenleriniz tarafından henüz bir duyuru paylaşılmadı.',
             );
           }
 

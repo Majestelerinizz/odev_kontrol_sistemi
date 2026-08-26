@@ -11,7 +11,8 @@ class NotificationsScreen extends StatelessWidget {
     final sampleNotifications = [
       {
         'title': 'LGS Kurumsal Deneme #3 Açıklandı!',
-        'subtitle': 'Toplam 85.50 Net ile öğrenciniz sınıfta 2. sırada yer aldı.',
+        'subtitle':
+            'Toplam 85.50 Net ile öğrenciniz sınıfta 2. sırada yer aldı.',
         'time': '10 dk önce',
         'icon': Icons.stars_rounded,
         'color': AppColors.parentPrimary,
@@ -25,7 +26,8 @@ class NotificationsScreen extends StatelessWidget {
       },
       {
         'title': 'Öğretmen Değerlendirme Notu',
-        'subtitle': 'Matematik dersindeki özverili çalışması için teşekkür ederiz.',
+        'subtitle':
+            'Matematik dersindeki özverili çalışması için teşekkür ederiz.',
         'time': ' Dün',
         'icon': Icons.sticky_note_2_rounded,
         'color': AppColors.success,

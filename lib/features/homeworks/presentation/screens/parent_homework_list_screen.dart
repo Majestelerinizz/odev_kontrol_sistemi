@@ -21,7 +21,8 @@ class ParentHomeworkListScreen extends ConsumerWidget {
     final studentsAsync = ref.watch(parentStudentsStreamProvider(parentUid));
     final activeStudent = studentsAsync.valueOrNull?.firstOrNull;
     final studentId = activeStudent?.id ?? parentUid;
-    final assignmentsAsync = ref.watch(studentAssignmentsStreamProvider(studentId));
+    final assignmentsAsync =
+        ref.watch(studentAssignmentsStreamProvider(studentId));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -44,7 +45,8 @@ class ParentHomeworkListScreen extends ConsumerWidget {
                         color: AppColors.parentPrimary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.assignment_turned_in_rounded, size: 40, color: AppColors.parentPrimary),
+                      child: const Icon(Icons.assignment_turned_in_rounded,
+                          size: 40, color: AppColors.parentPrimary),
                     ),
                     const SizedBox(height: 16),
                     Text('Henüz Ödev Bulunmuyor', style: AppTextStyles.h3),
@@ -52,7 +54,8 @@ class ParentHomeworkListScreen extends ConsumerWidget {
                     Text(
                       'Öğretmeniniz ödev tanımladığında teslim tarihi ve ödev detayları burada listelenecektir.',
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.textSecondary),
                     ),
                   ],
                 ),
@@ -73,7 +76,8 @@ class ParentHomeworkListScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Ödevler yüklenirken bir hata oluştu: $e')),
+        error: (e, _) =>
+            Center(child: Text('Ödevler yüklenirken bir hata oluştu: $e')),
       ),
     );
   }
@@ -87,7 +91,8 @@ class _ParentHomeworkAssignmentCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final homeworkAsync = ref.watch(homeworkDetailProvider(assignment.homeworkId));
+    final homeworkAsync =
+        ref.watch(homeworkDetailProvider(assignment.homeworkId));
 
     return homeworkAsync.when(
       data: (homework) {
@@ -125,7 +130,8 @@ class _ParentHomeworkAssignmentCard extends ConsumerWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.parentPrimary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -148,11 +154,13 @@ class _ParentHomeworkAssignmentCard extends ConsumerWidget {
             homework.title,
             style: AppTextStyles.h4,
           ),
-          if (homework.description != null && homework.description!.isNotEmpty) ...[
+          if (homework.description != null &&
+              homework.description!.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
               homework.description!,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: AppColors.textSecondary),
             ),
           ],
           const SizedBox(height: 12),
@@ -160,24 +168,30 @@ class _ParentHomeworkAssignmentCard extends ConsumerWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.event_outlined, size: 16, color: AppColors.textSecondary),
+              const Icon(Icons.event_outlined,
+                  size: 16, color: AppColors.textSecondary),
               const SizedBox(width: 6),
               Text(
                 'Teslim: ${homework.dueDate.toTurkishDate()}',
-                style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.labelSmall
+                    .copyWith(color: AppColors.textSecondary),
               ),
               const Spacer(),
-              if (homework.questionRange != null && homework.questionRange!.isNotEmpty) ...[
-                const Icon(Icons.menu_book_outlined, size: 16, color: AppColors.textSecondary),
+              if (homework.questionRange != null &&
+                  homework.questionRange!.isNotEmpty) ...[
+                const Icon(Icons.menu_book_outlined,
+                    size: 16, color: AppColors.textSecondary),
                 const SizedBox(width: 4),
                 Text(
                   homework.questionRange!,
-                  style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary),
+                  style: AppTextStyles.labelSmall
+                      .copyWith(color: AppColors.textSecondary),
                 ),
               ],
             ],
           ),
-          if (assignment.teacherNote != null && assignment.teacherNote!.isNotEmpty) ...[
+          if (assignment.teacherNote != null &&
+              assignment.teacherNote!.isNotEmpty) ...[
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(10),
@@ -189,7 +203,8 @@ class _ParentHomeworkAssignmentCard extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.comment_outlined, size: 16, color: AppColors.teacherPrimary),
+                  const Icon(Icons.comment_outlined,
+                      size: 16, color: AppColors.teacherPrimary),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -197,7 +212,10 @@ class _ParentHomeworkAssignmentCard extends ConsumerWidget {
                       children: [
                         const Text(
                           'Öğretmen Notu:',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.teacherPrimary),
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.teacherPrimary),
                         ),
                         const SizedBox(height: 2),
                         Text(

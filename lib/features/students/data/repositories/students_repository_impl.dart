@@ -19,20 +19,19 @@ class StudentsRepositoryImpl implements StudentsRepository {
       _firestore.collection('invite_codes');
 
   @override
-  Stream<List<StudentEntity>> getClassStudents(String classId, {required String teacherId}) {
+  Stream<List<StudentEntity>> getClassStudents(String classId,
+      {required String teacherId}) {
     if (classId.isEmpty) return Stream.value([]);
 
-    Query<Map<String, dynamic>> query = _studentsRef.where('classId', isEqualTo: classId);
+    Query<Map<String, dynamic>> query =
+        _studentsRef.where('classId', isEqualTo: classId);
     if (teacherId.isNotEmpty) {
       query = query.where('teacherId', isEqualTo: teacherId);
     }
 
-    return query
-        .snapshots()
-        .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => StudentModel.fromFirestore(doc))
-          .toList();
+    return query.snapshots().map((snapshot) {
+      final list =
+          snapshot.docs.map((doc) => StudentModel.fromFirestore(doc)).toList();
       list.sort((a, b) => a.name.compareTo(b.name));
       return list;
     }).handleError((_) => <StudentEntity>[]);
@@ -142,7 +141,8 @@ class StudentsRepositoryImpl implements StudentsRepository {
           .get();
 
       if (query.docs.isEmpty) return null;
-      final list = query.docs.map((d) => InviteCodeModel.fromFirestore(d)).toList();
+      final list =
+          query.docs.map((d) => InviteCodeModel.fromFirestore(d)).toList();
       list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       final model = list.first;
       return model.isExpired ? null : model;

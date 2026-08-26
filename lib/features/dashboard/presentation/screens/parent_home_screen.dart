@@ -38,11 +38,13 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
     final user = authState.valueOrNull;
 
     // ── Veliye bağlı öğrenci ────────────────────────────────────────────────
-    final studentsAsync = ref.watch(parentStudentsStreamProvider(user?.uid ?? ''));
+    final studentsAsync =
+        ref.watch(parentStudentsStreamProvider(user?.uid ?? ''));
     final activeStudent = studentsAsync.valueOrNull?.firstOrNull;
 
     // ── Sınıf bilgisi ─────────────────────────────────────────────────────────
-    final classAsync = ref.watch(classStreamProvider(activeStudent?.classId ?? ''));
+    final classAsync =
+        ref.watch(classStreamProvider(activeStudent?.classId ?? ''));
     final className = classAsync.valueOrNull?.name ?? '';
 
     final studentName = activeStudent != null
@@ -51,28 +53,36 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
             : activeStudent.name)
         : 'Bağlı Öğrenci Aranıyor...';
 
-    final schoolNo = activeStudent?.schoolNumber != null && activeStudent!.schoolNumber!.isNotEmpty
+    final schoolNo = activeStudent?.schoolNumber != null &&
+            activeStudent!.schoolNumber!.isNotEmpty
         ? 'Okul No: ${activeStudent.schoolNumber}'
         : (activeStudent != null ? 'Kayıtlı Öğrenci' : 'Bağlantı Yok');
 
     final greetingName = activeStudent != null
         ? '${activeStudent.name} Velisi'
-        : (user?.name != null && !user!.name.startsWith('parent_') ? user.name : 'Veli');
+        : (user?.name != null && !user!.name.startsWith('parent_')
+            ? user.name
+            : 'Veli');
 
     // ── Canlı Ödev İstatistikleri ───────────────────────────────────────────
-    final assignmentsAsync = ref.watch(studentAssignmentsStreamProvider(activeStudent?.id ?? ''));
+    final assignmentsAsync =
+        ref.watch(studentAssignmentsStreamProvider(activeStudent?.id ?? ''));
     final assignments = assignmentsAsync.valueOrNull ?? [];
     final activeHomeworkCount = assignments.where((a) => !a.isCompleted).length;
-    final completedHomeworkCount = assignments.where((a) => a.isCompleted).length;
+    final completedHomeworkCount =
+        assignments.where((a) => a.isCompleted).length;
 
     // ── Canlı Deneme Sınavı İstatistikleri ──────────────────────────────────
-    final examsAsync = ref.watch(studentExamsStreamProvider(activeStudent?.id ?? ''));
+    final examsAsync =
+        ref.watch(studentExamsStreamProvider(activeStudent?.id ?? ''));
     final exams = examsAsync.valueOrNull ?? [];
     final lastExam = exams.firstOrNull;
-    final lastNetStr = lastExam != null ? lastExam.totalNet.toStringAsFixed(2) : '-';
+    final lastNetStr =
+        lastExam != null ? lastExam.totalNet.toStringAsFixed(2) : '-';
 
     // ── Canlı Hedef Durumu ─────────────────────────────────────────────────
-    final goalAsync = ref.watch(studentGoalStreamProvider(activeStudent?.id ?? ''));
+    final goalAsync =
+        ref.watch(studentGoalStreamProvider(activeStudent?.id ?? ''));
     final goal = goalAsync.valueOrNull;
     final goalPercentStr = goal != null
         ? '%${goal.progressPercentage.clamp(0, 100).toStringAsFixed(0)}'
@@ -81,7 +91,8 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
             : '-');
 
     // ── Öğretmen Notu ───────────────────────────────────────────────────────
-    final teacherNoteText = (activeStudent?.teacherNote != null && activeStudent!.teacherNote!.trim().isNotEmpty)
+    final teacherNoteText = (activeStudent?.teacherNote != null &&
+            activeStudent!.teacherNote!.trim().isNotEmpty)
         ? activeStudent.teacherNote!.trim()
         : 'Öğretmeniniz henüz özel bir değerlendirme notu girmedi.';
 
@@ -96,7 +107,7 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
         slivers: [
           // ── SliverAppBar ───────────────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 140,
+            expandedHeight: 156,
             floating: false,
             pinned: true,
             backgroundColor: AppColors.parentPrimary,
@@ -109,7 +120,7 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                     colors: [AppColors.parentPrimary, AppColors.parentLight],
                   ),
                 ),
-                padding: const EdgeInsets.fromLTRB(20, 48, 20, 14),
+                padding: const EdgeInsets.fromLTRB(20, 36, 20, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -128,6 +139,7 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 6),
                     Text(
                       'Merhaba, $greetingName 👋',
@@ -136,7 +148,8 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                     const SizedBox(height: 2),
                     Text(
                       'Çocuğunuzun güncel durumu aşağıda.',
-                      style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+                      style: AppTextStyles.bodySmall
+                          .copyWith(color: Colors.white70),
                     ),
                   ],
                 ),
@@ -144,7 +157,8 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                icon: const Icon(Icons.notifications_outlined,
+                    color: Colors.white),
                 onPressed: () => context.push('/parent/notifications'),
               ),
               const SizedBox(width: 4),
@@ -161,7 +175,8 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.parentSurface,
                     borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-                    border: Border.all(color: AppColors.parentPrimary.withValues(alpha: 0.3)),
+                    border: Border.all(
+                        color: AppColors.parentPrimary.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
@@ -172,14 +187,16 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                           color: AppColors.parentPrimary,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.face_rounded, color: Colors.white, size: 26),
+                        child: const Icon(Icons.face_rounded,
+                            color: Colors.white, size: 26),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Bağlı Öğrenci Profili', style: AppTextStyles.labelSmall),
+                            Text('Bağlı Öğrenci Profili',
+                                style: AppTextStyles.labelSmall),
                             const SizedBox(height: 2),
                             Text(
                               studentName,
@@ -192,14 +209,18 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.parentPrimary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           schoolNo,
-                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.parentPrimary),
+                          style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.parentPrimary),
                         ),
                       ),
                     ],
@@ -271,10 +292,12 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: AppColors.teacherPrimary.withValues(alpha: 0.1),
+                          color:
+                              AppColors.teacherPrimary.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.sticky_note_2_rounded, color: AppColors.teacherPrimary, size: 24),
+                        child: const Icon(Icons.sticky_note_2_rounded,
+                            color: AppColors.teacherPrimary, size: 24),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -283,12 +306,14 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                           children: [
                             Text(
                               'Öğretmen Değerlendirmesi',
-                              style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold),
+                              style: AppTextStyles.labelLarge
+                                  .copyWith(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               teacherNoteText,
-                              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                              style: AppTextStyles.bodySmall
+                                  .copyWith(color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -310,7 +335,8 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.notifications_active_rounded, color: AppColors.parentPrimary, size: 24),
+                      const Icon(Icons.notifications_active_rounded,
+                          color: AppColors.parentPrimary, size: 24),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -318,12 +344,15 @@ class _ParentHomeScreenState extends ConsumerState<ParentHomeScreen> {
                           children: [
                             Text(
                               latestMessage?.title ?? 'Duyuru Paneli',
-                              style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold),
+                              style: AppTextStyles.labelLarge
+                                  .copyWith(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              latestMessage?.body ?? 'Henüz yeni bir duyuru veya mesaj bulunmuyor.',
-                              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                              latestMessage?.body ??
+                                  'Henüz yeni bir duyuru veya mesaj bulunmuyor.',
+                              style: AppTextStyles.bodySmall
+                                  .copyWith(color: AppColors.textSecondary),
                             ),
                           ],
                         ),

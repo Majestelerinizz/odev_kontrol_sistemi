@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// src/middleware/authMiddleware.js — Firebase ID Token Doğrulama
+// src/middleware/authMiddleware.js — Firebase ID Token & App Check Doğrulama
 // ═══════════════════════════════════════════════════════════════
 'use strict';
 
@@ -23,18 +23,45 @@ async function requireFirebaseAuth(req, res, next) {
   const idToken = match[1];
 
   try {
+    if (admin.apps.length === 0) {
+      console.warn('⚠️ Firebase Admin başlatılmamış. Test ortamı dışında token doğrulanamaz.');
+      if (process.env.NODE_ENV === 'test') {
+        req.user = { uid: 'test-user-uid', phone_number: '+905315635049', role: 'parent' };
+        return next();
+      }
+      return res.status(503).json({
+        error: 'AUTH_SERVICE_UNAVAILABLE',
+        message: 'Kimlik doğrulama servisi şu anda kullanılamıyor.',
+      });
+    }
+
     // Firebase Admin SDK ile ID Token'ı kriptografik olarak doğrula
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     req.user = decodedToken;
 
-    // App Check Token varsa doğrula (Opsiyonel / İleri Seviye)
+    // ── App Check Token Doğrulaması (Environment-based Audit / Enforce Modu) ──
+    const appCheckMode = (process.env.APP_CHECK_MODE || 'audit').toLowerCase();
     const appCheckToken = req.headers['x-firebase-appcheck'];
-    if (appCheckToken && admin.appCheck) {
-      try {
-        const appCheckClaims = await admin.appCheck().verifyToken(appCheckToken);
-        req.appCheck = appCheckClaims;
-      } catch (_) {
-        // App Check fail olsa bile audit modunda devam edebilir
+
+    if (admin.appCheck) {
+      if (appCheckToken) {
+        try {
+          const appCheckClaims = await admin.appCheck().verifyToken(appCheckToken);
+          req.appCheck = appCheckClaims;
+        } catch (appCheckErr) {
+          if (appCheckMode === 'enforce') {
+            return res.status(401).json({
+              error: 'APP_CHECK_FAILED',
+              message: 'Uygulama bütünlük doğrulaması (App Check) başarısız oldu.',
+            });
+          }
+          console.warn('⚠️ App Check doğrulama uyarısı (Audit modu):', appCheckErr.message);
+        }
+      } else if (appCheckMode === 'enforce' && process.env.NODE_ENV === 'production') {
+        return res.status(401).json({
+          error: 'MISSING_APP_CHECK_TOKEN',
+          message: 'Güvenlik doğrulaması (App Check) başlığı eksik.',
+        });
       }
     }
 

@@ -19,9 +19,8 @@ class ClassesRepositoryImpl implements ClassesRepository {
         .where('teacherId', isEqualTo: teacherId)
         .snapshots()
         .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => ClassModel.fromFirestore(doc))
-          .toList();
+      final list =
+          snapshot.docs.map((doc) => ClassModel.fromFirestore(doc)).toList();
       list.sort((a, b) => a.name.compareTo(b.name));
       return list;
     }).handleError((_) => <ClassEntity>[]);

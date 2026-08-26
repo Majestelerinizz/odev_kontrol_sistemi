@@ -32,10 +32,9 @@ class HomeworkDetailScreen extends ConsumerWidget {
             return const Center(child: Text('Ödev bulunamadı.'));
           }
 
-          final studentsAsync =
-              ref.watch(classStudentsStreamProvider(
-                (classId: homework.classId, teacherId: homework.teacherId),
-              ));
+          final studentsAsync = ref.watch(classStudentsStreamProvider(
+            (classId: homework.classId, teacherId: homework.teacherId),
+          ));
 
           return Column(
             children: [
@@ -132,8 +131,7 @@ class HomeworkDetailScreen extends ConsumerWidget {
                         };
 
                         return ListView.separated(
-                          padding:
-                              const EdgeInsets.all(AppSizes.pagePadding),
+                          padding: const EdgeInsets.all(AppSizes.pagePadding),
                           itemCount: students.length,
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 8),
@@ -161,8 +159,8 @@ class HomeworkDetailScreen extends ConsumerWidget {
                       },
                       loading: () =>
                           const Center(child: CircularProgressIndicator()),
-                      error: (err, __) =>
-                          const Center(child: Text('Atama bilgisi bulunamadı.')),
+                      error: (err, __) => const Center(
+                          child: Text('Atama bilgisi bulunamadı.')),
                     );
                   },
                   loading: () =>
@@ -175,7 +173,8 @@ class HomeworkDetailScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, __) => const Center(child: Text('Ödev bilgisi bulunamadı.')),
+        error: (err, __) =>
+            const Center(child: Text('Ödev bilgisi bulunamadı.')),
       ),
     );
   }
@@ -215,8 +214,7 @@ class _StudentAssignmentRow extends StatelessWidget {
             child: Text(
               student.name.isNotEmpty ? student.name[0].toUpperCase() : '?',
               style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.teacherPrimary),
+                  fontWeight: FontWeight.bold, color: AppColors.teacherPrimary),
             ),
           ),
           const SizedBox(width: 12),

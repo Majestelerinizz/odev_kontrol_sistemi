@@ -36,7 +36,8 @@ class AiVisionService {
       'net': 15.0,
       'score': 75.0,
       'confidence': 0.95,
-      'notes': 'Gemini AI Yapay Zeka Görsel Analizi tamamlandı. 20 soruda 16 Doğru, 4 Yanlış tespit edildi (15.0 Net).',
+      'notes':
+          'Gemini AI Yapay Zeka Görsel Analizi tamamlandı. 20 soruda 16 Doğru, 4 Yanlış tespit edildi (15.0 Net).',
     };
   }
 }

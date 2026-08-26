@@ -13,15 +13,15 @@ class ExamsRepositoryImpl implements ExamsRepository {
       _firestore.collection('exam_results');
 
   @override
-  Stream<List<ExamResultEntity>> getStudentExams(String studentId, {String? teacherId}) {
+  Stream<List<ExamResultEntity>> getStudentExams(String studentId,
+      {String? teacherId}) {
     if (studentId.isEmpty) return Stream.value([]);
-    Query<Map<String, dynamic>> query = _examsRef.where('studentId', isEqualTo: studentId);
+    Query<Map<String, dynamic>> query =
+        _examsRef.where('studentId', isEqualTo: studentId);
     if (teacherId != null && teacherId.isNotEmpty) {
       query = query.where('teacherId', isEqualTo: teacherId);
     }
-    return query
-        .snapshots()
-        .map((snapshot) {
+    return query.snapshots().map((snapshot) {
       final list = snapshot.docs
           .map((doc) => ExamResultModel.fromFirestore(doc))
           .toList();
@@ -31,15 +31,15 @@ class ExamsRepositoryImpl implements ExamsRepository {
   }
 
   @override
-  Stream<List<ExamResultEntity>> getClassExams(String classId, {required String teacherId}) {
+  Stream<List<ExamResultEntity>> getClassExams(String classId,
+      {required String teacherId}) {
     if (classId.isEmpty) return Stream.value([]);
-    Query<Map<String, dynamic>> query = _examsRef.where('classId', isEqualTo: classId);
+    Query<Map<String, dynamic>> query =
+        _examsRef.where('classId', isEqualTo: classId);
     if (teacherId.isNotEmpty) {
       query = query.where('teacherId', isEqualTo: teacherId);
     }
-    return query
-        .snapshots()
-        .map((snapshot) {
+    return query.snapshots().map((snapshot) {
       final list = snapshot.docs
           .map((doc) => ExamResultModel.fromFirestore(doc))
           .toList();

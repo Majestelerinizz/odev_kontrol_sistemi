@@ -26,7 +26,8 @@ void main() {
   });
 
   group('HomeworkAssignmentEntity Tests', () {
-    test('Durum yardımcıları (isCompleted, isPending, isMissed) doğru çalışır', () {
+    test('Durum yardımcıları (isCompleted, isPending, isMissed) doğru çalışır',
+        () {
       final assignment = HomeworkAssignmentEntity(
         id: 'asg_1',
         homeworkId: 'hw_1',

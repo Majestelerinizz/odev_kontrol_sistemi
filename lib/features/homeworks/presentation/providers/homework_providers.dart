@@ -18,16 +18,18 @@ final teacherHomeworksStreamProvider =
 });
 
 /// Bir ödeve ait öğrenci durumlarının akışı
-final homeworkAssignmentsStreamProvider = StreamProvider.family<
-    List<HomeworkAssignmentEntity>, String>((ref, homeworkId) {
+final homeworkAssignmentsStreamProvider =
+    StreamProvider.family<List<HomeworkAssignmentEntity>, String>(
+        (ref, homeworkId) {
   return ref
       .watch(homeworksRepositoryProvider)
       .getHomeworkAssignments(homeworkId);
 });
 
 /// Bir öğrenciye ait tüm ödev atamalarının canlı akışı (Veli paneli için)
-final studentAssignmentsStreamProvider = StreamProvider.family<
-    List<HomeworkAssignmentEntity>, String>((ref, studentId) {
+final studentAssignmentsStreamProvider =
+    StreamProvider.family<List<HomeworkAssignmentEntity>, String>(
+        (ref, studentId) {
   return ref
       .watch(homeworksRepositoryProvider)
       .getStudentAssignments(studentId);

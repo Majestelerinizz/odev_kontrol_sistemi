@@ -5,8 +5,18 @@ extension DateTimeExtensions on DateTime {
   /// Türkçe tarih formatı: "22 Temmuz 2026"
   String toTurkishDate() {
     const months = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık',
     ];
     return '$day ${months[month - 1]} $year';
   }
@@ -14,8 +24,18 @@ extension DateTimeExtensions on DateTime {
   /// Kısa format: "22 Tem 2026"
   String toShortTurkishDate() {
     const months = [
-      'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz',
-      'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara',
+      'Oca',
+      'Şub',
+      'Mar',
+      'Nis',
+      'May',
+      'Haz',
+      'Tem',
+      'Ağu',
+      'Eyl',
+      'Eki',
+      'Kas',
+      'Ara',
     ];
     return '$day ${months[month - 1]} $year';
   }
@@ -126,8 +146,7 @@ extension BuildContextExtensions on BuildContext {
 /// int / double uzantıları
 extension DoubleExtensions on double {
   /// Net hesaplama (4 yanlış 1 doğruyu götürür)
-  static double calculateNet(int correct, int wrong,
-      {double penalty = 4.0}) {
+  static double calculateNet(int correct, int wrong, {double penalty = 4.0}) {
     return correct - (wrong / penalty);
   }
 

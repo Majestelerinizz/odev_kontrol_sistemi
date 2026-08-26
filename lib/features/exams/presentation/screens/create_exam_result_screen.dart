@@ -147,8 +147,7 @@ class _CreateExamResultScreenState
                   studentsAsync.when(
                     data: (students) {
                       if (students.isEmpty) {
-                        return const Text(
-                            'Bu sınıfta henüz öğrenci kaydı yok.',
+                        return const Text('Bu sınıfta henüz öğrenci kaydı yok.',
                             style: TextStyle(color: AppColors.warning));
                       }
                       _selectedStudentId ??= students.first.id;
@@ -225,7 +224,8 @@ class _CreateExamResultScreenState
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Sınav Tarihi', style: AppTextStyles.inputLabel),
+                            Text('Sınav Tarihi',
+                                style: AppTextStyles.inputLabel),
                             const SizedBox(height: 6),
                             InkWell(
                               onTap: () async {
@@ -273,8 +273,7 @@ class _CreateExamResultScreenState
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Hesaplanan Toplam Net:',
-                          style: AppTextStyles.h4),
+                        Text('Hesaplanan Toplam Net:', style: AppTextStyles.h4),
                         Text(
                           totalNet.toStringAsFixed(2),
                           style: AppTextStyles.h2
@@ -361,9 +360,9 @@ class _CreateExamResultScreenState
                           _selectedStudentId != null) {
                         final scoresMap = <String, SubjectScore>{};
                         for (final s in _subjects) {
-                          final c =
-                              int.tryParse(_correctControllers[s]?.text ?? '0') ??
-                                  0;
+                          final c = int.tryParse(
+                                  _correctControllers[s]?.text ?? '0') ??
+                              0;
                           final w =
                               int.tryParse(_wrongControllers[s]?.text ?? '0') ??
                                   0;

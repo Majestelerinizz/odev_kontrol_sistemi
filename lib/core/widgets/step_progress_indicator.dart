@@ -58,9 +58,8 @@ class StepProgressIndicator extends StatelessWidget {
                       : Text(
                           '${stepIndex + 1}',
                           style: AppTextStyles.labelLarge.copyWith(
-                            color: isActive
-                                ? primaryColor
-                                : Colors.grey.shade600,
+                            color:
+                                isActive ? primaryColor : Colors.grey.shade600,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

@@ -54,29 +54,35 @@ class NotificationPermissionDialog extends StatelessWidget {
       ),
       content: const Text(
         'Ödev güncellemeleri, deneme sınavı sonuçları ve anlık mesajlar hakkında hemen bilgi sahibi olmak için anlık bildirimlere izin verin.',
-        style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
+        style: TextStyle(
+            fontSize: 14, color: AppColors.textSecondary, height: 1.4),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Daha Sonra', style: TextStyle(color: AppColors.textSecondary)),
+          child: const Text('Daha Sonra',
+              style: TextStyle(color: AppColors.textSecondary)),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.teacherPrimary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           ),
           onPressed: () {
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('🔔 Bildirim izinleri başarıyla aktifleştirildi!'),
+                content:
+                    Text('🔔 Bildirim izinleri başarıyla aktifleştirildi!'),
                 backgroundColor: AppColors.success,
               ),
             );
           },
-          child: const Text('İzin Ver', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          child: const Text('İzin Ver',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         ),
       ],
     );

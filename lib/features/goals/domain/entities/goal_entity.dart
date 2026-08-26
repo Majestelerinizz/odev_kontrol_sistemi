@@ -25,7 +25,8 @@ class GoalEntity {
   final DateTime endDate;
   final bool isActive;
 
-  double get remainingValue => (targetValue - currentValue).clamp(0, double.infinity);
+  double get remainingValue =>
+      (targetValue - currentValue).clamp(0, double.infinity);
   double get progressPercentage =>
       targetValue > 0 ? ((currentValue / targetValue) * 100).clamp(0, 100) : 0;
 
@@ -56,9 +57,7 @@ class GoalEntity {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is GoalEntity &&
-          runtimeType == other.runtimeType &&
-          id == other.id;
+      other is GoalEntity && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;

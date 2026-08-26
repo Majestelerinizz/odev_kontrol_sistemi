@@ -66,7 +66,8 @@ class _TeacherNewMessageScreenState
       context.pop();
     } catch (e) {
       if (!mounted) return;
-      context.showSnackBar('Mesaj gönderilemedi: ${e.toString()}', isError: true);
+      context.showSnackBar('Mesaj gönderilemedi: ${e.toString()}',
+          isError: true);
     } finally {
       if (mounted) {
         setState(() => _isSending = false);
@@ -84,7 +85,8 @@ class _TeacherNewMessageScreenState
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: const Icon(Icons.arrow_back_rounded,
+              color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: Text(

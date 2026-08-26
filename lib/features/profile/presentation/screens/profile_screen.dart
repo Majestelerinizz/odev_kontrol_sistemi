@@ -63,7 +63,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.teacherPrimary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             onPressed: () {
               if (newPassController.text.length < 6) {
@@ -83,7 +84,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               );
             },
-            child: const Text('Güncelle', style: TextStyle(color: Colors.white)),
+            child:
+                const Text('Güncelle', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -117,7 +119,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 '2. Veri Güvenliği:\nTüm veriler Google Firebase bulut altyapısında şifreli ve yetkilendirilmiş erişim kuralları (Firestore Security Rules) ile korunur.\n\n'
                 '3. Üçüncü Taraflarla Paylaşım:\nVerileriniz hiçbir reklam veren veya 3. taraf pazarlama şirketleri ile paylaşılmaz.\n\n'
                 '4. Haklarınız:\nHesabınızı dilediğiniz zaman silebilir veya verilerinizin silinmesini talep edebilirsiniz.',
-                style: TextStyle(fontSize: 13, height: 1.4, color: AppColors.textSecondary),
+                style: TextStyle(
+                    fontSize: 13, height: 1.4, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -126,10 +129,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.info,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Okudum ve Anladım', style: TextStyle(color: Colors.white)),
+            child: const Text('Okudum ve Anladım',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -160,7 +165,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             onPressed: () async {
               Navigator.pop(ctx);
@@ -168,13 +174,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Hesabınız ve profil verileriniz Firebase\'den kalıcı olarak silindi.'),
+                  content: Text(
+                      'Hesabınız ve profil verileriniz Firebase\'den kalıcı olarak silindi.'),
                   backgroundColor: AppColors.success,
                 ),
               );
               context.go('/welcome');
             },
-            child: const Text('Hesabımı Sil', style: TextStyle(color: Colors.white)),
+            child: const Text('Hesabımı Sil',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -234,12 +242,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     const SizedBox(width: 16),
                     Consumer(
                       builder: (context, ref, _) {
-                        final studentsAsync = ref.watch(parentStudentsStreamProvider(user?.uid ?? ''));
+                        final studentsAsync = ref.watch(
+                            parentStudentsStreamProvider(user?.uid ?? ''));
                         final parentStudents = studentsAsync.valueOrNull ?? [];
                         final connectedStudent = parentStudents.firstOrNull;
-                        final displayName = (!isTeacher && connectedStudent != null)
-                            ? '${connectedStudent.name} Velisi'
-                            : (user?.name ?? (isTeacher ? 'Öğretmen Hesabı' : 'Veli Hesabı'));
+                        final displayName =
+                            (!isTeacher && connectedStudent != null)
+                                ? '${connectedStudent.name} Velisi'
+                                : (user?.name ??
+                                    (isTeacher
+                                        ? 'Öğretmen Hesabı'
+                                        : 'Veli Hesabı'));
 
                         return Expanded(
                           child: Column(
@@ -263,7 +276,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
-                                  isTeacher ? '👨‍🏫 Matematik Öğretmeni' : '👨‍👩‍👧 Veli Hesabı',
+                                  isTeacher
+                                      ? '👨‍🏫 Matematik Öğretmeni'
+                                      : '👨‍👩‍👧 Veli Hesabı',
                                   style: AppTextStyles.labelSmall.copyWith(
                                     color: primaryColor,
                                     fontWeight: FontWeight.bold,
@@ -284,15 +299,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               if (!isTeacher) ...[
                 Consumer(
                   builder: (context, ref, _) {
-                    final studentsAsync = ref.watch(parentStudentsStreamProvider(user?.uid ?? ''));
+                    final studentsAsync = ref
+                        .watch(parentStudentsStreamProvider(user?.uid ?? ''));
                     final parentStudents = studentsAsync.valueOrNull ?? [];
 
                     if (parentStudents.isEmpty) {
-                      return _buildSettingsGroup('Öğrenci / Çocuk Bağlantıları', [
+                      return _buildSettingsGroup(
+                          'Öğrenci / Çocuk Bağlantıları', [
                         const ListTile(
-                          leading: Icon(Icons.info_outline_rounded, color: AppColors.textSecondary),
+                          leading: Icon(Icons.info_outline_rounded,
+                              color: AppColors.textSecondary),
                           title: Text('Henüz bağlı bir öğrenci bulunmuyor'),
-                          subtitle: Text('Öğretmeninizden aldığınız davet kodu ile bağlanabilirsiniz.'),
+                          subtitle: Text(
+                              'Öğretmeninizden aldığınız davet kodu ile bağlanabilirsiniz.'),
                         ),
                       ]);
                     }
@@ -301,27 +320,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       for (final st in parentStudents)
                         Consumer(
                           builder: (context, ref, _) {
-                            final classAsync = ref.watch(classStreamProvider(st.classId));
-                            final className = classAsync.valueOrNull?.name ?? '';
+                            final classAsync =
+                                ref.watch(classStreamProvider(st.classId));
+                            final className =
+                                classAsync.valueOrNull?.name ?? '';
                             final subtitle = className.isNotEmpty
                                 ? '$className Sınıfı • No: ${st.schoolNumber ?? '-'}'
-                                : (st.schoolNumber != null && st.schoolNumber!.isNotEmpty
+                                : (st.schoolNumber != null &&
+                                        st.schoolNumber!.isNotEmpty
                                     ? 'Okul No: ${st.schoolNumber}'
                                     : 'Kayıtlı Öğrenci');
 
                             return ListTile(
-                              leading: const Icon(Icons.face_rounded, color: AppColors.parentPrimary),
-                              title: Text(st.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                              leading: const Icon(Icons.face_rounded,
+                                  color: AppColors.parentPrimary),
+                              title: Text(st.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold)),
                               subtitle: Text(subtitle),
                               trailing: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: AppColors.successLight,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Text(
                                   'Bağlı',
-                                  style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                      color: AppColors.success,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
                             );
@@ -336,21 +365,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               // ── Bildirim Tercihleri ────────────────────────────────────
               _buildSettingsGroup('Bildirim Ayarları', [
                 SwitchListTile(
-                  secondary: Icon(Icons.notifications_active_rounded, color: primaryColor),
-                  title: const Text('Anlık Bildirimler', style: TextStyle(fontWeight: FontWeight.w600)),
+                  secondary: Icon(Icons.notifications_active_rounded,
+                      color: primaryColor),
+                  title: const Text('Anlık Bildirimler',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: const Text('Duyuru ve mesaj bildirimlerini al'),
                   value: _notificationsEnabled,
                   activeThumbColor: primaryColor,
-                  onChanged: (val) => setState(() => _notificationsEnabled = val),
+                  onChanged: (val) =>
+                      setState(() => _notificationsEnabled = val),
                 ),
                 const Divider(height: 1),
                 SwitchListTile(
-                  secondary: Icon(Icons.assignment_turned_in_rounded, color: primaryColor),
-                  title: const Text('Ödev & Deneme Uyarıları', style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: const Text('Yaklaşan ödev ve deneme hatırlatmaları'),
+                  secondary: Icon(Icons.assignment_turned_in_rounded,
+                      color: primaryColor),
+                  title: const Text('Ödev & Deneme Uyarıları',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle:
+                      const Text('Yaklaşan ödev ve deneme hatırlatmaları'),
                   value: _homeworkAlertsEnabled,
                   activeThumbColor: primaryColor,
-                  onChanged: (val) => setState(() => _homeworkAlertsEnabled = val),
+                  onChanged: (val) =>
+                      setState(() => _homeworkAlertsEnabled = val),
                 ),
               ]),
               const SizedBox(height: 20),

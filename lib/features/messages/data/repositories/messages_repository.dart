@@ -41,7 +41,8 @@ class MessagesRepository {
 
       for (final doc in studentsSnap.docs) {
         targetStudentIds.add(doc.id);
-        final parents = List<String>.from(doc.data()['parentIds'] as List? ?? []);
+        final parents =
+            List<String>.from(doc.data()['parentIds'] as List? ?? []);
         targetParentIds.addAll(parents);
       }
     } else {
@@ -53,7 +54,8 @@ class MessagesRepository {
 
       for (final doc in studentsSnap.docs) {
         targetStudentIds.add(doc.id);
-        final parents = List<String>.from(doc.data()['parentIds'] as List? ?? []);
+        final parents =
+            List<String>.from(doc.data()['parentIds'] as List? ?? []);
         targetParentIds.addAll(parents);
       }
     }
@@ -104,9 +106,8 @@ class MessagesRepository {
         .where('teacherId', isEqualTo: teacherId)
         .snapshots()
         .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => MessageModel.fromFirestore(doc))
-          .toList();
+      final list =
+          snapshot.docs.map((doc) => MessageModel.fromFirestore(doc)).toList();
       list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return list;
     });
@@ -119,9 +120,8 @@ class MessagesRepository {
         .where('parentIds', arrayContains: parentId)
         .snapshots()
         .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => MessageModel.fromFirestore(doc))
-          .toList();
+      final list =
+          snapshot.docs.map((doc) => MessageModel.fromFirestore(doc)).toList();
       list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return list;
     });

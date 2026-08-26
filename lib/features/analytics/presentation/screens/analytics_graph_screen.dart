@@ -61,8 +61,8 @@ class AnalyticsGraphScreen extends ConsumerWidget {
                         children: [
                           CircleAvatar(
                             radius: 24,
-                            backgroundColor: AppColors.teacherPrimary
-                                .withValues(alpha: 0.1),
+                            backgroundColor:
+                                AppColors.teacherPrimary.withValues(alpha: 0.1),
                             child: Text(
                               student.name[0].toUpperCase(),
                               style: AppTextStyles.h3
@@ -259,7 +259,8 @@ class AnalyticsGraphScreen extends ConsumerWidget {
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, __) => Center(child: Text('Sınavlar yüklenemedi: $err')),
+            error: (err, __) =>
+                Center(child: Text('Sınavlar yüklenemedi: $err')),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

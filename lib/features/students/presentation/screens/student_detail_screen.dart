@@ -235,8 +235,8 @@ class _InviteCodeDisplay extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.teacherPrimary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: AppColors.teacherPrimary.withValues(alpha: 0.2)),
+        border:
+            Border.all(color: AppColors.teacherPrimary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,8 +244,7 @@ class _InviteCodeDisplay extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Aktif Veli Davet Kodu:',
-                  style: AppTextStyles.labelMedium),
+              Text('Aktif Veli Davet Kodu:', style: AppTextStyles.labelMedium),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
@@ -267,8 +266,8 @@ class _InviteCodeDisplay extends StatelessWidget {
             children: [
               SelectableText(
                 inviteCode.code,
-                style: AppTextStyles.h2
-                    .copyWith(color: AppColors.teacherPrimary, letterSpacing: 2),
+                style: AppTextStyles.h2.copyWith(
+                    color: AppColors.teacherPrimary, letterSpacing: 2),
               ),
               const Spacer(),
               IconButton(

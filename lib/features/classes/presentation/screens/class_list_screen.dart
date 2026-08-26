@@ -39,8 +39,7 @@ class ClassListScreen extends ConsumerWidget {
               subtitle:
                   'Öğrencilerinizi ekleyip ödev atamak için önce bir sınıf oluşturun.',
               icon: Icons.school_rounded,
-              action: () =>
-                  _showAddClassDialog(context, ref, user?.uid ?? ''),
+              action: () => _showAddClassDialog(context, ref, user?.uid ?? ''),
               actionLabel: 'Sınıf Oluştur',
             );
           }
@@ -164,7 +163,8 @@ class ClassListScreen extends ConsumerWidget {
                       Navigator.pop(ctx);
                       if (success) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Sınıf başarıyla oluşturuldu!')),
+                          const SnackBar(
+                              content: Text('Sınıf başarıyla oluşturuldu!')),
                         );
                       }
                     }

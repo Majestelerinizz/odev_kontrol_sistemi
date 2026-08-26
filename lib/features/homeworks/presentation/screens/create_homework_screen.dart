@@ -115,7 +115,8 @@ class _CreateHomeworkScreenState extends ConsumerState<CreateHomeworkScreen> {
                     items: classes
                         .map((c) => DropdownMenuItem(
                               value: c.id,
-                              child: Text('${c.name} (${c.studentCount} Öğrenci)'),
+                              child:
+                                  Text('${c.name} (${c.studentCount} Öğrenci)'),
                             ))
                         .toList(),
                     onChanged: (val) {
@@ -260,10 +261,13 @@ class _CreateHomeworkScreenState extends ConsumerState<CreateHomeworkScreen> {
                       if (_formKey.currentState!.validate() &&
                           _selectedClassId != null) {
                         // Sınıftaki tüm öğrencileri çek
-                        final students = await ref.read(
-                            classStudentsStreamProvider(
-                              (classId: _selectedClassId!, teacherId: user?.uid ?? ''),
-                            ).future);
+                        final students =
+                            await ref.read(classStudentsStreamProvider(
+                          (
+                            classId: _selectedClassId!,
+                            teacherId: user?.uid ?? ''
+                          ),
+                        ).future);
                         final studentIds = students.map((s) => s.id).toList();
 
                         if (studentIds.isEmpty) {
@@ -289,9 +293,10 @@ class _CreateHomeworkScreenState extends ConsumerState<CreateHomeworkScreen> {
                               sourceName: _sourceController.text.trim().isEmpty
                                   ? null
                                   : _sourceController.text.trim(),
-                              questionRange: _rangeController.text.trim().isEmpty
-                                  ? null
-                                  : _rangeController.text.trim(),
+                              questionRange:
+                                  _rangeController.text.trim().isEmpty
+                                      ? null
+                                      : _rangeController.text.trim(),
                               description:
                                   _descriptionController.text.trim().isEmpty
                                       ? null

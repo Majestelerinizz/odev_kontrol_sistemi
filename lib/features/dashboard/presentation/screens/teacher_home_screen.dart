@@ -39,7 +39,7 @@ class _TeacherHomeScreenState extends ConsumerState<TeacherHomeScreen> {
         slivers: [
           // ── SliverAppBar ───────────────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 140,
+            expandedHeight: 156,
             floating: false,
             pinned: true,
             backgroundColor: AppColors.teacherPrimary,
@@ -52,7 +52,7 @@ class _TeacherHomeScreenState extends ConsumerState<TeacherHomeScreen> {
                     colors: [AppColors.teacherPrimary, AppColors.teacherLight],
                   ),
                 ),
-                padding: const EdgeInsets.fromLTRB(20, 48, 20, 14),
+                padding: const EdgeInsets.fromLTRB(20, 36, 20, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -71,6 +71,7 @@ class _TeacherHomeScreenState extends ConsumerState<TeacherHomeScreen> {
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 6),
                     Text(
                       'Merhaba, ${user?.name.split(' ').first ?? 'Öğretmenim'} 👋',
@@ -79,7 +80,8 @@ class _TeacherHomeScreenState extends ConsumerState<TeacherHomeScreen> {
                     const SizedBox(height: 2),
                     Text(
                       _getTodayGreeting(),
-                      style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+                      style: AppTextStyles.bodySmall
+                          .copyWith(color: Colors.white70),
                     ),
                   ],
                 ),
@@ -87,7 +89,8 @@ class _TeacherHomeScreenState extends ConsumerState<TeacherHomeScreen> {
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                icon: const Icon(Icons.notifications_outlined,
+                    color: Colors.white),
                 onPressed: () => context.push('/teacher/notifications'),
               ),
               const SizedBox(width: 4),
@@ -190,7 +193,8 @@ class _TeacherHomeScreenState extends ConsumerState<TeacherHomeScreen> {
                 const SizedBox(height: 12),
                 EmptyState(
                   title: 'Henüz ödev eklenmedi',
-                  subtitle: 'Yeni ödev eklemek için "Yeni Ödev" butonunu kullanın.',
+                  subtitle:
+                      'Yeni ödev eklemek için "Yeni Ödev" butonunu kullanın.',
                   icon: Icons.assignment_rounded,
                   action: () => context.push('/teacher/homeworks/new'),
                   actionLabel: 'Yeni Ödev',
