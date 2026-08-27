@@ -1,8 +1,6 @@
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../models/student_model.dart';
-import '../models/invite_code_model.dart';
 import '../../domain/entities/student_entity.dart';
 import '../../domain/repositories/students_repository.dart';
 
@@ -13,28 +11,26 @@ class StudentsRepositoryImpl implements StudentsRepository {
   final FirebaseFirestore _firestore;
 
   CollectionReference<Map<String, dynamic>> get _studentsRef =>
-      _firestore.collection('students');
+      _firestore.collection(AppConstants.colStudents);
   CollectionReference<Map<String, dynamic>> get _classesRef =>
-      _firestore.collection('classes');
+      _firestore.collection(AppConstants.colClasses);
   CollectionReference<Map<String, dynamic>> get _inviteCodesRef =>
-      _firestore.collection('invite_codes');
+      _firestore.collection(AppConstants.colInviteCodes);
 
   @override
-  Stream<List<StudentEntity>> getClassStudents(String classId, {required String teacherId}) {
+  Stream<List<StudentEntity>> getClassStudents(String classId,
+      {required String teacherId}) {
     if (classId.isEmpty) return Stream.value([]);
 
-    Query<Map<String, dynamic>> query = _studentsRef.where('classId', isEqualTo: classId);
+    Query<Map<String, dynamic>> query =
+        _studentsRef.where('classId', isEqualTo: classId);
     if (teacherId.isNotEmpty) {
       query = query.where('teacherId', isEqualTo: teacherId);
     }
 
-    return query
-        .limit(AppConstants.pageSize)
-        .snapshots()
-        .map((snapshot) {
-      final list = snapshot.docs
-          .map((doc) => StudentModel.fromFirestore(doc))
-          .toList();
+    return query.limit(AppConstants.pageSize).snapshots().map((snapshot) {
+      final list =
+          snapshot.docs.map((doc) => StudentModel.fromFirestore(doc)).toList();
       list.sort((a, b) => a.name.compareTo(b.name));
       return list;
     });
@@ -57,9 +53,7 @@ class StudentsRepositoryImpl implements StudentsRepository {
         .limit(AppConstants.pageSize)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => StudentModel.fromFirestore(doc))
-          .toList();
+      return snapshot.docs.map((doc) => StudentModel.fromFirestore(doc)).toList();
     });
   }
 
@@ -80,11 +74,11 @@ class StudentsRepositoryImpl implements StudentsRepository {
 
     final docRef = await _studentsRef.add(model.toFirestore());
 
-    // Sınıfın öğrenci sayısını artır
     await _classesRef.doc(student.classId).update({
       'studentCount': FieldValue.increment(1),
     });
 
+    await _syncClassInviteRoster(student.classId);
     return docRef.id;
   }
 
@@ -104,61 +98,50 @@ class StudentsRepositoryImpl implements StudentsRepository {
     );
 
     await _studentsRef.doc(student.id).update(model.toFirestore());
+    await _syncClassInviteRoster(student.classId);
   }
 
   @override
   Future<void> deleteStudent(String studentId, String classId) async {
     await _studentsRef.doc(studentId).delete();
 
-    // Sınıfın öğrenci sayısını azalt
     await _classesRef.doc(classId).update({
       'studentCount': FieldValue.increment(-1),
     });
+
+    await _syncClassInviteRoster(classId);
   }
 
-  @override
-  Future<InviteCodeModel> generateInviteCode({
-    required String studentId,
-    required String teacherId,
-  }) async {
-    final code = _generateRandomCode();
-    final expiresAt = DateTime.now().add(const Duration(days: 14));
-
-    final inviteModel = InviteCodeModel(
-      code: code,
-      studentId: studentId,
-      teacherId: teacherId,
-      expiresAt: expiresAt,
-      createdAt: DateTime.now(),
-    );
-
-    await _inviteCodesRef.doc(code).set(inviteModel.toFirestore());
-    return inviteModel;
-  }
-
-  @override
-  Future<InviteCodeModel?> getActiveInviteCode(String studentId) async {
+  Future<void> _syncClassInviteRoster(String classId) async {
     try {
-      final query = await _inviteCodesRef
-          .where('studentId', isEqualTo: studentId)
-          .where('used', isEqualTo: false)
+      final classDoc = await _classesRef.doc(classId).get();
+      final code = classDoc.data()?['inviteCode'] as String?;
+      if (code == null || code.isEmpty) return;
+
+      final snapshot = await _studentsRef
+          .where('classId', isEqualTo: classId)
+          .limit(AppConstants.pageSize * 5)
           .get();
 
-      if (query.docs.isEmpty) return null;
-      final list = query.docs.map((d) => InviteCodeModel.fromFirestore(d)).toList();
-      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      final model = list.first;
-      return model.isExpired ? null : model;
-    } catch (_) {
-      return null;
-    }
-  }
+      final students = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'id': doc.id,
+          'name': data['name'] as String? ?? '',
+          if (data['schoolNumber'] != null)
+            'schoolNumber': data['schoolNumber'],
+        };
+      }).toList();
 
-  String _generateRandomCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    final random = Random();
-    final randomPart =
-        List.generate(6, (index) => chars[random.nextInt(chars.length)]).join();
-    return 'OT-$randomPart';
+      students.sort((a, b) =>
+          (a['name'] as String).compareTo(b['name'] as String));
+
+      await _inviteCodesRef.doc(code).set(
+        {'students': students},
+        SetOptions(merge: true),
+      );
+    } catch (_) {
+      // Davet kodu yoksa veya yetki yoksa sessizce geç
+    }
   }
 }

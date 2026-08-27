@@ -1,7 +1,8 @@
 # Handoff — Tasarım ekibi & Faz B (Firebase canlı)
 
 Altyapı (auth, rules dosyaları, index dosyaları, FCM client, hosting config, local build) hazır.
-**Canlı Firebase deploy henüz yapılmadı** — aşağıdaki Faz B bilinçli durak noktasındadır.
+**Faz B ilerleme (`eduly-server`):** Firestore rules + indexes canlı; Hosting canlı (`https://eduly-server.web.app`).
+**Kalan:** Authentication’da Email/Password açılması (Console), admin seed, Cloud Functions için Blaze planı.
 
 ## Açılacak klasörler
 
@@ -44,7 +45,7 @@ Kökte Flutter `pubspec.yaml` yoktur. Android Studio / Xcode için `mobile/` aç
 
 ## Faz B — DURAK: canlı Firebase (CLI + Blaze gerekir)
 
-Proje: `odevtakipsistemi-b93b2` (`.firebaserc`).
+Proje: `eduly-server` (`.firebaserc`).
 
 Önkoşullar:
 
@@ -75,7 +76,7 @@ firebase deploy --only firestore:rules,firestore:indexes,functions,hosting
 
 Deploy sonrası:
 
-- Hosting URL: `https://odevtakipsistemi-b93b2.web.app` (veya Console’daki Hosting URL)
+- Hosting URL: `https://eduly-server.web.app` (veya Console’daki Hosting URL)
 - Authentication → Authorized domains: `*.web.app` / `*.firebaseapp.com` (genelde hazır)
 - Canlı smoke: admin login, listeler, broadcast; mobile parent homework get
 

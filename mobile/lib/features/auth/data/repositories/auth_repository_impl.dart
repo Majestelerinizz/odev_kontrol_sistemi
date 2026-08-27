@@ -113,6 +113,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
     required String inviteCode,
+    required String studentId,
   }) async {
     User? createdUser;
     try {
@@ -121,7 +122,7 @@ class AuthRepositoryImpl implements AuthRepository {
         throw const AuthException('Geçersiz davet kodu.');
       }
 
-      final studentId = codeData['studentId'] as String;
+      final resolvedStudentId = _resolveStudentId(codeData, studentId);
       final now = DateTime.now();
 
       try {
@@ -137,7 +138,8 @@ class AuthRepositoryImpl implements AuthRepository {
             email: email,
             password: password,
             inviteCode: inviteCode,
-            studentId: studentId,
+            studentId: resolvedStudentId,
+            inviteType: codeData['type'] as String? ?? 'student',
             now: now,
           );
         }
@@ -161,8 +163,9 @@ class AuthRepositoryImpl implements AuthRepository {
         userModel: userModel,
         name: name.trim(),
         email: email.trim(),
-        studentId: studentId,
+        studentId: resolvedStudentId,
         inviteCode: inviteCode,
+        inviteType: codeData['type'] as String? ?? 'student',
         now: now,
         mergeUser: false,
       );
@@ -179,12 +182,42 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  String _resolveStudentId(Map<String, dynamic> codeData, String studentId) {
+    final type = codeData['type'] as String? ??
+        (codeData['classId'] != null ? 'class' : 'student');
+
+    if (type == 'class') {
+      if (studentId.isEmpty) {
+        throw const AuthException('Lütfen çocuğunuzu listeden seçin.');
+      }
+      final students = codeData['students'] as List<dynamic>? ?? [];
+      final ids = students
+          .whereType<Map>()
+          .map((e) => e['id'] as String? ?? '')
+          .where((id) => id.isNotEmpty)
+          .toSet();
+      if (!ids.contains(studentId)) {
+        throw const AuthException(
+          'Seçilen öğrenci bu sınıf davet koduna ait değil.',
+        );
+      }
+      return studentId;
+    }
+
+    final legacyId = codeData['studentId'] as String?;
+    if (legacyId == null || legacyId.isEmpty) {
+      throw const AuthException('Geçersiz davet kodu.');
+    }
+    return legacyId;
+  }
+
   Future<AppUser> _linkInviteToExistingParent({
     required String name,
     required String email,
     required String password,
     required String inviteCode,
     required String studentId,
+    required String inviteType,
     required DateTime now,
   }) async {
     late final User user;
@@ -229,6 +262,7 @@ class AuthRepositoryImpl implements AuthRepository {
       email: email.trim(),
       studentId: studentId,
       inviteCode: inviteCode,
+      inviteType: inviteType,
       now: now,
       mergeUser: true,
     );
@@ -244,6 +278,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String studentId,
     required String inviteCode,
+    required String inviteType,
     required DateTime now,
     required bool mergeUser,
   }) async {
@@ -287,14 +322,17 @@ class AuthRepositoryImpl implements AuthRepository {
       },
     );
 
-    batch.update(
-      _inviteCodes.doc(inviteCode),
-      {
-        'used': true,
-        'usedBy': uid,
-        'usedAt': now.toIso8601String(),
-      },
-    );
+    // Sınıf kodları yeniden kullanılabilir; yalnızca eski öğrenci kodlarını işaretle
+    if (inviteType != 'class') {
+      batch.update(
+        _inviteCodes.doc(inviteCode),
+        {
+          'used': true,
+          'usedBy': uid,
+          'usedAt': now.toIso8601String(),
+        },
+      );
+    }
 
     await batch.commit();
   }
@@ -406,13 +444,26 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Map<String, dynamic>?> validateInviteCode(String code) async {
     try {
-      final doc = await _inviteCodes.doc(code).get();
+      final doc = await _inviteCodes.doc(code.trim().toUpperCase()).get();
       if (!doc.exists || doc.data() == null) return null;
 
-      final data = doc.data()!;
-      final used = data['used'] as bool? ?? false;
-      if (used) {
-        throw const AuthException('Bu davet kodu daha önce kullanılmış.');
+      final data = Map<String, dynamic>.from(doc.data()!);
+      data['code'] = doc.id;
+
+      final type = data['type'] as String? ??
+          (data['classId'] != null ? 'class' : 'student');
+      data['type'] = type;
+
+      final revoked = data['revoked'] as bool? ?? false;
+      if (revoked) {
+        throw const AuthException('Bu davet kodu iptal edilmiş.');
+      }
+
+      if (type != 'class') {
+        final used = data['used'] as bool? ?? false;
+        if (used) {
+          throw const AuthException('Bu davet kodu daha önce kullanılmış.');
+        }
       }
 
       final expiresAt = data['expiresAt'];

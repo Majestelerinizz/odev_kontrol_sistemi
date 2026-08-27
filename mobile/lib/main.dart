@@ -31,12 +31,13 @@ Future<void> main() async {
     if (kIsWeb) {
       await Firebase.initializeApp(
         options: const FirebaseOptions(
-          apiKey: "AIzaSyDx03qPyKBzQUb97dW_j2cN1kbBbQL0sZM",
-          appId: "1:1063947496038:web:c424f96a4fa7ed77711ba7",
-          messagingSenderId: "1063947496038",
-          projectId: "odevtakipsistemi-b93b2",
-          authDomain: "odevtakipsistemi-b93b2.firebaseapp.com",
-          storageBucket: "odevtakipsistemi-b93b2.firebasestorage.app",
+          apiKey: "AIzaSyDZ80PElxFSEjX8G5-LhM36H-UOWO0SJUM",
+          appId: "1:763956808451:web:37b5b0f6a85848b240b736",
+          messagingSenderId: "763956808451",
+          projectId: "eduly-server",
+          authDomain: "eduly-server.firebaseapp.com",
+          storageBucket: "eduly-server.firebasestorage.app",
+          measurementId: "G-6WVK3D5NWE",
         ),
       );
     } else {

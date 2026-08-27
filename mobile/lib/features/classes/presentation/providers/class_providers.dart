@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../students/data/models/invite_code_model.dart';
 import '../../data/repositories/classes_repository_impl.dart';
 import '../../domain/entities/class_entity.dart';
 import '../../domain/repositories/classes_repository.dart';
@@ -17,7 +18,21 @@ final teacherClassesStreamProvider = StreamProvider<List<ClassEntity>>((ref) {
   return ref.watch(classesRepositoryProvider).getTeacherClasses(user.uid);
 });
 
-/// Sınıf Ekleme / Silme İşlemleri Notifier'ı
+/// Tek sınıf akışı
+final classStreamProvider =
+    StreamProvider.family<ClassEntity?, String>((ref, classId) {
+  return ref.watch(classesRepositoryProvider).getClassStream(classId);
+});
+
+/// Sınıfın aktif davet kodu
+final activeClassInviteProvider =
+    FutureProvider.family<InviteCodeModel?, String>((ref, classId) {
+  return ref
+      .watch(classesRepositoryProvider)
+      .getActiveClassInviteCode(classId);
+});
+
+/// Sınıf Ekleme / Silme / Davet Kodu İşlemleri Notifier'ı
 class ClassNotifier extends StateNotifier<AsyncValue<void>> {
   ClassNotifier(this._repo) : super(const AsyncValue.data(null));
 
@@ -57,6 +72,24 @@ class ClassNotifier extends StateNotifier<AsyncValue<void>> {
     } catch (e, st) {
       state = AsyncValue.error(e, st);
       return false;
+    }
+  }
+
+  Future<InviteCodeModel?> generateClassInviteCode({
+    required String classId,
+    required String teacherId,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      final invite = await _repo.generateClassInviteCode(
+        classId: classId,
+        teacherId: teacherId,
+      );
+      state = const AsyncValue.data(null);
+      return invite;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return null;
     }
   }
 }

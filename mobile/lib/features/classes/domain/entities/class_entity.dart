@@ -11,6 +11,7 @@ class ClassEntity {
     this.schoolName,
     this.academicYear = '2026-2027',
     this.studentCount = 0,
+    this.inviteCode,
     required this.createdAt,
   });
 
@@ -21,6 +22,8 @@ class ClassEntity {
   final String? schoolName;
   final String academicYear;
   final int studentCount;
+  /// Sınıf davet kodu (tüm veliler aynı kodu kullanır)
+  final String? inviteCode;
   final DateTime createdAt;
 
   ClassEntity copyWith({
@@ -31,6 +34,7 @@ class ClassEntity {
     String? schoolName,
     String? academicYear,
     int? studentCount,
+    String? inviteCode,
     DateTime? createdAt,
   }) {
     return ClassEntity(
@@ -41,6 +45,7 @@ class ClassEntity {
       schoolName: schoolName ?? this.schoolName,
       academicYear: academicYear ?? this.academicYear,
       studentCount: studentCount ?? this.studentCount,
+      inviteCode: inviteCode ?? this.inviteCode,
       createdAt: createdAt ?? this.createdAt,
     );
   }

@@ -16,7 +16,7 @@ async function deployRules() {
 
     const rules = admin.securityRules();
     const ruleSet = await rules.createRuleset({
-      name: 'projects/odevtakipsistemi-b93b2',
+      name: 'projects/eduly-server',
       source: {
         files: [{
           name: 'firestore.rules',

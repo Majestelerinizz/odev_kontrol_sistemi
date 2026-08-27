@@ -35,8 +35,8 @@ class AppStrings {
   static const String resetPassword = 'Şifre Sıfırla';
   static const String roleTeacher = 'Öğretmen';
   static const String roleParent = 'Veli';
-  static const String inviteCode = 'Davet Kodu';
-  static const String inviteCodeHint = 'Örnek: OT-8A-A7K9M2';
+  static const String inviteCode = 'Sınıf Davet Kodu';
+  static const String inviteCodeHint = 'Örnek: OT-A7K9M2';
   static const String termsAccept = 'Kullanım koşullarını kabul ediyorum';
   static const String privacyPolicy = 'Gizlilik Politikası';
   static const String termsOfService = 'Kullanım Koşulları';
@@ -67,7 +67,7 @@ class AppStrings {
   static const String schoolNumber = 'Okul Numarası';
   static const String studentProfile = 'Öğrenci Profili';
   static const String noStudents = 'Henüz öğrenci eklenmedi';
-  static const String generateInviteCode = 'Davet Kodu Oluştur';
+  static const String generateInviteCode = 'Sınıf Davet Kodu Oluştur';
   static const String targetScore = 'Hedef Puan';
   static const String teacherNote = 'Öğretmen Notu';
 

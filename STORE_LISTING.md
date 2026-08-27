@@ -23,9 +23,9 @@ Eduly, öğretmenlerin sınıflarını, öğrencilerini, ödevlerini ve deneme s
 Education
 
 ## Gizlilik / destek URL’leri
-- Gizlilik: https://odevtakipsistemi-b93b2.web.app/privacy.html
-- Koşullar: https://odevtakipsistemi-b93b2.web.app/terms.html
-- Destek: https://odevtakipsistemi-b93b2.web.app/support.html
+- Gizlilik: https://eduly-server.web.app/privacy.html
+- Koşullar: https://eduly-server.web.app/terms.html
+- Destek: https://eduly-server.web.app/support.html
 - E-posta: destek@eduly.app
 
 ## Data Safety / App Privacy (özet)

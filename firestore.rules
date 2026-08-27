@@ -100,14 +100,20 @@ service cloud.firestore {
     }
 
     match /invite_codes/{code} {
-      // Kullanılmamış kod: kayıt öncesi doğrulama için auth olmadan get.
-      // Kullanılmış kod: yalnızca auth (öğretmen/admin/veli) — anonim sızıntı yok.
-      allow get: if resource.data.used == false || isAuthenticated();
+      // Sınıf kodları (type=class): kayıt öncesi doğrulama için anonim get.
+      // Eski öğrenci kodları: yalnızca kullanılmamışken anonim get.
+      allow get: if resource.data.get('revoked', false) == false &&
+        (
+          resource.data.get('type', 'student') == 'class' ||
+          resource.data.used == false ||
+          isAuthenticated()
+        );
       allow list: if isTeacher() || isAdmin();
       allow create: if isTeacher() &&
         request.resource.data.teacherId == request.auth.uid;
       allow update: if isTeacher() ||
         (isParent() &&
+          resource.data.get('type', 'student') != 'class' &&
           resource.data.used == false &&
           request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['used', 'usedBy', 'usedAt']) &&

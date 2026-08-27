@@ -10,8 +10,9 @@ import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/step_progress_indicator.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../../students/data/models/invite_code_model.dart';
 
-/// Veli kaydı: 1) Davet kodu 2) Ad + e-posta + şifre.
+/// Veli kaydı: 1) Sınıf davet kodu 2) Öğrenci seçimi 3) Hesap bilgileri.
 class ParentRegisterScreen extends ConsumerStatefulWidget {
   const ParentRegisterScreen({super.key});
 
@@ -24,14 +25,16 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
   int _currentStep = 0;
 
   final _codeController = TextEditingController();
-  final _step1FormKey = GlobalKey<FormState>();
+  final _step2FormKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _termsAccepted = true;
 
   String? _validatedCode;
-  String? _studentName;
+  String? _className;
+  List<InviteStudentOption> _students = const [];
+  InviteStudentOption? _selectedStudent;
 
   @override
   void dispose() {
@@ -54,14 +57,42 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
     final isValid = await notifier.validateInviteCode(code);
 
     if (!mounted) return;
-    if (isValid) {
-      _validatedCode = code;
-      final data = notifier.inviteCodeData;
-      _studentName = data?['studentName'] as String?;
-      setState(() => _currentStep = 1);
-    } else {
+    if (!isValid) {
       final error = ref.read(parentAuthProvider).errorMessage;
       if (error != null) context.showSnackBar(error, isError: true);
+      return;
+    }
+
+    final data = notifier.inviteCodeData;
+    final type = data?['type'] as String? ?? 'student';
+    _validatedCode = code;
+    _className = data?['className'] as String?;
+    _selectedStudent = null;
+
+    if (type == 'class') {
+      final raw = data?['students'] as List<dynamic>? ?? [];
+      _students = raw
+          .whereType<Map>()
+          .map((e) => InviteStudentOption.fromMap(Map<String, dynamic>.from(e)))
+          .where((s) => s.id.isNotEmpty)
+          .toList();
+      if (_students.isEmpty) {
+        context.showSnackBar(
+          'Bu sınıfta henüz öğrenci yok. Öğretmeninizle iletişime geçin.',
+          isError: true,
+        );
+        return;
+      }
+      setState(() => _currentStep = 1);
+    } else {
+      // Eski öğrenci kodu uyumluluğu
+      final studentId = data?['studentId'] as String? ?? '';
+      final studentName = data?['studentName'] as String? ?? 'Öğrenci';
+      _students = [
+        InviteStudentOption(id: studentId, name: studentName),
+      ];
+      _selectedStudent = _students.first;
+      setState(() => _currentStep = 2);
     }
   }
 
@@ -74,14 +105,22 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
     }
   }
 
+  void _confirmStudentSelection() {
+    if (_selectedStudent == null) {
+      context.showSnackBar('Lütfen çocuğunuzu seçin.', isError: true);
+      return;
+    }
+    setState(() => _currentStep = 2);
+  }
+
   Future<void> _submitRegister() async {
     context.unfocus();
-    if (!_step1FormKey.currentState!.validate()) return;
+    if (!_step2FormKey.currentState!.validate()) return;
     if (!_termsAccepted) {
       context.showSnackBar(AppStrings.errorTermsRequired, isError: true);
       return;
     }
-    if (_validatedCode == null) {
+    if (_validatedCode == null || _selectedStudent == null) {
       context.showSnackBar(AppStrings.errorInviteCodeRequired, isError: true);
       return;
     }
@@ -91,6 +130,7 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
           inviteCode: _validatedCode!,
+          studentId: _selectedStudent!.id,
         );
 
     if (!mounted) return;
@@ -128,14 +168,18 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
             children: [
               StepProgressIndicator(
                 currentStep: _currentStep,
-                totalSteps: 2,
-                stepTitles: const ['Davet Kodu', 'Hesap Bilgileri'],
+                totalSteps: 3,
+                stepTitles: const ['Sınıf Kodu', 'Öğrenci', 'Hesap'],
                 primaryColor: AppColors.parentPrimary,
               ),
               const SizedBox(height: 28),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: _currentStep == 0 ? _buildStep0() : _buildStep1(),
+                child: switch (_currentStep) {
+                  0 => _buildStep0(),
+                  1 => _buildStep1(),
+                  _ => _buildStep2(),
+                },
               ),
               const SizedBox(height: 32),
               Row(
@@ -167,15 +211,16 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
       key: const ValueKey(0),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('1. Öğrenci Davet Kodu', style: AppTextStyles.h3),
+        Text('1. Sınıf Davet Kodu', style: AppTextStyles.h3),
         const SizedBox(height: 6),
         Text(
-          'Öğretmeninizden aldığınız davet kodunu girin.',
+          'Öğretmeninizden aldığınız sınıf kodunu girin. '
+          'Aynı kodu sınıfın tüm velileri kullanabilir.',
           style: AppTextStyles.bodyMedium,
         ),
         const SizedBox(height: 24),
         AppTextField(
-          label: AppStrings.inviteCode,
+          label: 'Sınıf Davet Kodu',
           hint: 'OT-XXXXXX',
           controller: _codeController,
           prefixIcon:
@@ -195,15 +240,117 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
   }
 
   Widget _buildStep1() {
+    return Column(
+      key: const ValueKey(1),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('2. Çocuğunuzu Seçin', style: AppTextStyles.h3),
+        const SizedBox(height: 6),
+        Text(
+          _className != null
+              ? '$_className sınıfındaki öğrencilerden çocuğunuzu seçin.'
+              : 'Listeden çocuğunuzu seçin.',
+          style: AppTextStyles.bodyMedium,
+        ),
+        const SizedBox(height: 20),
+        ..._students.map((student) {
+          final selected = _selectedStudent?.id == student.id;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Material(
+              color: selected
+                  ? AppColors.parentPrimary.withValues(alpha: 0.08)
+                  : AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              child: InkWell(
+                onTap: () => setState(() => _selectedStudent = student),
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: selected
+                          ? AppColors.parentPrimary
+                          : AppColors.border,
+                      width: selected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: AppColors.parentPrimary
+                            .withValues(alpha: 0.15),
+                        child: Text(
+                          student.name.isNotEmpty
+                              ? student.name[0].toUpperCase()
+                              : '?',
+                          style: AppTextStyles.h4
+                              .copyWith(color: AppColors.parentPrimary),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(student.name, style: AppTextStyles.h4),
+                            if (student.schoolNumber != null)
+                              Text(
+                                'Okul No: ${student.schoolNumber}',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        selected
+                            ? Icons.radio_button_checked_rounded
+                            : Icons.radio_button_off_rounded,
+                        color: selected
+                            ? AppColors.parentPrimary
+                            : AppColors.textSecondary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            Expanded(
+              child: SecondaryButton(label: 'Geri', onPressed: _prevStep),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 2,
+              child: PrimaryButton(
+                label: 'Devam',
+                onPressed: _confirmStudentSelection,
+                backgroundColor: AppColors.parentPrimary,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStep2() {
     final authState = ref.watch(parentAuthProvider);
 
     return Form(
-      key: _step1FormKey,
+      key: _step2FormKey,
       child: Column(
-        key: const ValueKey(1),
+        key: const ValueKey(2),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (_studentName != null) ...[
+          if (_selectedStudent != null) ...[
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -234,13 +381,13 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Eşleşen Öğrenci',
+                          'Seçilen Öğrenci',
                           style: AppTextStyles.labelSmall.copyWith(
                             color: AppColors.parentPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text(_studentName!, style: AppTextStyles.h4),
+                        Text(_selectedStudent!.name, style: AppTextStyles.h4),
                       ],
                     ),
                   ),
@@ -254,7 +401,7 @@ class _ParentRegisterScreenState extends ConsumerState<ParentRegisterScreen> {
             ),
             const SizedBox(height: 24),
           ],
-          Text('2. Hesap Bilgileri', style: AppTextStyles.h3),
+          Text('3. Hesap Bilgileri', style: AppTextStyles.h3),
           const SizedBox(height: 6),
           Text(
             'E-posta ve şifrenizle giriş yapabileceksiniz.',

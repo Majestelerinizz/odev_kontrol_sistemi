@@ -16,12 +16,13 @@ abstract class AuthRepository {
     required String password,
   });
 
-  /// Veli kaydı (davet koduyla)
+  /// Veli kaydı (sınıf davet kodu + seçilen öğrenci)
   Future<AppUser> registerParent({
     required String name,
     required String email,
     required String password,
     required String inviteCode,
+    required String studentId,
   });
 
   /// E-posta/şifre ile giriş.
@@ -44,6 +45,6 @@ abstract class AuthRepository {
   /// Kullanıcı profilini Firestore'dan getir
   Future<AppUser?> getUserProfile(String uid);
 
-  /// Davet kodunu doğrula
+  /// Davet kodunu doğrula (sınıf kodu veya eski öğrenci kodu)
   Future<Map<String, dynamic>?> validateInviteCode(String code);
 }

@@ -57,14 +57,15 @@ class AppConstants {
   static const double defaultWrongPenalty = 4.0;
 
   // ── Davet kodu ────────────────────────────────────────────────────────────
-  static const int inviteCodeExpiryDays = 7;
+  /// Sınıf kodları süresiz; eski öğrenci kodları için yedek süre.
+  static const int inviteCodeExpiryDays = 365;
 
   // ── Sayfalama ─────────────────────────────────────────────────────────────
   static const int pageSize = 20;
 
   // ── Uygulama bilgileri ────────────────────────────────────────────────────
   static const String supportEmail = 'destek@eduly.app';
-  static const String privacyPolicyUrl = 'https://odevtakipsistemi-b93b2.web.app/privacy.html';
-  static const String termsUrl = 'https://odevtakipsistemi-b93b2.web.app/terms.html';
-  static const String storeSupportUrl = 'https://odevtakipsistemi-b93b2.web.app/support.html';
+  static const String privacyPolicyUrl = 'https://eduly-server.web.app/privacy.html';
+  static const String termsUrl = 'https://eduly-server.web.app/terms.html';
+  static const String storeSupportUrl = 'https://eduly-server.web.app/support.html';
 }

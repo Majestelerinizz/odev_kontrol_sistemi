@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -11,6 +12,8 @@ import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../students/presentation/providers/student_providers.dart';
 import '../../../students/domain/entities/student_entity.dart';
+import '../../../students/data/models/invite_code_model.dart';
+import '../providers/class_providers.dart';
 
 class ClassDetailScreen extends ConsumerStatefulWidget {
   const ClassDetailScreen({super.key, required this.classId});
@@ -35,15 +38,20 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final teacherId = user?.uid ?? FirebaseAuth.instance.currentUser?.uid ?? '';
-    final studentsAsync =
-        ref.watch(classStudentsStreamProvider(
-          (classId: widget.classId, teacherId: teacherId),
-        ));
+    final studentsAsync = ref.watch(classStudentsStreamProvider(
+      (classId: widget.classId, teacherId: teacherId),
+    ));
+    final inviteAsync = ref.watch(activeClassInviteProvider(widget.classId));
+    final classAsync = ref.watch(classStreamProvider(widget.classId));
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Sınıf Detayı & Öğrenciler'),
+        title: classAsync.when(
+          data: (cls) => Text(cls?.name ?? 'Sınıf Detayı'),
+          loading: () => const Text('Sınıf Detayı'),
+          error: (_, __) => const Text('Sınıf Detayı'),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add_alt_1_rounded),
@@ -54,9 +62,28 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
       ),
       body: Column(
         children: [
-          // ── Arama Çubuğu ──────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: inviteAsync.when(
+              data: (invite) => _ClassInviteBanner(
+                invite: invite,
+                isGenerating: ref.watch(classNotifierProvider).isLoading,
+                onGenerate: () => _generateInvite(teacherId),
+                onRegenerate: () =>
+                    _generateInvite(teacherId, regenerate: true),
+              ),
+              loading: () => const LinearProgressIndicator(minHeight: 2),
+              error: (_, __) => _ClassInviteBanner(
+                invite: null,
+                isGenerating: false,
+                onGenerate: () => _generateInvite(teacherId),
+                onRegenerate: () =>
+                    _generateInvite(teacherId, regenerate: true),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: AppTextField(
               controller: _searchController,
               hint: 'Öğrenci adı veya okul numarası ara...',
@@ -64,8 +91,6 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
               onChanged: (val) => setState(() => _searchQuery = val.trim()),
             ),
           ),
-
-          // ── Öğrenci Listesi ───────────────────────────────────────────────
           Expanded(
             child: studentsAsync.when(
               data: (students) {
@@ -124,6 +149,32 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
         label: Text('Öğrenci Ekle', style: AppTextStyles.buttonMedium),
       ),
     );
+  }
+
+  Future<void> _generateInvite(String teacherId,
+      {bool regenerate = false}) async {
+    final code =
+        await ref.read(classNotifierProvider.notifier).generateClassInviteCode(
+              classId: widget.classId,
+              teacherId: teacherId,
+            );
+    ref.invalidate(activeClassInviteProvider(widget.classId));
+    if (!mounted) return;
+    if (code != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            regenerate
+                ? 'Sınıf kodu yenilendi: ${code.code}'
+                : 'Sınıf davet kodu oluşturuldu: ${code.code}',
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Davet kodu oluşturulamadı.')),
+      );
+    }
   }
 
   void _showAddStudentDialog(BuildContext context, String teacherId) {
@@ -202,6 +253,7 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
                 if (context.mounted) {
                   Navigator.pop(ctx);
                   if (success) {
+                    ref.invalidate(activeClassInviteProvider(widget.classId));
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text('Öğrenci başarıyla eklendi!')),
@@ -235,9 +287,135 @@ class _ClassDetailScreenState extends ConsumerState<ClassDetailScreen> {
               await ref
                   .read(studentNotifierProvider.notifier)
                   .deleteStudent(student.id, widget.classId);
+              ref.invalidate(activeClassInviteProvider(widget.classId));
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text('Sil'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ClassInviteBanner extends StatelessWidget {
+  const _ClassInviteBanner({
+    required this.invite,
+    required this.isGenerating,
+    required this.onGenerate,
+    required this.onRegenerate,
+  });
+
+  final InviteCodeModel? invite;
+  final bool isGenerating;
+  final VoidCallback onGenerate;
+  final VoidCallback onRegenerate;
+
+  @override
+  Widget build(BuildContext context) {
+    if (invite == null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Sınıf Davet Kodu', style: AppTextStyles.h4),
+            const SizedBox(height: 6),
+            Text(
+              'Tek bir kod oluşturun; tüm veliler aynı kodla kayıt olup çocuğunu seçsin.',
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 12),
+            PrimaryButton(
+              label: 'Sınıf Davet Kodu Oluştur',
+              icon: Icons.qr_code_rounded,
+              isLoading: isGenerating,
+              onPressed: onGenerate,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.teacherPrimary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(
+          color: AppColors.teacherPrimary.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('Sınıf Davet Kodu', style: AppTextStyles.labelMedium),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.successLight,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'Paylaşılabilir',
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: AppColors.success,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              SelectableText(
+                invite!.code,
+                style: AppTextStyles.h2.copyWith(
+                  color: AppColors.teacherPrimary,
+                  letterSpacing: 2,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.copy_rounded,
+                    color: AppColors.teacherPrimary),
+                tooltip: 'Kodu Kopyala',
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: invite!.code));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Sınıf kodu (${invite!.code}) panoya kopyalandı',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded,
+                    color: AppColors.teacherPrimary),
+                tooltip: 'Kodu Yenile',
+                onPressed: isGenerating ? null : onRegenerate,
+              ),
+            ],
+          ),
+          Text(
+            'Bu kodu sınıf grubuna bir kez paylaşmanız yeterli. '
+            'Veliler kayıtta çocuğunu listeden seçer.',
+            style: AppTextStyles.bodySmall
+                .copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -323,7 +501,7 @@ class _StudentCard extends StatelessWidget {
                           child: Text(
                             student.hasParent
                                 ? 'Veli Bağlı'
-                                : 'Veli Bekliyor (Davet Kodu Gerekli)',
+                                : 'Veli Bekliyor (Sınıf Kodu ile)',
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: student.hasParent

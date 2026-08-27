@@ -11,6 +11,7 @@ class ClassModel extends ClassEntity {
     super.schoolName,
     super.academicYear,
     super.studentCount,
+    super.inviteCode,
     required super.createdAt,
   });
 
@@ -24,6 +25,7 @@ class ClassModel extends ClassEntity {
       schoolName: data['schoolName'] as String?,
       academicYear: data['academicYear'] as String? ?? '2026-2027',
       studentCount: (data['studentCount'] as num?)?.toInt() ?? 0,
+      inviteCode: data['inviteCode'] as String?,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -36,6 +38,7 @@ class ClassModel extends ClassEntity {
       'schoolName': schoolName,
       'academicYear': academicYear,
       'studentCount': studentCount,
+      if (inviteCode != null) 'inviteCode': inviteCode,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -49,6 +52,7 @@ class ClassModel extends ClassEntity {
       schoolName: entity.schoolName,
       academicYear: entity.academicYear,
       studentCount: entity.studentCount,
+      inviteCode: entity.inviteCode,
       createdAt: entity.createdAt,
     );
   }

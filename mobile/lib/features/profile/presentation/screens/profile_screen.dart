@@ -42,12 +42,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Öğretmeninizden aldığınız 6 haneli davet kodunu girin:',
+              'Öğretmeninizden aldığınız sınıf davet kodunu girin:',
               style: AppTextStyles.bodySmall,
             ),
             const SizedBox(height: 16),
             AppTextField(
-              label: 'Davet Kodu',
+              label: 'Sınıf Davet Kodu',
               hint: 'Örn: OT-A7K9M2',
               controller: codeController,
               prefixIcon: const Icon(Icons.key_rounded, color: AppColors.parentPrimary),
@@ -348,7 +348,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       style: AppTextStyles.labelLarge
                           .copyWith(color: AppColors.parentPrimary),
                     ),
-                    subtitle: const Text('Öğretmenden alınan davet kodu ile ekle'),
+                    subtitle: const Text('Öğretmenden alınan sınıf kodu ile ekle'),
                     trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.parentPrimary),
                     onTap: _showAddChildDialog,
                   ),

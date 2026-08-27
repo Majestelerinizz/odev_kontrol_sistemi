@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "1063947496038",
-    "project_id": "odevtakipsistemi-b93b2",
-    "storage_bucket": "odevtakipsistemi-b93b2.firebasestorage.app"
+    "project_number": "763956808451",
+    "project_id": "eduly-server",
+    "storage_bucket": "eduly-server.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1063947496038:android:c424f96a4fa7ed77711ba7",
+        "mobilesdk_app_id": "1:763956808451:android:bd316af68557379340b736",
         "android_client_info": {
           "package_name": "com.odevtakip.odev_takip"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDx03qPyKBzQUb97dW_j2cN1kbBbQL0sZM"
+          "current_key": "AIzaSyCtp-hVe39WCzJGuV449CYZ3lTXPJN7ne8"
         }
       ],
       "services": {

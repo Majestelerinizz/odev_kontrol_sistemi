@@ -56,9 +56,9 @@ firebase deploy --only hosting
 ```
 
 Yasal sayfalar `web-panel/web/{privacy,terms,support}.html` → build çıktısına kopyalanır:
-- https://odevtakipsistemi-b93b2.web.app/privacy.html
-- https://odevtakipsistemi-b93b2.web.app/terms.html
-- https://odevtakipsistemi-b93b2.web.app/support.html
+- https://eduly-server.web.app/privacy.html
+- https://eduly-server.web.app/terms.html
+- https://eduly-server.web.app/support.html
 
 Ayrıntılar: [HANDOFF.md](HANDOFF.md) Faz B, [ADMIN_SEED.md](ADMIN_SEED.md), [STORE_LISTING.md](STORE_LISTING.md).
 

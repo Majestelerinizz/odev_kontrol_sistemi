@@ -143,6 +143,7 @@ class ParentAuthNotifier extends StateNotifier<AuthState> {
     required String email,
     required String password,
     required String inviteCode,
+    required String studentId,
   }) async {
     state = state.loading;
     try {
@@ -151,6 +152,7 @@ class ParentAuthNotifier extends StateNotifier<AuthState> {
         email: email,
         password: password,
         inviteCode: inviteCode,
+        studentId: studentId,
       );
       state = state.success;
     } on AuthException catch (e) {
