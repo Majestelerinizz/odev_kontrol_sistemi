@@ -126,12 +126,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       foregroundColor: AppColors.teacherPrimary,
                       icon: Icons.arrow_forward_rounded,
                     ),
-                    const SizedBox(height: 12),
-                    SecondaryButton(
-                      label: 'Giriş Yap',
-                      onPressed: () => context.push('/login'),
-                      color: Colors.white,
-                    ),
                     const SizedBox(height: 16),
                   ],
                 ),

@@ -2,7 +2,7 @@
 
 Altyapı (auth, rules dosyaları, index dosyaları, FCM client, hosting config, local build) hazır.
 **Faz B ilerleme (`eduly-server`):** Firestore rules + indexes canlı; Hosting canlı (`https://eduly-server.web.app`).
-**Kalan:** Authentication’da Email/Password açılması (Console), admin seed, Cloud Functions için Blaze planı.
+**Kalan:** Authentication'da Email/Password + Phone açılması (Console), admin seed, Cloud Functions deploy (`sendBroadcast`, `getTeacherAuthPreview`).
 
 ## Açılacak klasörler
 
@@ -10,7 +10,7 @@ Altyapı (auth, rules dosyaları, index dosyaları, FCM client, hosting config, 
 |--------|------|
 | `mobile/` | Öğretmen + veli Flutter uygulaması |
 | `web-panel/` | Admin Flutter Web paneli (öğretmen kopyası değil) |
-| `functions/` | `sendBroadcast` Cloud Function |
+| `functions/` | `sendBroadcast`, `getTeacherAuthPreview` Cloud Functions |
 | `backend/` | Legacy / opsiyonel — lansman yolu değil |
 
 Kökte Flutter `pubspec.yaml` yoktur. Android Studio / Xcode için `mobile/` açın.
@@ -19,12 +19,13 @@ Kökte Flutter `pubspec.yaml` yoktur. Android Studio / Xcode için `mobile/` aç
 
 **Yapar:** tema, layout, kopya, animasyon, boş durum görselleri, ikonografi.
 
-**Yapmaz:** Firestore rules/indexes geri alma, demo OTP/passwordless geri getirme, `backend/`’i zorunlu kılma, auth rol mantığını değiştirme.
+**Yapmaz:** Firestore rules/indexes geri alma, `backend/`’i zorunlu kılma, auth rol mantığını değiştirme.
 
 ## Auth (üretim)
 
-- Öğretmen: e-posta + şifre
-- Veli: davet kodu ile kayıt (e-posta + şifre) veya e-posta ile giriş
+- Öğretmen: e-posta önce akışı → kayıt (isim + şifre) veya giriş (şifre)
+- Veli: telefon + SMS OTP (Firebase Phone Auth) → kayıt (isim + sınıf kodu + öğrenci seçimi) veya giriş
+- Davet linki: `https://eduly-server.web.app/join?code=OT-XXXX&studentId=optional`
 - Admin: yalnızca `role=admin` + `isActive != false` — [ADMIN_SEED.md](ADMIN_SEED.md)
 
 ## Stabilize notları (kod)
@@ -36,9 +37,9 @@ Kökte Flutter `pubspec.yaml` yoktur. Android Studio / Xcode için `mobile/` aç
 
 ## Local smoke (Firebase projesi bağlı cihaz/emülatör)
 
-- [ ] Öğretmen kayıt / giriş (yanlış rol sekmesi reddedilir)
+- [ ] Öğretmen kayıt / giriş (e-posta önce akışı)
 - [ ] Sınıf + öğrenci + davet kodu
-- [ ] Veli davet kaydı + ödev / deneme listesi (demo veri yok)
+- [ ] Veli telefon OTP kayıt / giriş + davet linki (`/join?code=`)
 - [ ] Öğretmen mesajı
 - [ ] Admin login (local `flutter run -d chrome`)
 - [ ] Broadcast (FCM token’lı cihazda; Functions deploy sonrası)
@@ -52,7 +53,8 @@ Proje: `eduly-server` (`.firebaserc`).
 1. `npm i -g firebase-tools` (veya mevcut CLI)
 2. `firebase login`
 3. Firebase Console’da Blaze planı
-4. Admin seed ([ADMIN_SEED.md](ADMIN_SEED.md))
+4. Authentication → Email/Password + Phone etkin
+5. Admin seed ([ADMIN_SEED.md](ADMIN_SEED.md))
 
 Komutlar (repo kökünden):
 

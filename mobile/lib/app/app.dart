@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/services/fcm_service.dart';
 import '../core/theme/app_theme.dart';
+import '../features/auth/data/invite_link_service.dart';
 import '../features/auth/presentation/providers/auth_providers.dart';
 import 'router.dart';
 
@@ -17,6 +18,14 @@ class App extends ConsumerStatefulWidget {
 
 class _AppState extends ConsumerState<App> {
   String? _lastSyncedUid;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(inviteLinkServiceProvider).initialize();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

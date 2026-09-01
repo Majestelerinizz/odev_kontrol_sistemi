@@ -1,30 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/app_user.dart';
+import '../../domain/entities/teacher_auth_preview.dart';
 import '../../domain/repositories/auth_repository.dart';
-
-// ── Repository provider ──────────────────────────────────────────────────────
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl();
 });
 
-// ── Auth state akışı ─────────────────────────────────────────────────────────
-
-/// Mevcut oturum durumu stream'i.
-/// null → giriş yok, AppUser → giriş var
 final authStateProvider = StreamProvider<AppUser?>((ref) {
   return ref.watch(authRepositoryProvider).authStateChanges;
 });
 
-/// Mevcut oturum açmış kullanıcı (senkron erişim için)
 final currentUserProvider = Provider<AppUser?>((ref) {
   return ref.watch(authStateProvider).valueOrNull;
 });
 
-// ── Auth işlem durumu ─────────────────────────────────────────────────────────
-
-/// Auth ekranları için işlem durumu (giriş, kayıt, şifre sıfırlama)
 class AuthState {
   const AuthState({
     this.isLoading = false,
@@ -53,12 +44,78 @@ class AuthState {
   AuthState get success => const AuthState(isSuccess: true);
 }
 
-// ── Öğretmen Auth Notifier ───────────────────────────────────────────────────
+// ── Davet linki ön doldurma ───────────────────────────────────────────────────
+
+class InvitePrefill {
+  const InvitePrefill({this.code, this.studentId});
+
+  final String? code;
+  final String? studentId;
+
+  bool get hasCode => code != null && code!.isNotEmpty;
+}
+
+class InvitePrefillNotifier extends StateNotifier<InvitePrefill> {
+  InvitePrefillNotifier() : super(const InvitePrefill());
+
+  void setPrefill({String? code, String? studentId}) {
+    state = InvitePrefill(
+      code: code?.trim().toUpperCase(),
+      studentId: studentId?.trim(),
+    );
+  }
+
+  void clearCode() => state = InvitePrefill(studentId: state.studentId);
+  void clear() => state = const InvitePrefill();
+}
+
+final invitePrefillProvider =
+    StateNotifierProvider<InvitePrefillNotifier, InvitePrefill>((ref) {
+  return InvitePrefillNotifier();
+});
+
+// ── Öğretmen Auth ─────────────────────────────────────────────────────────────
 
 class TeacherAuthNotifier extends StateNotifier<AuthState> {
   TeacherAuthNotifier(this._repo) : super(const AuthState());
 
   final AuthRepository _repo;
+  TeacherAuthPreview? lastPreview;
+
+  Future<TeacherAuthPreview?> checkEmail(String email) async {
+    state = state.loading;
+    try {
+      final methods = await _repo.fetchSignInMethodsForEmail(email);
+      final hasAuthAccount = methods.isNotEmpty;
+
+      if (!hasAuthAccount) {
+        lastPreview = const TeacherAuthPreview(exists: false);
+        state = const AuthState();
+        return lastPreview;
+      }
+
+      final preview = await _repo.getTeacherAuthPreview(email);
+      lastPreview = preview;
+
+      if (preview.isParent) {
+        state = state.error(
+          'Bu e-posta bir veli hesabına ait. Öğretmen olarak devam edemezsiniz.',
+        );
+        return null;
+      }
+
+      state = const AuthState();
+      return preview.exists
+          ? preview
+          : TeacherAuthPreview(exists: true, name: preview.name);
+    } on AuthException catch (e) {
+      state = state.error(e.message);
+      return null;
+    } catch (_) {
+      state = state.error('E-posta kontrol edilemedi.');
+      return null;
+    }
+  }
 
   Future<void> registerTeacher({
     required String name,
@@ -98,6 +155,7 @@ class TeacherAuthNotifier extends StateNotifier<AuthState> {
   Future<void> signOut() async {
     await _repo.signOut();
     state = const AuthState();
+    lastPreview = null;
   }
 
   void clearError() => state = const AuthState();
@@ -108,14 +166,12 @@ final teacherAuthProvider =
   return TeacherAuthNotifier(ref.watch(authRepositoryProvider));
 });
 
-// ── Veli Auth Notifier ───────────────────────────────────────────────────────
+// ── Veli Auth ─────────────────────────────────────────────────────────────────
 
 class ParentAuthNotifier extends StateNotifier<AuthState> {
   ParentAuthNotifier(this._repo) : super(const AuthState());
 
   final AuthRepository _repo;
-
-  /// Davet kodu önizleme bilgisi
   Map<String, dynamic>? inviteCodeData;
 
   Future<bool> validateInviteCode(String code) async {
@@ -138,19 +194,25 @@ class ParentAuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> registerParent({
+  Future<AppUser?> loadCurrentProfile(String uid) async {
+    try {
+      return await _repo.getUserProfile(uid);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> registerParentWithPhone({
     required String name,
-    required String email,
-    required String password,
+    required String phone,
     required String inviteCode,
     required String studentId,
   }) async {
     state = state.loading;
     try {
-      await _repo.registerParent(
+      await _repo.registerParentWithPhone(
         name: name,
-        email: email,
-        password: password,
+        phone: phone,
         inviteCode: inviteCode,
         studentId: studentId,
       );
@@ -158,35 +220,18 @@ class ParentAuthNotifier extends StateNotifier<AuthState> {
     } on AuthException catch (e) {
       state = state.error(e.message);
     } catch (_) {
-      state = state.error('Beklenmeyen bir hata oluştu.');
-    }
-  }
-
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) async {
-    state = state.loading;
-    try {
-      await _repo.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-        expectedRole: 'parent',
-      );
-      state = state.success;
-    } on AuthException catch (e) {
-      state = state.error(e.message);
-    } catch (_) {
-      state = state.error('Beklenmeyen bir hata oluştu.');
+      state = state.error('Kayıt tamamlanamadı.');
     }
   }
 
   Future<void> signOut() async {
     await _repo.signOut();
+    inviteCodeData = null;
     state = const AuthState();
   }
 
   void clearError() => state = const AuthState();
+  void clearInviteData() => inviteCodeData = null;
 }
 
 final parentAuthProvider =
@@ -194,7 +239,7 @@ final parentAuthProvider =
   return ParentAuthNotifier(ref.watch(authRepositoryProvider));
 });
 
-// ── Şifre sıfırlama notifier ─────────────────────────────────────────────────
+// ── Şifre sıfırlama ───────────────────────────────────────────────────────────
 
 class PasswordResetNotifier extends StateNotifier<AuthState> {
   PasswordResetNotifier(this._repo) : super(const AuthState());

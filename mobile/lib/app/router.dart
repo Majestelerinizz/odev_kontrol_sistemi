@@ -7,9 +7,8 @@ import '../features/auth/presentation/providers/auth_providers.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/auth/presentation/screens/welcome_screen.dart';
 import '../features/auth/presentation/screens/role_selection_screen.dart';
-import '../features/auth/presentation/screens/teacher_register_screen.dart';
-import '../features/auth/presentation/screens/parent_register_screen.dart';
-import '../features/auth/presentation/screens/login_screen.dart';
+import '../features/auth/presentation/screens/teacher_auth_flow_screen.dart';
+import '../features/auth/presentation/screens/parent_auth_flow_screen.dart';
 import '../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../features/dashboard/presentation/screens/teacher_home_screen.dart';
 import '../features/dashboard/presentation/screens/parent_home_screen.dart';
@@ -52,12 +51,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       final firebaseUser = FirebaseAuth.instance.currentUser;
       final location = state.uri.toString();
 
-      final isAuthPage = location.startsWith('/login') ||
-          location.startsWith('/register') ||
+      final isAuthPage = location.startsWith('/auth') ||
           location.startsWith('/role-selection') ||
           location.startsWith('/forgot-password') ||
           location.startsWith('/welcome') ||
-          location.startsWith('/splash');
+          location.startsWith('/splash') ||
+          location.startsWith('/join');
 
       // Stream / profil yüklenirken welcome'a atma
       if (authState.isLoading) return null;
@@ -106,20 +105,43 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RoleSelectionScreen(),
       ),
       GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
+        path: '/auth/teacher',
+        builder: (context, state) => const TeacherAuthFlowScreen(),
       ),
       GoRoute(
-        path: '/register/teacher',
-        builder: (context, state) => const TeacherRegisterScreen(),
+        path: '/auth/parent',
+        builder: (context, state) {
+          final code = state.uri.queryParameters['code'];
+          final studentId = state.uri.queryParameters['studentId'];
+          if (code != null && code.isNotEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ref.read(invitePrefillProvider.notifier).setPrefill(
+                    code: code,
+                    studentId: studentId,
+                  );
+            });
+          }
+          return const ParentAuthFlowScreen();
+        },
       ),
       GoRoute(
-        path: '/register/parent',
-        builder: (context, state) => const ParentRegisterScreen(),
+        path: '/join',
+        redirect: (context, state) {
+          final code = state.uri.queryParameters['code'];
+          final studentId = state.uri.queryParameters['studentId'];
+          final params = <String>[];
+          if (code != null) params.add('code=$code');
+          if (studentId != null) params.add('studentId=$studentId');
+          final query = params.isEmpty ? '' : '?${params.join('&')}';
+          return '/auth/parent$query';
+        },
       ),
       GoRoute(
         path: '/forgot-password',
-        builder: (context, state) => const ForgotPasswordScreen(),
+        builder: (context, state) {
+          final email = state.extra as String?;
+          return ForgotPasswordScreen(initialEmail: email);
+        },
       ),
 
       // ── Öğretmen rotaları ─────────────────────────────────────────────────

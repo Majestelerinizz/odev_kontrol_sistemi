@@ -1,50 +1,40 @@
-import '../../domain/entities/app_user.dart';
+import '../entities/app_user.dart';
+import '../entities/teacher_auth_preview.dart';
 
 /// Auth işlemleri için soyut repository arayüzü.
-/// Implementasyon `auth_repository_impl.dart` içinde yapılır.
 abstract class AuthRepository {
-  /// Oturum durumu akışı
   Stream<AppUser?> get authStateChanges;
-
-  /// Mevcut oturum açmış kullanıcı (son bilinen profil; stream ile güncellenir)
   AppUser? get currentUser;
 
-  /// Öğretmen kaydı
   Future<AppUser> registerTeacher({
     required String name,
     required String email,
     required String password,
   });
 
-  /// Veli kaydı (sınıf davet kodu + seçilen öğrenci)
-  Future<AppUser> registerParent({
+  /// Veli kaydı — telefon ile doğrulanmış oturum sonrası profil tamamlama.
+  Future<AppUser> registerParentWithPhone({
     required String name,
-    required String email,
-    required String password,
+    required String phone,
     required String inviteCode,
     required String studentId,
   });
 
-  /// E-posta/şifre ile giriş.
-  /// [expectedRole] verilirse profil rolü eşleşmezse oturum kapatılır.
   Future<AppUser> signInWithEmailAndPassword({
     required String email,
     required String password,
     String? expectedRole,
   });
 
-  /// Çıkış
+  /// E-posta için kayıtlı giriş yöntemlerini döner (boş = yeni hesap).
+  Future<List<String>> fetchSignInMethodsForEmail(String email);
+
+  /// Öğretmen giriş/kayıt önizlemesi (isim + rol).
+  Future<TeacherAuthPreview> getTeacherAuthPreview(String email);
+
   Future<void> signOut();
-
-  /// Hesabı hem Firebase Auth hem Firestore'dan kalıcı olarak sil
   Future<void> deleteAccount();
-
-  /// Şifre sıfırlama e-postası gönder
   Future<void> sendPasswordResetEmail(String email);
-
-  /// Kullanıcı profilini Firestore'dan getir
   Future<AppUser?> getUserProfile(String uid);
-
-  /// Davet kodunu doğrula (sınıf kodu veya eski öğrenci kodu)
   Future<Map<String, dynamic>?> validateInviteCode(String code);
 }

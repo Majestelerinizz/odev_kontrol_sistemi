@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../domain/entities/app_user.dart';
+import '../../domain/entities/teacher_auth_preview.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../models/app_user_model.dart';
 
@@ -95,7 +97,7 @@ class AuthRepositoryImpl implements AuthRepository {
       if (e is FirebaseAuthException &&
           (e.code == 'email-already-in-use' || e.code == 'EMAIL_EXISTS')) {
         throw const AuthException(
-          'Bu e-posta adresi zaten kayıtlı. Lütfen Giriş Yap ekranından şifrenizle giriş yapınız.',
+          'Bu e-posta adresi zaten kayıtlı. Lütfen şifrenizle giriş yapınız.',
         );
       }
       if (createdUser != null) {
@@ -108,14 +110,19 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<AppUser> registerParent({
+  Future<AppUser> registerParentWithPhone({
     required String name,
-    required String email,
-    required String password,
+    required String phone,
     required String inviteCode,
     required String studentId,
   }) async {
-    User? createdUser;
+    final firebaseUser = _auth.currentUser;
+    if (firebaseUser == null) {
+      throw const AuthException(
+        'Telefon doğrulaması tamamlanmadı. Lütfen OTP adımını tekrarlayın.',
+      );
+    }
+
     try {
       final codeData = await validateInviteCode(inviteCode);
       if (codeData == null) {
@@ -124,60 +131,83 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final resolvedStudentId = _resolveStudentId(codeData, studentId);
       final now = DateTime.now();
+      final trimmedName = name.trim();
+      final e164 = phone.trim();
+      final syntheticEmail = _syntheticParentEmail(e164);
 
-      try {
-        final credential = await _auth.createUserWithEmailAndPassword(
-          email: email.trim(),
-          password: password,
+      final existing = await getUserProfile(firebaseUser.uid);
+      if (existing != null && existing.role != 'parent') {
+        await _auth.signOut();
+        _cachedUser = null;
+        throw const AuthException(
+          'Bu telefon numarası veli hesabı için uygun değil.',
         );
-        createdUser = credential.user!;
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'email-already-in-use' || e.code == 'EMAIL_EXISTS') {
-          return _linkInviteToExistingParent(
-            name: name,
-            email: email,
-            password: password,
-            inviteCode: inviteCode,
-            studentId: resolvedStudentId,
-            inviteType: codeData['type'] as String? ?? 'student',
-            now: now,
-          );
-        }
-        rethrow;
       }
 
-      await createdUser.updateDisplayName(name.trim());
+      await firebaseUser.updateDisplayName(trimmedName);
 
       final userModel = AppUserModel(
-        uid: createdUser.uid,
+        uid: firebaseUser.uid,
         role: 'parent',
-        name: name.trim(),
-        email: email.trim(),
+        name: trimmedName,
+        email: syntheticEmail,
+        phone: e164,
         isActive: true,
-        createdAt: now,
+        createdAt: existing?.createdAt ?? now,
         updatedAt: now,
       );
 
       await _commitParentInviteBinding(
-        uid: createdUser.uid,
+        uid: firebaseUser.uid,
         userModel: userModel,
-        name: name.trim(),
-        email: email.trim(),
+        name: trimmedName,
+        email: syntheticEmail,
+        phone: e164,
         studentId: resolvedStudentId,
         inviteCode: inviteCode,
         inviteType: codeData['type'] as String? ?? 'student',
         now: now,
-        mergeUser: false,
+        mergeUser: existing != null,
       );
 
       _cachedUser = userModel;
       return userModel;
     } catch (e) {
-      if (createdUser != null) {
-        try {
-          await createdUser.delete();
-        } catch (_) {}
-      }
+      throw _mapException(e);
+    }
+  }
+
+  String _syntheticParentEmail(String phoneE164) {
+    final digits = phoneE164.replaceAll(RegExp(r'\D'), '');
+    return '$digits@parents.eduly.local';
+  }
+
+  @override
+  Future<List<String>> fetchSignInMethodsForEmail(String email) async {
+    try {
+      return await _auth.fetchSignInMethodsForEmail(email.trim());
+    } catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  @override
+  Future<TeacherAuthPreview> getTeacherAuthPreview(String email) async {
+    try {
+      final callable =
+          FirebaseFunctions.instance.httpsCallable('getTeacherAuthPreview');
+      final result = await callable.call<Map<String, dynamic>>({
+        'email': email.trim().toLowerCase(),
+      });
+      final data = result.data;
+      return TeacherAuthPreview(
+        exists: data['exists'] as bool? ?? false,
+        name: data['name'] as String?,
+        role: data['role'] as String?,
+      );
+    } on FirebaseFunctionsException catch (e) {
+      throw AuthException(e.message ?? 'E-posta kontrol edilemedi.');
+    } catch (e) {
       throw _mapException(e);
     }
   }
@@ -211,71 +241,12 @@ class AuthRepositoryImpl implements AuthRepository {
     return legacyId;
   }
 
-  Future<AppUser> _linkInviteToExistingParent({
-    required String name,
-    required String email,
-    required String password,
-    required String inviteCode,
-    required String studentId,
-    required String inviteType,
-    required DateTime now,
-  }) async {
-    late final User user;
-    try {
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: email.trim(),
-        password: password,
-      );
-      user = credential.user!;
-    } catch (_) {
-      throw const AuthException(
-        'Bu e-posta zaten kayıtlı. Şifreniz doğruysa tekrar deneyin; '
-        'değilse Giriş Yap ekranından giriş yapın veya şifre sıfırlayın.',
-      );
-    }
-
-    final existing = await getUserProfile(user.uid);
-    if (existing != null && existing.role != 'parent') {
-      await _auth.signOut();
-      _cachedUser = null;
-      throw const AuthException(
-        'Bu e-posta bir veli hesabı değil. Doğru hesapla giriş yapın.',
-      );
-    }
-
-    await user.updateDisplayName(name.trim());
-
-    final userModel = AppUserModel(
-      uid: user.uid,
-      role: 'parent',
-      name: name.trim(),
-      email: email.trim(),
-      isActive: true,
-      createdAt: existing?.createdAt ?? now,
-      updatedAt: now,
-    );
-
-    await _commitParentInviteBinding(
-      uid: user.uid,
-      userModel: userModel,
-      name: name.trim(),
-      email: email.trim(),
-      studentId: studentId,
-      inviteCode: inviteCode,
-      inviteType: inviteType,
-      now: now,
-      mergeUser: true,
-    );
-
-    _cachedUser = userModel;
-    return userModel;
-  }
-
   Future<void> _commitParentInviteBinding({
     required String uid,
     required AppUserModel userModel,
     required String name,
     required String email,
+    required String phone,
     required String studentId,
     required String inviteCode,
     required String inviteType,
@@ -296,6 +267,7 @@ class AuthRepositoryImpl implements AuthRepository {
           'uid': uid,
           'name': name,
           'email': email,
+          'phone': phone,
           'studentIds': FieldValue.arrayUnion([studentId]),
           'updatedAt': now.toIso8601String(),
         },
@@ -309,6 +281,7 @@ class AuthRepositoryImpl implements AuthRepository {
           'uid': uid,
           'name': name,
           'email': email,
+          'phone': phone,
           'studentIds': [studentId],
           'createdAt': now.toIso8601String(),
         },
@@ -496,6 +469,12 @@ class AuthRepositoryImpl implements AuthRepository {
         'invalid-credential' ||
         'INVALID_LOGIN_CREDENTIALS' =>
           const AuthException('E-posta veya şifre hatalı.'),
+        'invalid-verification-code' =>
+          const AuthException('Doğrulama kodu hatalı.'),
+        'session-expired' =>
+          const AuthException('Kodun süresi doldu. Yeni kod isteyin.'),
+        'invalid-phone-number' =>
+          const AuthException('Geçersiz telefon numarası.'),
         'invalid-email' =>
           const AuthException('Geçersiz e-posta adresi biçimi.'),
         'email-already-in-use' =>

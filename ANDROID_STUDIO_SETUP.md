@@ -80,7 +80,13 @@ cp mobile/lib/firebase_options.example.dart mobile/lib/firebase_options.dart
 Ardından `firebase_options.dart` içindeki placeholder değerleri Firebase Console'dan doldurun.
 Alternatif: `dart pub global activate flutterfire_cli` → `flutterfire configure`
 
-### Adım 2.4 — iOS için (isteğe bağlı)
+### Adım 2.4 — Firebase Phone Auth (veli SMS OTP)
+
+1. Firebase Console → Authentication → Sign-in method → **Phone** → Enable
+2. Android: Proje ayarları → SHA-1 ve SHA-256 fingerprint ekle (`keytool -list -v -keystore ...`)
+3. Geliştirme için Console'da test telefon numarası + sabit OTP tanımlayabilirsiniz
+
+### Adım 2.5 — iOS için (isteğe bağlı)
 1. Firebase Console → iOS uygulaması → `GoogleService-Info.plist` indir
 2. Kopyala: `ODEV_SİSTEM_PROJESİ/ios/Runner/GoogleService-Info.plist`
 

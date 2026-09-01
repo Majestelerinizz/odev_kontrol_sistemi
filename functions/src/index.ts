@@ -194,3 +194,34 @@ export const sendBroadcast = onCall(async (request) => {
     broadcastId: auditRef.id,
   };
 });
+
+interface TeacherPreviewRequest {
+  email?: string;
+}
+
+export const getTeacherAuthPreview = onCall(async (request) => {
+  const email = ((request.data ?? {}) as TeacherPreviewRequest).email
+    ?.trim()
+    .toLowerCase();
+
+  if (!email || !email.includes("@")) {
+    throw new HttpsError("invalid-argument", "Geçerli bir e-posta gerekir.");
+  }
+
+  const snap = await db
+    .collection("users")
+    .where("email", "==", email)
+    .limit(1)
+    .get();
+
+  if (snap.empty) {
+    return {exists: false, name: null, role: null};
+  }
+
+  const data = snap.docs[0].data();
+  return {
+    exists: true,
+    name: (data.name as string | undefined) ?? null,
+    role: (data.role as string | undefined) ?? null,
+  };
+});

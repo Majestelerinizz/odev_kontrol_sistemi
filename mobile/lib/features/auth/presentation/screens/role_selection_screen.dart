@@ -80,7 +80,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                     'Ödev ve deneme takibi',
                     'Veli bilgilendirme',
                   ],
-                  onTap: () => context.push('/register/teacher'),
+                  onTap: () => context.push('/auth/teacher'),
                 ),
                 const SizedBox(height: 20),
 
@@ -96,30 +96,10 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                     'Deneme sonuçlarını takip edin',
                     'Öğretmen mesajlarını okuyun',
                   ],
-                  onTap: () => context.push('/register/parent'),
+                  onTap: () => context.push('/auth/parent'),
                 ),
 
                 const Spacer(),
-
-                // ── Giriş bağlantısı ─────────────────────────────────────
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Zaten hesabınız var mı? ',
-                      style: AppTextStyles.bodyMedium,
-                    ),
-                    TextButton(
-                      onPressed: () => context.push('/login'),
-                      child: Text(
-                        AppStrings.login,
-                        style: AppTextStyles.labelLarge.copyWith(
-                          color: AppColors.teacherPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),
