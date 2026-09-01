@@ -63,9 +63,24 @@ PostgreSQL sync sistemini aktif etmek için gereken tüm adımları içerir.
 
 1. Firebase Console → `Proje Ayarları → Uygulamalarım → Android uygulaması`
 2. **google-services.json** dosyasını indir
-3. Kopyala: `ODEV_SİSTEM_PROJESİ/android/app/google-services.json`
+3. Kopyala: `mobile/android/app/google-services.json` (şablon: `google-services.json.example`)
 
-### Adım 2.3 — iOS için (isteğe bağlı)
+### Adım 2.3 — Flutter Firebase seçenekleri (web derlemesi)
+
+Mobil projede Flutter web veya admin panelde derleme için:
+
+```bash
+# web-panel
+cp web-panel/lib/firebase_options.example.dart web-panel/lib/firebase_options.dart
+
+# mobile (yalnızca flutter run -d chrome gibi web hedefleri)
+cp mobile/lib/firebase_options.example.dart mobile/lib/firebase_options.dart
+```
+
+Ardından `firebase_options.dart` içindeki placeholder değerleri Firebase Console'dan doldurun.
+Alternatif: `dart pub global activate flutterfire_cli` → `flutterfire configure`
+
+### Adım 2.4 — iOS için (isteğe bağlı)
 1. Firebase Console → iOS uygulaması → `GoogleService-Info.plist` indir
 2. Kopyala: `ODEV_SİSTEM_PROJESİ/ios/Runner/GoogleService-Info.plist`
 

@@ -56,9 +56,12 @@ mobile/android/app/release
 
 # ── Firebase yapılandırma dosyaları (GİZLİ — asla commit etme) ─
 **/google-services.json
+!**/google-services.json.example
 **/GoogleService-Info.plist
 **/*firebase-adminsdk*.json
 **/serviceAccountKey.json
+**/firebase_options.dart
+!**/firebase_options.example.dart
 
 # ── PostgreSQL Docker verileri ─────────────────────────────────
 postgres_data/

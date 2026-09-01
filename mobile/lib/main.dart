@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/app.dart';
 import 'core/services/fcm_service.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,17 +30,7 @@ Future<void> main() async {
   // ── Firebase başlatma ─────────────────────────────────────────────────────
   try {
     if (kIsWeb) {
-      await Firebase.initializeApp(
-        options: const FirebaseOptions(
-          apiKey: "AIzaSyDZ80PElxFSEjX8G5-LhM36H-UOWO0SJUM",
-          appId: "1:763956808451:web:37b5b0f6a85848b240b736",
-          messagingSenderId: "763956808451",
-          projectId: "eduly-server",
-          authDomain: "eduly-server.firebaseapp.com",
-          storageBucket: "eduly-server.firebasestorage.app",
-          measurementId: "G-6WVK3D5NWE",
-        ),
-      );
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.web);
     } else {
       await Firebase.initializeApp();
     }

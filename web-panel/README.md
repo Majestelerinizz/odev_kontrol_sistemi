@@ -11,6 +11,7 @@ Flutter Web süper kullanıcı paneli. Öğretmen/veli mobil uygulamasının kop
 
 ```bash
 cd web-panel
+cp lib/firebase_options.example.dart lib/firebase_options.dart   # ilk kurulum
 flutter pub get
 flutter run -d chrome
 ```
