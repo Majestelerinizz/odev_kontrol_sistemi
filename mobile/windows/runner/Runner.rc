@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.odevtakip" "\0"
-            VALUE "FileDescription", "odev_takip" "\0"
+            VALUE "CompanyName", "Eduly" "\0"
+            VALUE "FileDescription", "Eduly" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "odev_takip" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.odevtakip. All rights reserved." "\0"
-            VALUE "OriginalFilename", "odev_takip.exe" "\0"
-            VALUE "ProductName", "odev_takip" "\0"
+            VALUE "InternalName", "eduly" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Eduly. All rights reserved." "\0"
+            VALUE "OriginalFilename", "eduly.exe" "\0"
+            VALUE "ProductName", "Eduly" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

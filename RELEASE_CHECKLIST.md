@@ -93,7 +93,8 @@ firebase deploy --only firestore:rules,firestore:indexes,functions,hosting
 
 ### Teknik
 - [ ] Upload keystore yedeklendi
-- [ ] `applicationId` / bundle id mağaza kaydıyla uyumlu
+- [ ] `applicationId` / bundle id = `com.eduly.app` (Play Console ve Firebase Android/iOS app ile birebir aynı)
+- [ ] Debug + upload SHA-1/SHA-256 Firebase’e eklendi; reCAPTCHA anahtarları yeni paket adına göre
 - [ ] Crashlytics Console’da veri geliyor (release build)
 - [ ] App Check (önerilir; Console’da etkinleştir — henüz istemci zorunlu değil)
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -6,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/app.dart';
 import 'core/services/fcm_service.dart';
+import 'core/services/sms_service.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -36,6 +39,11 @@ Future<void> main() async {
     }
   } catch (e) {
     debugPrint('Firebase initialize warning: $e');
+  }
+
+  // Phone Auth reCAPTCHA Enterprise — SMS OTP öncesi anahtarları yükle
+  if (!kIsWeb) {
+    unawaited(SmsService.ensureRecaptchaReady());
   }
 
   // Crashlytics: web'de yok; debug'da kapalı (gürültüyü önle)

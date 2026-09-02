@@ -1,4 +1,4 @@
-package com.odevtakip.odev_takip
+package com.eduly.app
 
 import io.flutter.embedding.android.FlutterActivity
 

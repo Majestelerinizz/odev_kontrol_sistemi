@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,6 +57,8 @@ class _ParentAuthFlowScreenState extends ConsumerState<ParentAuthFlowScreen> {
 
   bool _isLoading = false;
   int _resendSeconds = 0;
+  bool _phoneAuthHandled = false;
+  StreamSubscription<User?>? _autoVerifySub;
 
   @override
   void initState() {
@@ -73,6 +77,7 @@ class _ParentAuthFlowScreenState extends ConsumerState<ParentAuthFlowScreen> {
 
   @override
   void dispose() {
+    _autoVerifySub?.cancel();
     _phoneController.dispose();
     _otpController.dispose();
     _nameController.dispose();
@@ -122,6 +127,8 @@ class _ParentAuthFlowScreenState extends ConsumerState<ParentAuthFlowScreen> {
       case _ParentStep.phone:
         context.pop();
       case _ParentStep.otp:
+        _autoVerifySub?.cancel();
+        _phoneAuthHandled = false;
         setState(() => _step = _ParentStep.phone);
       case _ParentStep.name:
         setState(() => _step = _ParentStep.otp);
@@ -144,13 +151,19 @@ class _ParentAuthFlowScreenState extends ConsumerState<ParentAuthFlowScreen> {
     _phoneE164 = PhoneUtils.toE164(digits);
 
     setState(() => _isLoading = true);
+    _phoneAuthHandled = false;
     try {
-      await SmsService.sendOtp(_phoneE164);
+      final session = await SmsService.sendOtp(_phoneE164);
       if (!mounted) return;
+      if (session.autoVerified) {
+        await _continueAfterPhoneAuth();
+        return;
+      }
       setState(() {
         _step = _ParentStep.otp;
         _resendSeconds = 60;
       });
+      _watchLateAutoVerify();
       _startResendTimer();
     } on AuthException catch (e) {
       if (mounted) context.showSnackBar(e.message, isError: true);
@@ -192,43 +205,10 @@ class _ParentAuthFlowScreenState extends ConsumerState<ParentAuthFlowScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final credential = await SmsService.verifyOtp(
+      final user = await SmsService.verifyOtp(
         smsCode: _otpController.text.trim(),
       );
-
-      final uid = credential.user?.uid;
-      if (uid == null) {
-        throw const AuthException('Oturum açılamadı.');
-      }
-
-      final profile =
-          await ref.read(parentAuthProvider.notifier).loadCurrentProfile(uid);
-
-      if (!mounted) return;
-
-      if (profile != null && profile.isParent && profile.isActive) {
-        setState(() {
-          _isReturningUser = true;
-          _returningName = profile.name;
-        });
-        context.showSnackBar(
-          'Tekrar hoş geldiniz, ${profile.name}',
-        );
-        context.go('/parent/home');
-        return;
-      }
-
-      if (profile != null && profile.isTeacher) {
-        await FirebaseAuth.instance.signOut();
-        throw const AuthException(
-          'Bu telefon bir öğretmen hesabına bağlı.',
-        );
-      }
-
-      setState(() {
-        _isReturningUser = false;
-        _step = _ParentStep.name;
-      });
+      await _continueAfterPhoneAuth(uid: user.uid);
     } on AuthException catch (e) {
       if (mounted) context.showSnackBar(e.message, isError: true);
     } catch (e) {
@@ -238,6 +218,59 @@ class _ParentAuthFlowScreenState extends ConsumerState<ParentAuthFlowScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _watchLateAutoVerify() {
+    _autoVerifySub?.cancel();
+    _autoVerifySub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (!mounted || user == null || _phoneAuthHandled) return;
+      if (_step != _ParentStep.otp) return;
+      _continueAfterPhoneAuth(uid: user.uid).catchError((Object e) {
+        if (!mounted) return;
+        final message = e is AuthException ? e.message : 'Doğrulama başarısız.';
+        context.showSnackBar(message, isError: true);
+      });
+    });
+  }
+
+  Future<void> _continueAfterPhoneAuth({String? uid}) async {
+    if (_phoneAuthHandled) return;
+    _phoneAuthHandled = true;
+    await _autoVerifySub?.cancel();
+
+    final resolvedUid = uid ?? FirebaseAuth.instance.currentUser?.uid;
+    if (resolvedUid == null) {
+      _phoneAuthHandled = false;
+      throw const AuthException('Oturum açılamadı.');
+    }
+
+    final profile =
+        await ref.read(parentAuthProvider.notifier).loadCurrentProfile(resolvedUid);
+
+    if (!mounted) return;
+
+    if (profile != null && profile.isParent && profile.isActive) {
+      setState(() {
+        _isReturningUser = true;
+        _returningName = profile.name;
+      });
+      context.showSnackBar('Tekrar hoş geldiniz, ${profile.name}');
+      context.go('/parent/home');
+      return;
+    }
+
+    if (profile != null && profile.isTeacher) {
+      await FirebaseAuth.instance.signOut();
+      _phoneAuthHandled = false;
+      throw const AuthException(
+        'Bu telefon bir öğretmen hesabına bağlı.',
+      );
+    }
+
+    setState(() {
+      _isReturningUser = false;
+      _step = _ParentStep.name;
+    });
   }
 
   void _submitName() {

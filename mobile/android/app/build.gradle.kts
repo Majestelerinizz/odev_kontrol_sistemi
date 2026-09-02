@@ -17,7 +17,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.odevtakip.odev_takip"
+    namespace = "com.eduly.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -31,8 +31,9 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.odevtakip.odev_takip"
-        minSdk = flutter.minSdkVersion
+        applicationId = "com.eduly.app"
+        // reCAPTCHA Enterprise / Phone Auth: API 23+
+        minSdk = maxOf(23, flutter.minSdkVersion)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

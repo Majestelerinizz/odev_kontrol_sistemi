@@ -59,11 +59,24 @@ PostgreSQL sync sistemini aktif etmek için gereken tüm adımları içerir.
 4. Dosyayı yeniden adlandır: `serviceAccountKey.json`
 5. Kopyala: `ODEV_SİSTEM_PROJESİ/backend/serviceAccountKey.json`
 
-### Adım 2.2 — Android için google-services.json
+### Adım 2.2 — Android uygulaması (`com.eduly.app`)
 
-1. Firebase Console → `Proje Ayarları → Uygulamalarım → Android uygulaması`
-2. **google-services.json** dosyasını indir
-3. Kopyala: `mobile/android/app/google-services.json` (şablon: `google-services.json.example`)
+Paket adı: **`com.eduly.app`**. Play Store’a henüz yüklenmediyse eski `com.odevtakip.odev_takip` kaydını silip bu paketle **yeni Android uygulaması** ekleyin.
+
+1. Firebase Console → ⚙️ **Project settings** → **Your apps**
+2. **Add app** → Android → Android package name: `com.eduly.app` → App nickname: `Eduly`
+3. **google-services.json** indir → `mobile/android/app/google-services.json` üzerine kopyala
+4. SHA-1 ve SHA-256 ekle (debug + varsa upload keystore). Komutlar:
+
+```powershell
+# Debug (emülatör / flutter run)
+keytool -list -v -keystore "$env:USERPROFILE\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android
+
+# Release / Play upload (keystore oluşturduktan sonra)
+keytool -list -v -keystore android\upload-keystore.jks -alias upload
+```
+
+SHA-1 **ve** SHA-256’yı Firebase Android uygulamasına yapıştırın. Phone Auth + reCAPTCHA + Play Integrity bunlara bağlıdır.
 
 ### Adım 2.3 — Flutter Firebase seçenekleri (web derlemesi)
 
@@ -80,15 +93,23 @@ cp mobile/lib/firebase_options.example.dart mobile/lib/firebase_options.dart
 Ardından `firebase_options.dart` içindeki placeholder değerleri Firebase Console'dan doldurun.
 Alternatif: `dart pub global activate flutterfire_cli` → `flutterfire configure`
 
-### Adım 2.4 — Firebase Phone Auth (veli SMS OTP)
+### Adım 2.4 — Firebase Phone Auth + reCAPTCHA (veli SMS OTP)
 
-1. Firebase Console → Authentication → Sign-in method → **Phone** → Enable
-2. Android: Proje ayarları → SHA-1 ve SHA-256 fingerprint ekle (`keytool -list -v -keystore ...`)
-3. Geliştirme için Console'da test telefon numarası + sabit OTP tanımlayabilirsiniz
+1. Blaze planı açık olmalı (SMS ücretlidir).
+2. Authentication → **Sign-in method** → **Phone** → Enable
+3. Authentication → **Settings** → **reCAPTCHA** / App verification: Android + iOS (ve web panel için Web) anahtarlarını `com.eduly.app` paket/bundle kimliğiyle ekleyin. Eski pakete bağlı anahtarları silin.
+4. Google Cloud Console’da **reCAPTCHA Enterprise API** ve **Identity Toolkit API** etkin olsun.
+5. Geliştirme: Phone provider → **Phone numbers for testing** ile sahte numara + sabit OTP tanımlayın (SMS harcamaz).
+6. Paket adı değişince eski Android uygulamasına bağlı SHA ve reCAPTCHA anahtarlarını `com.eduly.app` kaydıyla yeniden oluşturun.
 
 ### Adım 2.5 — iOS için (isteğe bağlı)
-1. Firebase Console → iOS uygulaması → `GoogleService-Info.plist` indir
-2. Kopyala: `ODEV_SİSTEM_PROJESİ/ios/Runner/GoogleService-Info.plist`
+
+Bundle ID: **`com.eduly.app`**
+
+1. Firebase Console → iOS uygulaması ekle (bundle ID: `com.eduly.app`)
+2. `GoogleService-Info.plist` indir → `mobile/ios/Runner/GoogleService-Info.plist`
+3. Apple Developer → APNs Auth Key (.p8) oluştur → Firebase Project settings → Cloud Messaging → iOS APNs Authentication Key
+4. Xcode → Signing & Capabilities → **Push Notifications** + Background Modes → Remote notifications
 
 ---
 
